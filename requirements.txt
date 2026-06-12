@@ -1,9 +1,11 @@
 asgiref==3.11.1
 attrs==26.1.0
 Django==6.0.6
+django-cors-headers==4.9.0
 django-filter==25.2
 djangorestframework==3.17.1
 drf-yasg==1.21.15
+gunicorn==26.0.0
 importlib_resources==7.1.0
 inflection==0.5.1
 jsonschema==4.26.0
@@ -11,6 +13,8 @@ jsonschema-specifications==2025.9.1
 Markdown==3.10.2
 packaging==26.2
 pillow==12.2.0
+psycopg2-binary==2.9.12
+python-decouple==3.8
 pytz==2026.2
 PyYAML==6.0.3
 referencing==0.37.0
@@ -20,3 +24,4 @@ swagger-spec-validator==3.0.4
 typing_extensions==4.15.0
 tzdata==2026.2
 uritemplate==4.2.0
+whitenoise==6.12.0
