@@ -26,7 +26,7 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool, default=False)
 
 ALLOWED_HOSTS = [
-    'твой-проект.onrender.com',
+    'careerup-i5eg.onrender.com',
     'localhost',
     '127.0.0.1',
 ]
