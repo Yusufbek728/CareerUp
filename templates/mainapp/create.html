@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create {{ listing_title }} — CareerUp</title>
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}">
+</head>
+<body>
+    <main class="create-page container">
+        <a href="{% url 'home' %}" class="back-link">&larr; Back to CareerUp</a>
+        <section class="create-panel">
+            <span class="tag">NEW LISTING</span>
+            <h1>Create {{ listing_title }}</h1>
+            <p class="form-intro">Add your information so people can contact you through CareerUp.</p>
+
+            <form method="post" class="listing-form" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="form-errors">{{ form.non_field_errors }}</div>
+                {% endif %}
+                {% for field in form %}
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+                        {{ field }}
+                        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                        {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="primary-btn form-submit">Create {{ listing_title }}</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

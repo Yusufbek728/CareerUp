@@ -1,0 +1,235 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerUp — Jobs, Internship & Talent</title>
+    <meta name="description" content="CareerUp is a modern platform for jobs, internships and resumes.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}">
+</head>
+<body>
+    <div class="page-shell">
+        <header class="header">
+            <nav class="nav container">
+                <div class="logo-wrap">
+                    <div class="logo-icon">C</div>
+                    <span>CareerUp</span>
+                </div>
+                <div class="nav-links">
+                    <a href="#career">Career</a>
+                    <a href="#features">Features</a>
+                    <a href="#jobs">Jobs</a>
+                    <a href="#internships">Internships</a>
+                </div>
+                <details class="create-menu">
+                    <summary class="nav-btn">Create</summary>
+                    <div class="create-options">
+                        <a href="{% url 'create_listing' 'job' %}">Job</a>
+                        <a href="{% url 'create_listing' 'resume' %}">Resume</a>
+                    </div>
+                </details>
+            </nav>
+        </header>
+
+        <main>
+            <section class="hero container" id="career">
+                <div class="hero-copy reveal">
+                    <span class="tag">BUILD YOUR FUTURE</span>
+                    <h1>Find the right opportunity<br>for your next step.</h1>
+                    <p>
+                        CareerUp connects ambitious people with employers, internship programs and powerful opportunities designed to accelerate success.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="#jobs" class="primary-btn">Explore jobs</a>
+                        <a href="#internships" class="secondary-btn">View internships</a>
+                    </div>
+                    <div class="mini-stats">
+                        <div>
+                            <strong>{{ job_count }}</strong>
+                            <span>Jobs</span>
+                        </div>
+                        <div>
+                            <strong>{{ internship_count }}</strong>
+                            <span>Internships</span>
+                        </div>
+                        <div>
+                            <strong>{{ resume_count }}</strong>
+                            <span>Resumes</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-visual reveal">
+                    <div class="orb orb-one"></div>
+                    <div class="orb orb-two"></div>
+                    <div class="dashboard-card main-card">
+                        <div class="card-header">
+                            <span>AD SPACE</span>
+                            <span class="online-dot"></span>
+                        </div>
+                        <h3>Your advertisement can be placed here</h3>
+                        <div class="card-row">
+                            <span>Your brand</span>
+                            <span>Premium placement</span>
+                        </div>
+                    </div>
+
+                    <div class="floating-card card-a">
+                        <small>New job</small>
+                        <strong>Frontend Engineer</strong>
+                    </div>
+                    <div class="floating-card card-b">
+                        <small>Internship</small>
+                        <strong>UI/UX Intern</strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="features container reveal" id="features">
+                <div class="section-head">
+                    <span class="tag">WHY US</span>
+                    <h2>Built for jobs, internships and growth.</h2>
+                </div>
+                <div class="feature-grid">
+                    <article class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Fast matching</h3>
+                        <p>Connect with opportunities tailored to your skills and goals.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3>Smart filters</h3>
+                        <p>Find the best jobs by experience, work model and expected salary.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon">🤝</div>
+                        <h3>Trust network</h3>
+                        <p>Discover reliable employers and candidates from one platform.</p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="listing-section container reveal" id="jobs">
+                <div class="section-head split-head">
+                    <div>
+                        <span class="tag">LATEST JOBS</span>
+                        <h2>Fresh opportunities</h2>
+                    </div>
+                    <a href="#jobs">View all</a>
+                </div>
+
+                <div class="job-grid">
+                    {% for job in jobs %}
+                    <a href="{% url 'job_detail' job.pk %}" class="job-card-link">
+                        <article class="job-card">
+                            <span class="status {% if job.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ job.status }}</span>
+                            <h3>{{ job.job_title }}</h3>
+                            <p>{{ job.company_name }}</p>
+                            <ul>
+                                <li>{{ job.working_condition }}</li>
+                                <li>{{ job.work_schedule_and_working_hours }}</li>
+                                <li>{{ job.required_experience }} years</li>
+                            </ul>
+                            <div class="card-footer">
+                                <strong>${{ job.salary }}</strong>
+                                <span>{{ job.created_at|date:"M d, Y" }}</span>
+                            </div>
+                        </article>
+                    </a>
+                    {% empty %}
+                    <p class="empty-text">No jobs available yet.</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="listing-section alt-section container reveal" id="internships">
+                <div class="section-head split-head">
+                    <div>
+                        <span class="tag">INTERNSHIPS</span>
+                        <h2>Learn while you grow</h2>
+                    </div>
+                    <a href="#internships">View all</a>
+                </div>
+
+                <div class="job-grid">
+                    {% for internship in internships %}
+                    <a href="{% url 'internship_detail' internship.pk %}" class="job-card-link">
+                        <article class="job-card">
+                            <span class="status neutral">Internship</span>
+                            <h3>{{ internship.job_title }}</h3>
+                            <p>{{ internship.company_name }}</p>
+                            <ul>
+                                <li>{{ internship.working_condition }}</li>
+                                <li>{{ internship.work_duration }} weeks</li>
+                                <li>{{ internship.work_schedule_and_working_hours }}</li>
+                            </ul>
+                            <div class="card-footer">
+                                <strong>{{ internship.work_time }}</strong>
+                                <span>{{ internship.created_at|date:"M d, Y" }}</span>
+                            </div>
+                        </article>
+                    </a>
+                    {% empty %}
+                    <p class="empty-text">No internships available yet.</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="listing-section container reveal" id="resumes">
+                <div class="section-head split-head">
+                    <div>
+                        <span class="tag">RESUMES</span>
+                        <h2>People looking for their next opportunity</h2>
+                    </div>
+                    <a href="#resumes">View all</a>
+                </div>
+
+                <div class="job-grid">
+                    {% for resume in resumes %}
+                    <a href="{% url 'resume_detail' resume.pk %}" class="job-card-link">
+                        <article class="job-card">
+                            <span class="status neutral">Resume</span>
+                            <h3>{{ resume.name }} {{ resume.surname }}</h3>
+                            <p>{{ resume.email }}</p>
+                            <ul>
+                                <li>{{ resume.experience }} years experience</li>
+                            </ul>
+                            <div class="card-footer">
+                                <strong>${{ resume.wanted_salary }}</strong>
+                                <span>{{ resume.created_at|date:"M d, Y" }}</span>
+                            </div>
+                        </article>
+                    </a>
+                    {% empty %}
+                    <p class="empty-text">No resumes available yet.</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="resume-band container reveal">
+                <div class="band-content">
+                    <div>
+                        <span class="tag">OUR COMMUNITY</span>
+                        <h2>People who are actively looking for growth opportunities.</h2>
+                    </div>
+                    <a href="#career" class="primary-btn">Create profile</a>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <div class="container footer-inner">
+                <div class="logo-wrap">
+                    <div class="logo-icon">C</div>
+                    <span>CareerUp</span>
+                </div>
+                <p>© 2026 CareerUp. Designed for smarter hiring.</p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
