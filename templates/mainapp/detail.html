@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if type == 'job' %}{{ item.job_title }}{% elif type == 'internship' %}{{ item.job_title }}{% else %}{{ item.name }} {{ item.surname }}{% endif %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}">
+</head>
+<body>
+    <div class="page-shell">
+        <header class="header">
+            <nav class="nav container">
+                <div class="logo-wrap">
+                    <div class="logo-icon">C</div>
+                    <span>CareerUp</span>
+                </div>
+                <a href="{% url 'home' %}" class="nav-btn">Back home</a>
+            </nav>
+        </header>
+
+        <main class="container detail-page">
+            <div class="detail-card reveal">
+                {% if type == 'job' %}
+                    <span class="tag">JOB</span>
+                    <h1>{{ item.job_title }}</h1>
+                    <p class="company-name">{{ item.company_name }}</p>
+                    <div class="detail-grid">
+                        <div><strong>Salary:</strong> ${{ item.salary }}</div>
+                        <div><strong>Phone 1:</strong> {% if item.phone_number %}{{ item.phone_number }}{% else %}Not provided{% endif %}</div>
+                        <div><strong>Phone 2:</strong> {% if item.phone_number2 %}{{ item.phone_number2 }}{% else %}Not provided{% endif %}</div>
+                        <div><strong>Experience:</strong> {{ item.required_experience }} years</div>
+                        <div><strong>Work time:</strong> {{ item.work_time }}</div>
+                        <div><strong>Condition:</strong> {{ item.working_condition }}</div>
+                        <div><strong>Schedule:</strong> {{ item.work_schedule_and_working_hours }}</div>
+                        <div><strong>Field:</strong> {{ item.work_field }}</div>
+                        <div><strong>Status:</strong> {{ item.status }}</div>
+                        <div><strong>Created:</strong> {{ item.created_at|date:"M d, Y" }}</div>
+                    </div>
+                    <div class="detail-section">
+                        <h3>Requirements</h3>
+                        <p>{{ item.requirements_of_job }}</p>
+                    </div>
+
+                {% elif type == 'internship' %}
+                    <span class="tag">INTERNSHIP</span>
+                    <h1>{{ item.job_title }}</h1>
+                    <p class="company-name">{{ item.company_name }}</p>
+                    <div class="detail-grid">
+                        <div><strong>Work duration:</strong> {{ item.work_duration }} weeks</div>
+                        <div><strong>Phone 1:</strong> {% if item.phone_number %}{{ item.phone_number }}{% else %}Not provided{% endif %}</div>
+                        <div><strong>Phone 2:</strong> {% if item.phone_number2 %}{{ item.phone_number2 }}{% else %}Not provided{% endif %}</div>
+                        <div><strong>Work time:</strong> {{ item.work_time }}</div>
+                        <div><strong>Condition:</strong> {{ item.working_condition }}</div>
+                        <div><strong>Schedule:</strong> {{ item.work_schedule_and_working_hours }}</div>
+                        <div><strong>Field:</strong> {{ item.work_field }}</div>
+                        <div><strong>Created:</strong> {{ item.created_at|date:"M d, Y" }}</div>
+                    </div>
+
+                {% else %}
+                    <span class="tag">RESUME</span>
+                    <h1>{{ item.name }} {{ item.surname }}</h1>
+                    <p class="company-name">{{ item.email }}</p>
+                    <div class="detail-grid">
+                        <div><strong>Phone 1:</strong> {{ item.phone_number }}</div>
+                        <div><strong>Phone 2:</strong> {% if item.phone_number2 %}{{ item.phone_number2 }}{% else %}Not provided{% endif %}</div>
+                        <div><strong>Experience:</strong> {{ item.experience }} years</div>
+                        <div><strong>Wanted salary:</strong> ${{ item.wanted_salary }}</div>
+                        <div><strong>Work time:</strong> {{ item.wanted_work_time }}</div>
+                        <div><strong>Condition:</strong> {{ item.wanted_working_condition }}</div>
+                        <div><strong>Schedule:</strong> {{ item.wanted_work_schedule_and_working_hours }}</div>
+                        <div><strong>Status:</strong> {{ item.status }}</div>
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+</body>
+</html>
