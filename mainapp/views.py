@@ -10,8 +10,8 @@ from rest_framework.response import Response
 
 from mainapp.pagination import InternshipPagination, JobPagination, ResumePagination
 from mainapp.throttling import InternshipThrottle, JobThrottle, ResumeThrottle
-from .models import Job, Internship, resume
-from .forms import InternshipForm, JobForm, LoginForm, RegistrationForm, ResumeForm
+from .models import AccountProfile, Job, Internship, resume
+from .forms import InternshipForm, JobForm, LoginForm, RegistrationForm, ResumeForm, RoleForm
 from .serialiers import JobSerializer, ResumeSerializer, InternshipSerializer, RegistrationSerializer
 
 
@@ -107,6 +107,26 @@ def create_listing(request, listing_type):
         'form': form,
         'listing_title': listing_title,
     })
+
+
+@login_required
+def choose_role(request):
+    profile = getattr(request.user, 'account_profile', None)
+    if profile and profile.role:
+        return redirect('home')
+
+    form = RoleForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        AccountProfile.objects.update_or_create(
+            user=request.user,
+            defaults={
+                'role': form.cleaned_data['role'],
+                'display_name': request.user.get_full_name() or request.user.username,
+            },
+        )
+        return redirect('home')
+
+    return render(request, 'mainapp/choose_role.html', {'form': form})
 
 
 def register_view(request):

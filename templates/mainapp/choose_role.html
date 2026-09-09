@@ -1,0 +1,31 @@
+{% load i18n static %}
+{% get_current_language as current_language %}
+<!DOCTYPE html>
+<html lang="{{ current_language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% translate "Choose account type" %} — CareerUp</title>
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}">
+</head>
+<body>
+    <main class="create-page container">
+        <a href="{% url 'home' %}" class="back-link">&larr; {% translate "Back to CareerUp" %}</a>
+        <section class="create-panel auth-panel">
+            <span class="tag">{% translate "PROFILE" %}</span>
+            <h1>{% translate "Choose account type" %}</h1>
+            <p class="form-intro">{% translate "Choose who you are to create the right kind of listing." %}</p>
+            <form method="post" class="listing-form">
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+                <div class="form-field">
+                    <label for="{{ form.role.id_for_label }}">{{ form.role.label }}</label>
+                    {{ form.role }}
+                    {% for error in form.role.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+                <button type="submit" class="primary-btn form-submit">{% translate "Continue" %}</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
