@@ -40,6 +40,13 @@ class LoginForm(forms.Form):
         return cleaned_data
 
 
+class RoleForm(forms.Form):
+    role = forms.ChoiceField(
+        choices=(('company', _('Company')), ('worker', _('Worker'))),
+        label=_('Account type'),
+    )
+
+
 class JobForm(forms.ModelForm):
     class Meta:
         model = Job
