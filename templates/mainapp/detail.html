@@ -50,7 +50,7 @@
                         <div><strong>{% translate "Condition:" %}</strong> {{ item.working_condition }}</div>
                         <div><strong>{% translate "Schedule:" %}</strong> {{ item.work_schedule_and_working_hours }}</div>
                         <div><strong>{% translate "Field:" %}</strong> {{ item.work_field }}</div>
-                        <div><strong>{% translate "Status:" %}</strong> {{ item.status }}</div>
+                        <div><strong>{% translate "Status:" %}</strong> {{ item.get_status_display }}</div>
                         <div><strong>{% translate "Created:" %}</strong> {{ item.created_at|date:"M d, Y" }}</div>
                     </div>
                     <div class="detail-section">
@@ -70,6 +70,7 @@
                         <div><strong>{% translate "Condition:" %}</strong> {{ item.working_condition }}</div>
                         <div><strong>{% translate "Schedule:" %}</strong> {{ item.work_schedule_and_working_hours }}</div>
                         <div><strong>{% translate "Field:" %}</strong> {{ item.work_field }}</div>
+                        <div><strong>{% translate "Status:" %}</strong> {{ item.get_status_display }}</div>
                         <div><strong>{% translate "Created:" %}</strong> {{ item.created_at|date:"M d, Y" }}</div>
                     </div>
 

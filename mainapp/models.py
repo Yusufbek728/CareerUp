@@ -1,14 +1,15 @@
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 phone_number_validator = RegexValidator(
     regex=r'^\+?(?=(?:\D*\d){8,15}\D*$)[0-9][0-9\s().-]*[0-9]$',
     message='Введите корректный номер телефона: 8–15 цифр, можно использовать +, пробелы, дефисы и скобки.',
 )
 STATUS_CHOICES = (
-    ('qidirilyapti', 'Qidirilyapti'),
-    ('topilgan', 'Topilgan'),
+    ('qidirilyapti', _('Still looking')),
+    ('topilgan', _('Not looking')),
 )
 WORKING_CONDITIONS = (
     ('full_time', 'toliq vaqt'),
@@ -73,6 +74,7 @@ class Internship(models.Model):
     work_schedule_and_working_hours = models.CharField(max_length=20, choices=WORKING_DAYS, default='6/1')
     work_field = models.CharField(max_length=20, choices=WORK_FIELDS, default='full_time')
     created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='qidirilyapti')
     def __str__(self):
         return self.job_title
     

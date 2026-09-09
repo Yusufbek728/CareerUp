@@ -20,19 +20,19 @@
         </section>
         {% for job in jobs %}
             <article class="owned-listing">
-                <div><span class="status pending">{% translate "Job" %}</span><h3>{{ job.job_title }}</h3><p>{{ job.company_name }}</p></div>
+                <div><span class="status {% if job.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ job.get_status_display }}</span><h3>{{ job.job_title }}</h3><p>{{ job.company_name }}</p></div>
                 <a class="secondary-btn" href="{% url 'edit_listing' 'job' job.pk %}">{% translate "Edit" %}</a>
             </article>
         {% endfor %}
         {% for internship in internships %}
             <article class="owned-listing">
-                <div><span class="status neutral">{% translate "Internship" %}</span><h3>{{ internship.job_title }}</h3><p>{{ internship.company_name }}</p></div>
+                <div><span class="status {% if internship.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ internship.get_status_display }}</span><h3>{{ internship.job_title }}</h3><p>{{ internship.company_name }}</p></div>
                 <a class="secondary-btn" href="{% url 'edit_listing' 'internship' internship.pk %}">{% translate "Edit" %}</a>
             </article>
         {% endfor %}
         {% for user_resume in resumes %}
             <article class="owned-listing">
-                <div><span class="status neutral">{% translate "Resume" %}</span><h3>{{ user_resume.name }} {{ user_resume.surname }}</h3><p>{{ user_resume.email }}</p></div>
+                <div><span class="status {% if user_resume.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ user_resume.get_status_display }}</span><h3>{{ user_resume.name }} {{ user_resume.surname }}</h3><p>{{ user_resume.email }}</p></div>
                 <a class="secondary-btn" href="{% url 'edit_listing' 'resume' user_resume.pk %}">{% translate "Edit" %}</a>
             </article>
         {% endfor %}
