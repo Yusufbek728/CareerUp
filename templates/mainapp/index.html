@@ -51,6 +51,8 @@
                                     <a href="{% url 'create_listing' 'internship' %}">{% translate "Internship" %}</a>
                                 {% elif request.user.account_profile.role == 'worker' %}
                                     <a href="{% url 'create_listing' 'resume' %}">{% translate "Resume" %}</a>
+                                {% else %}
+                                    <a href="{% url 'register' %}">{% translate "Complete your profile to create" %}</a>
                                 {% endif %}
                             {% else %}
                                 <a href="{% url 'login' %}?next={% url 'create_listing' 'job' %}">{% translate "Log in to create" %}</a>
