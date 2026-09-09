@@ -1,0 +1,44 @@
+{% load i18n static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% translate "My cards" %} - CareerUp</title>
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}">
+</head>
+<body>
+    <main class="create-page container">
+        <div class="create-toolbar">
+            <a href="{% url 'home' %}" class="back-link">&larr; {% translate "Back to CareerUp" %}</a>
+            <a href="{% url 'logout' %}" class="secondary-btn">{% translate "Log out" %}</a>
+        </div>
+        <section class="section-head">
+            <span class="tag">{% translate "ACCOUNT" %}</span>
+            <h1>{% translate "My cards" %}</h1>
+            <p class="form-intro">{{ request.user.account_profile.display_name }} · {{ request.user.account_profile.get_role_display }}</p>
+        </section>
+        {% for job in jobs %}
+            <article class="owned-listing">
+                <div><span class="status pending">{% translate "Job" %}</span><h3>{{ job.job_title }}</h3><p>{{ job.company_name }}</p></div>
+                <a class="secondary-btn" href="{% url 'edit_listing' 'job' job.pk %}">{% translate "Edit" %}</a>
+            </article>
+        {% endfor %}
+        {% for internship in internships %}
+            <article class="owned-listing">
+                <div><span class="status neutral">{% translate "Internship" %}</span><h3>{{ internship.job_title }}</h3><p>{{ internship.company_name }}</p></div>
+                <a class="secondary-btn" href="{% url 'edit_listing' 'internship' internship.pk %}">{% translate "Edit" %}</a>
+            </article>
+        {% endfor %}
+        {% for user_resume in resumes %}
+            <article class="owned-listing">
+                <div><span class="status neutral">{% translate "Resume" %}</span><h3>{{ user_resume.name }} {{ user_resume.surname }}</h3><p>{{ user_resume.email }}</p></div>
+                <a class="secondary-btn" href="{% url 'edit_listing' 'resume' user_resume.pk %}">{% translate "Edit" %}</a>
+            </article>
+        {% endfor %}
+        {% if not jobs and not internships and not resumes %}
+            <p class="empty-text">{% translate "You have not created any cards yet." %}</p>
+        {% endif %}
+    </main>
+</body>
+</html>

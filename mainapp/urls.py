@@ -10,7 +10,14 @@ from .views import (
     internship_detail,
     resume_detail,
     create_listing,
+    edit_listing,
+    login_view,
+    logout_view,
+    my_listings,
+    register_view,
+    RegistrationAPIView,
 )
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 router = routers.DefaultRouter()
 router.register(r'jobs', JobViewSet)
@@ -23,6 +30,14 @@ urlpatterns = [
     path('internships/<int:pk>/', internship_detail, name='internship_detail'),
     path('resumes/<int:pk>/', resume_detail, name='resume_detail'),
     path('create/<str:listing_type>/', create_listing, name='create_listing'),
+    path('edit/<str:listing_type>/<int:pk>/', edit_listing, name='edit_listing'),
+    path('register/', register_view, name='register'),
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
+    path('my-listings/', my_listings, name='my_listings'),
     path('api/', include(router.urls)),
+    path('api/register/', RegistrationAPIView.as_view(), name='api_register'),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]

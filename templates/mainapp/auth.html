@@ -1,0 +1,37 @@
+{% load i18n static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% translate auth_title %} - CareerUp</title>
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}">
+</head>
+<body>
+    <main class="create-page container">
+        <a href="{% url 'home' %}" class="back-link">&larr; {% translate "Back to CareerUp" %}</a>
+        <section class="create-panel auth-panel">
+            <span class="tag">{% translate "ACCOUNT" %}</span>
+            <h1>{% translate auth_title %}</h1>
+            <p class="form-intro">{% translate "Create an account to publish and manage your cards." %}</p>
+            <form method="post" class="listing-form" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+                {% for field in form %}
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+                        {{ field }}
+                        {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="primary-btn form-submit">{% translate auth_title %}</button>
+            </form>
+            {% if auth_title == 'Register' %}
+                <p class="auth-switch">{% translate "Already have an account?" %} <a href="{% url 'login' %}">{% translate "Log in" %}</a></p>
+            {% else %}
+                <p class="auth-switch">{% translate "No account yet?" %} <a href="{% url 'register' %}">{% translate "Register" %}</a></p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

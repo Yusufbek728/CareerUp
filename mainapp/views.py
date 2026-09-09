@@ -1,19 +1,58 @@
+from django.db.models import Q
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, redirect, render
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.filters import SearchFilter
+from rest_framework.response import Response
 
 from mainapp.pagination import InternshipPagination, JobPagination, ResumePagination
 from mainapp.throttling import InternshipThrottle, JobThrottle, ResumeThrottle
 from .models import Job, Internship, resume
-from .forms import JobForm, ResumeForm
-from .serialiers import JobSerializer, ResumeSerializer, InternshipSerializer
+from .forms import InternshipForm, JobForm, LoginForm, RegistrationForm, ResumeForm
+from .serialiers import JobSerializer, ResumeSerializer, InternshipSerializer, RegistrationSerializer
 
 
 def home_view(request):
-    jobs = Job.objects.order_by('-created_at')[:6]
-    internships = Internship.objects.order_by('-created_at')[:4]
-    resumes = resume.objects.order_by('-created_at')[:4]
+    search_query = request.GET.get('q', '').strip()
+    jobs = Job.objects.all()
+    internships = Internship.objects.all()
+    resumes = resume.objects.all()
+
+    if search_query:
+        jobs = jobs.filter(
+            Q(company_name__icontains=search_query)
+            | Q(job_title__icontains=search_query)
+            | Q(work_field__icontains=search_query)
+            | Q(working_condition__icontains=search_query)
+            | Q(work_schedule_and_working_hours__icontains=search_query)
+            | Q(owner__username__icontains=search_query)
+            | Q(owner__account_profile__display_name__icontains=search_query)
+        )
+        internships = internships.filter(
+            Q(company_name__icontains=search_query)
+            | Q(job_title__icontains=search_query)
+            | Q(work_field__icontains=search_query)
+            | Q(working_condition__icontains=search_query)
+            | Q(work_schedule_and_working_hours__icontains=search_query)
+            | Q(owner__username__icontains=search_query)
+            | Q(owner__account_profile__display_name__icontains=search_query)
+        )
+        resumes = resumes.filter(
+            Q(name__icontains=search_query)
+            | Q(surname__icontains=search_query)
+            | Q(email__icontains=search_query)
+            | Q(wanted_working_condition__icontains=search_query)
+            | Q(wanted_work_schedule_and_working_hours__icontains=search_query)
+            | Q(owner__username__icontains=search_query)
+            | Q(owner__account_profile__display_name__icontains=search_query)
+        )
+
+    jobs = jobs.order_by('-created_at')[:6]
+    internships = internships.order_by('-created_at')[:4]
+    resumes = resumes.order_by('-created_at')[:4]
 
     context = {
         'jobs': jobs,
@@ -22,6 +61,7 @@ def home_view(request):
         'job_count': Job.objects.count(),
         'internship_count': Internship.objects.count(),
         'resume_count': resume.objects.count(),
+        'search_query': search_query,
     }
     return render(request, 'mainapp/index.html', context)
 
@@ -41,18 +81,26 @@ def resume_detail(request, pk):
     return render(request, 'mainapp/detail.html', {'item': item, 'type': 'resume'})
 
 
+@login_required
 def create_listing(request, listing_type):
     form_config = {
         'job': (JobForm, 'Job', 'job_detail'),
+        'internship': (InternshipForm, 'Internship', 'internship_detail'),
         'resume': (ResumeForm, 'Resume', 'resume_detail'),
     }
     form_class, listing_title, detail_url = form_config.get(listing_type, (None, None, None))
     if form_class is None:
         return redirect('home')
 
+    role = getattr(getattr(request.user, 'account_profile', None), 'role', None)
+    if (listing_type in {'job', 'internship'} and role != 'company') or (listing_type == 'resume' and role != 'worker'):
+        return redirect('home')
+
     form = form_class(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        item = form.save()
+        item = form.save(commit=False)
+        item.owner = request.user
+        item.save()
         return redirect(detail_url, pk=item.pk)
 
     return render(request, 'mainapp/create.html', {
@@ -61,32 +109,125 @@ def create_listing(request, listing_type):
     })
 
 
-class JobViewSet(viewsets.ModelViewSet):
+def register_view(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+    form = RegistrationForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        data = form.cleaned_data
+        user = User.objects.create_user(username=data['username'], email=data['email'], password=data['password'])
+        from .models import AccountProfile
+        AccountProfile.objects.create(user=user, role=data['role'], display_name=data['display_name'])
+        login(request, user)
+        return redirect('home')
+    return render(request, 'mainapp/auth.html', {'form': form, 'auth_title': 'Register'})
+
+
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+    form = LoginForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        login(request, form.cleaned_data['user'])
+        return redirect(request.GET.get('next') or 'home')
+    return render(request, 'mainapp/auth.html', {'form': form, 'auth_title': 'Login'})
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('home')
+
+
+@login_required
+def my_listings(request):
+    context = {
+        'jobs': Job.objects.filter(owner=request.user).order_by('-created_at'),
+        'internships': Internship.objects.filter(owner=request.user).order_by('-created_at'),
+        'resumes': resume.objects.filter(owner=request.user).order_by('-created_at'),
+    }
+    return render(request, 'mainapp/my_listings.html', context)
+
+
+@login_required
+def edit_listing(request, listing_type, pk):
+    config = {
+        'job': (Job, JobForm, 'job_detail'),
+        'internship': (Internship, InternshipForm, 'internship_detail'),
+        'resume': (resume, ResumeForm, 'resume_detail'),
+    }
+    model, form_class, detail_url = config.get(listing_type, (None, None, None))
+    if model is None:
+        return redirect('home')
+    item = get_object_or_404(model, pk=pk, owner=request.user)
+    form = form_class(request.POST or None, instance=item)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect(detail_url, pk=item.pk)
+    return render(request, 'mainapp/create.html', {'form': form, 'listing_title': 'Edit ' + listing_type.title()})
+
+
+class RegistrationAPIView(generics.CreateAPIView):
+    serializer_class = RegistrationSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        user = User.objects.get(username=response.data['username'])
+        from rest_framework_simplejwt.tokens import RefreshToken
+        token = RefreshToken.for_user(user)
+        response.data['refresh'] = str(token)
+        response.data['access'] = str(token.access_token)
+        return response
+
+
+class OwnerModelViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.AllowAny]
+
+    def perform_create(self, serializer):
+        if not self.request.user.is_authenticated:
+            from rest_framework.exceptions import NotAuthenticated
+            raise NotAuthenticated('Registration and login are required to create a listing.')
+        serializer.save(owner=self.request.user)
+
+    def perform_update(self, serializer):
+        if serializer.instance.owner_id != self.request.user.id:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('You can edit only your own listings.')
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if instance.owner_id != self.request.user.id:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('You can delete only your own listings.')
+        instance.delete()
+
+
+class JobViewSet(OwnerModelViewSet):
     queryset = Job.objects.all()
     serializer_class = JobSerializer
     pagination_class = JobPagination
     throttle_classes = [JobThrottle]
     filter_backends = [SearchFilter, DjangoFilterBackend]
-    search_fields = ['company_name', 'job_title', 'working_condition', 'work_schedule_and_working_hours', 'work_field', 'status']
+    search_fields = ['company_name', 'job_title', 'working_condition', 'work_schedule_and_working_hours', 'work_field', 'status', 'owner__username', 'owner__account_profile__display_name']
     filterset_fields = ['company_name', 'salary', 'required_experience', 'work_time', 'job_title', 'working_condition', 'work_schedule_and_working_hours', 'work_field', 'status']
 
 
-class ResumeViewSet(viewsets.ModelViewSet):
+class ResumeViewSet(OwnerModelViewSet):
     queryset = resume.objects.all()
     serializer_class = ResumeSerializer
     pagination_class = ResumePagination
     throttle_classes = [ResumeThrottle]
     filter_backends = [SearchFilter, DjangoFilterBackend]
-    search_fields = ['name', 'surname', 'email', 'phone_number', 'experience', 'wanted_salary', 'wanted_working_condition', 'wanted_work_schedule_and_working_hours']
+    search_fields = ['name', 'surname', 'email', 'phone_number', 'experience', 'wanted_salary', 'wanted_working_condition', 'wanted_work_schedule_and_working_hours', 'owner__username', 'owner__account_profile__display_name']
     filterset_fields = ['name', 'surname', 'email', 'phone_number', 'phone_number2', 'experience', 'wanted_salary', 'wanted_work_time', 'wanted_working_condition', 'wanted_work_schedule_and_working_hours']
 
 
-class InternshipViewSet(viewsets.ModelViewSet):
+class InternshipViewSet(OwnerModelViewSet):
     queryset = Internship.objects.all()
     serializer_class = InternshipSerializer
     pagination_class = InternshipPagination
     throttle_classes = [InternshipThrottle]
     filter_backends = [SearchFilter, DjangoFilterBackend]
-    search_fields = ['company_name', 'job_title', 'working_condition', 'work_schedule_and_working_hours', 'work_field', 'status']
+    search_fields = ['company_name', 'job_title', 'working_condition', 'work_schedule_and_working_hours', 'work_field', 'status', 'owner__username', 'owner__account_profile__display_name']
     filterset_fields = ['company_name', 'work_time', 'work_duration', 'job_title', 'working_condition', 'work_schedule_and_working_hours', 'work_field']
 
