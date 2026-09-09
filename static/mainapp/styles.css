@@ -227,6 +227,7 @@ button {
 
 .create-menu {
     position: relative;
+    z-index: 40;
 }
 
 .create-menu summary {
@@ -247,6 +248,10 @@ button {
     border-radius: 14px;
     background: var(--panel-strong);
     box-shadow: var(--shadow);
+}
+
+.create-menu[open] .create-options {
+    display: block;
 }
 
 .create-options a {
