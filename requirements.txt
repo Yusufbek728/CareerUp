@@ -1,9 +1,11 @@
 asgiref==3.11.1
 attrs==26.1.0
+Babel==2.17.0
 Django==6.0.6
 django-cors-headers==4.9.0
 django-filter==25.2
 djangorestframework==3.17.1
+djangorestframework-simplejwt==5.5.1
 drf-yasg==1.21.15
 gunicorn==26.0.0
 importlib_resources==7.1.0

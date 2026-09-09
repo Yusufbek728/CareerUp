@@ -1,11 +1,12 @@
-{% load static %}
+{% load i18n static %}
+{% get_current_language as current_language %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_language }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareerUp — Jobs, Internship & Talent</title>
-    <meta name="description" content="CareerUp is a modern platform for jobs, internships and resumes.">
+    <title>{% translate "CareerUp — Jobs, Internship & Talent" %}</title>
+    <meta name="description" content="{% translate 'CareerUp is a modern platform for jobs, internships and resumes.' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -20,45 +21,75 @@
                     <span>CareerUp</span>
                 </div>
                 <div class="nav-links">
-                    <a href="#career">Career</a>
-                    <a href="#features">Features</a>
-                    <a href="#jobs">Jobs</a>
-                    <a href="#internships">Internships</a>
+                    <a href="#career">{% translate "Career" %}</a>
+                    <a href="#features">{% translate "Features" %}</a>
+                    <a href="#jobs">{% translate "Jobs" %}</a>
+                    <a href="#internships">{% translate "Internships" %}</a>
                 </div>
-                <details class="create-menu">
-                    <summary class="nav-btn">Create</summary>
-                    <div class="create-options">
-                        <a href="{% url 'create_listing' 'job' %}">Job</a>
-                        <a href="{% url 'create_listing' 'resume' %}">Resume</a>
-                    </div>
-                </details>
+                <div class="nav-actions">
+                    <form method="get" class="header-search">
+                        <label class="sr-only" for="header-search-input">{% translate "Search listings" %}</label>
+                        <input id="header-search-input" name="q" type="search" value="{{ search_query }}" placeholder="{% translate 'Search' %}">
+                        <button type="submit" aria-label="{% translate 'Search' %}">&#8594;</button>
+                    </form>
+                    <form action="{% url 'set_language' %}" method="post" class="language-switcher">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <label class="sr-only" for="language-select">{% translate "Language" %}</label>
+                        <select id="language-select" name="language" aria-label="{% translate 'Language' %}" onchange="this.form.submit()">
+                            <option value="en"{% if current_language == 'en' %} selected{% endif %}>ENG</option>
+                            <option value="ru"{% if current_language == 'ru' %} selected{% endif %}>RUS</option>
+                            <option value="uz"{% if current_language == 'uz' %} selected{% endif %}>UZB</option>
+                        </select>
+                    </form>
+                    <details class="create-menu">
+                        <summary class="nav-btn">{% translate "Create" %}</summary>
+                        <div class="create-options">
+                            {% if request.user.is_authenticated %}
+                                {% if request.user.account_profile.role == 'company' %}
+                                    <a href="{% url 'create_listing' 'job' %}">{% translate "Job" %}</a>
+                                    <a href="{% url 'create_listing' 'internship' %}">{% translate "Internship" %}</a>
+                                {% elif request.user.account_profile.role == 'worker' %}
+                                    <a href="{% url 'create_listing' 'resume' %}">{% translate "Resume" %}</a>
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'login' %}?next={% url 'create_listing' 'job' %}">{% translate "Log in to create" %}</a>
+                            {% endif %}
+                        </div>
+                    </details>
+                    {% if request.user.is_authenticated %}
+                        <a href="{% url 'my_listings' %}" class="nav-account">{% translate "My cards" %}</a>
+                        <a href="{% url 'logout' %}" class="nav-account">{% translate "Log out" %}</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="nav-account">{% translate "Log in" %}</a>
+                        <a href="{% url 'register' %}" class="nav-account">{% translate "Register" %}</a>
+                    {% endif %}
+                </div>
             </nav>
         </header>
 
         <main>
             <section class="hero container" id="career">
                 <div class="hero-copy reveal">
-                    <span class="tag">BUILD YOUR FUTURE</span>
-                    <h1>Find the right opportunity<br>for your next step.</h1>
-                    <p>
-                        CareerUp connects ambitious people with employers, internship programs and powerful opportunities designed to accelerate success.
-                    </p>
+                    <span class="tag">{% translate "BUILD YOUR FUTURE" %}</span>
+                    <h1>{% translate "Find the right opportunity" %}<br>{% translate "for your next step." %}</h1>
+                    <p>{% translate "CareerUp connects ambitious people with employers, internship programs and powerful opportunities designed to accelerate success." %}</p>
                     <div class="hero-actions">
-                        <a href="#jobs" class="primary-btn">Explore jobs</a>
-                        <a href="#internships" class="secondary-btn">View internships</a>
+                        <a href="#jobs" class="primary-btn">{% translate "Explore jobs" %}</a>
+                        <a href="#internships" class="secondary-btn">{% translate "View internships" %}</a>
                     </div>
                     <div class="mini-stats">
                         <div>
                             <strong>{{ job_count }}</strong>
-                            <span>Jobs</span>
+                            <span>{% translate "Jobs" %}</span>
                         </div>
                         <div>
                             <strong>{{ internship_count }}</strong>
-                            <span>Internships</span>
+                            <span>{% translate "Internships" %}</span>
                         </div>
                         <div>
                             <strong>{{ resume_count }}</strong>
-                            <span>Resumes</span>
+                            <span>{% translate "Resumes" %}</span>
                         </div>
                     </div>
                 </div>
@@ -68,22 +99,22 @@
                     <div class="orb orb-two"></div>
                     <div class="dashboard-card main-card">
                         <div class="card-header">
-                            <span>AD SPACE</span>
+                            <span>{% translate "AD SPACE" %}</span>
                             <span class="online-dot"></span>
                         </div>
-                        <h3>Your advertisement can be placed here</h3>
+                        <h3>{% translate "Your advertisement can be placed here" %}</h3>
                         <div class="card-row">
-                            <span>Your brand</span>
-                            <span>Premium placement</span>
+                            <span>{% translate "Your brand" %}</span>
+                            <span>{% translate "Premium placement" %}</span>
                         </div>
                     </div>
 
                     <div class="floating-card card-a">
-                        <small>New job</small>
+                        <small>{% translate "New job" %}</small>
                         <strong>Frontend Engineer</strong>
                     </div>
                     <div class="floating-card card-b">
-                        <small>Internship</small>
+                        <small>{% translate "Internship" %}</small>
                         <strong>UI/UX Intern</strong>
                     </div>
                 </div>
@@ -91,24 +122,24 @@
 
             <section class="features container reveal" id="features">
                 <div class="section-head">
-                    <span class="tag">WHY US</span>
-                    <h2>Built for jobs, internships and growth.</h2>
+                    <span class="tag">{% translate "WHY US" %}</span>
+                    <h2>{% translate "Built for jobs, internships and growth." %}</h2>
                 </div>
                 <div class="feature-grid">
                     <article class="feature-card">
                         <div class="feature-icon">⚡</div>
-                        <h3>Fast matching</h3>
-                        <p>Connect with opportunities tailored to your skills and goals.</p>
+                        <h3>{% translate "Fast matching" %}</h3>
+                        <p>{% translate "Connect with opportunities tailored to your skills and goals." %}</p>
                     </article>
                     <article class="feature-card">
                         <div class="feature-icon">🎯</div>
-                        <h3>Smart filters</h3>
-                        <p>Find the best jobs by experience, work model and expected salary.</p>
+                        <h3>{% translate "Smart filters" %}</h3>
+                        <p>{% translate "Find the best jobs by experience, work model and expected salary." %}</p>
                     </article>
                     <article class="feature-card">
                         <div class="feature-icon">🤝</div>
-                        <h3>Trust network</h3>
-                        <p>Discover reliable employers and candidates from one platform.</p>
+                        <h3>{% translate "Trust network" %}</h3>
+                        <p>{% translate "Discover reliable employers and candidates from one platform." %}</p>
                     </article>
                 </div>
             </section>
@@ -116,10 +147,10 @@
             <section class="listing-section container reveal" id="jobs">
                 <div class="section-head split-head">
                     <div>
-                        <span class="tag">LATEST JOBS</span>
-                        <h2>Fresh opportunities</h2>
+                        <span class="tag">{% translate "LATEST JOBS" %}</span>
+                        <h2>{% translate "Fresh opportunities" %}</h2>
                     </div>
-                    <a href="#jobs">View all</a>
+                    <a href="#jobs">{% translate "View all" %}</a>
                 </div>
 
                 <div class="job-grid">
@@ -132,7 +163,7 @@
                             <ul>
                                 <li>{{ job.working_condition }}</li>
                                 <li>{{ job.work_schedule_and_working_hours }}</li>
-                                <li>{{ job.required_experience }} years</li>
+                                <li>{{ job.required_experience }} {% translate "years" %}</li>
                             </ul>
                             <div class="card-footer">
                                 <strong>${{ job.salary }}</strong>
@@ -141,7 +172,7 @@
                         </article>
                     </a>
                     {% empty %}
-                    <p class="empty-text">No jobs available yet.</p>
+                    <p class="empty-text">{% translate "No jobs available yet." %}</p>
                     {% endfor %}
                 </div>
             </section>
@@ -149,22 +180,22 @@
             <section class="listing-section alt-section container reveal" id="internships">
                 <div class="section-head split-head">
                     <div>
-                        <span class="tag">INTERNSHIPS</span>
-                        <h2>Learn while you grow</h2>
+                        <span class="tag">{% translate "INTERNSHIPS" %}</span>
+                        <h2>{% translate "Learn while you grow" %}</h2>
                     </div>
-                    <a href="#internships">View all</a>
+                    <a href="#internships">{% translate "View all" %}</a>
                 </div>
 
                 <div class="job-grid">
                     {% for internship in internships %}
                     <a href="{% url 'internship_detail' internship.pk %}" class="job-card-link">
                         <article class="job-card">
-                            <span class="status neutral">Internship</span>
+                            <span class="status neutral">{% translate "Internship" %}</span>
                             <h3>{{ internship.job_title }}</h3>
                             <p>{{ internship.company_name }}</p>
                             <ul>
                                 <li>{{ internship.working_condition }}</li>
-                                <li>{{ internship.work_duration }} weeks</li>
+                                <li>{{ internship.work_duration }} {% translate "weeks" %}</li>
                                 <li>{{ internship.work_schedule_and_working_hours }}</li>
                             </ul>
                             <div class="card-footer">
@@ -174,7 +205,7 @@
                         </article>
                     </a>
                     {% empty %}
-                    <p class="empty-text">No internships available yet.</p>
+                    <p class="empty-text">{% translate "No internships available yet." %}</p>
                     {% endfor %}
                 </div>
             </section>
@@ -182,21 +213,21 @@
             <section class="listing-section container reveal" id="resumes">
                 <div class="section-head split-head">
                     <div>
-                        <span class="tag">RESUMES</span>
-                        <h2>People looking for their next opportunity</h2>
+                        <span class="tag">{% translate "RESUMES" %}</span>
+                        <h2>{% translate "People looking for their next opportunity" %}</h2>
                     </div>
-                    <a href="#resumes">View all</a>
+                    <a href="#resumes">{% translate "View all" %}</a>
                 </div>
 
                 <div class="job-grid">
                     {% for resume in resumes %}
                     <a href="{% url 'resume_detail' resume.pk %}" class="job-card-link">
                         <article class="job-card">
-                            <span class="status neutral">Resume</span>
+                            <span class="status neutral">{% translate "Resume" %}</span>
                             <h3>{{ resume.name }} {{ resume.surname }}</h3>
                             <p>{{ resume.email }}</p>
                             <ul>
-                                <li>{{ resume.experience }} years experience</li>
+                                <li>{{ resume.experience }} {% translate "years experience" %}</li>
                             </ul>
                             <div class="card-footer">
                                 <strong>${{ resume.wanted_salary }}</strong>
@@ -205,7 +236,7 @@
                         </article>
                     </a>
                     {% empty %}
-                    <p class="empty-text">No resumes available yet.</p>
+                    <p class="empty-text">{% translate "No resumes available yet." %}</p>
                     {% endfor %}
                 </div>
             </section>
@@ -213,10 +244,10 @@
             <section class="resume-band container reveal">
                 <div class="band-content">
                     <div>
-                        <span class="tag">OUR COMMUNITY</span>
-                        <h2>People who are actively looking for growth opportunities.</h2>
+                        <span class="tag">{% translate "OUR COMMUNITY" %}</span>
+                        <h2>{% translate "People who are actively looking for growth opportunities." %}</h2>
                     </div>
-                    <a href="#career" class="primary-btn">Create profile</a>
+                    <a href="#career" class="primary-btn">{% translate "Create profile" %}</a>
                 </div>
             </section>
         </main>
@@ -227,7 +258,7 @@
                     <div class="logo-icon">C</div>
                     <span>CareerUp</span>
                 </div>
-                <p>© 2026 CareerUp. Designed for smarter hiring.</p>
+                <p>© 2026 CareerUp. {% translate "Designed for smarter hiring." %}</p>
             </div>
         </footer>
     </div>

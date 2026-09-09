@@ -1,19 +1,32 @@
-{% load static %}
+{% load i18n static %}
+{% get_current_language as current_language %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_language }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create {{ listing_title }} — CareerUp</title>
+    <title>{% translate "Create" %} {% translate listing_title %} — CareerUp</title>
     <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}">
 </head>
 <body>
     <main class="create-page container">
-        <a href="{% url 'home' %}" class="back-link">&larr; Back to CareerUp</a>
+        <div class="create-toolbar">
+            <a href="{% url 'home' %}" class="back-link">&larr; {% translate "Back to CareerUp" %}</a>
+            <form action="{% url 'set_language' %}" method="post" class="language-switcher">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <label class="sr-only" for="language-select">{% translate "Language" %}</label>
+                <select id="language-select" name="language" aria-label="{% translate 'Language' %}" onchange="this.form.submit()">
+                    <option value="en"{% if current_language == 'en' %} selected{% endif %}>ENG</option>
+                    <option value="ru"{% if current_language == 'ru' %} selected{% endif %}>RUS</option>
+                    <option value="uz"{% if current_language == 'uz' %} selected{% endif %}>UZB</option>
+                </select>
+            </form>
+        </div>
         <section class="create-panel">
-            <span class="tag">NEW LISTING</span>
-            <h1>Create {{ listing_title }}</h1>
-            <p class="form-intro">Add your information so people can contact you through CareerUp.</p>
+            <span class="tag">{% translate "NEW LISTING" %}</span>
+            <h1>{% translate "Create" %} {% translate listing_title %}</h1>
+            <p class="form-intro">{% translate "Add your information so people can contact you through CareerUp." %}</p>
 
             <form method="post" class="listing-form" novalidate>
                 {% csrf_token %}
@@ -28,7 +41,7 @@
                         {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
                     </div>
                 {% endfor %}
-                <button type="submit" class="primary-btn form-submit">Create {{ listing_title }}</button>
+                <button type="submit" class="primary-btn form-submit">{% translate "Create" %} {% translate listing_title %}</button>
             </form>
         </section>
     </main>
