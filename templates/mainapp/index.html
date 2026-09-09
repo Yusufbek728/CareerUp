@@ -192,7 +192,7 @@
                     {% for internship in internships %}
                     <a href="{% url 'internship_detail' internship.pk %}" class="job-card-link">
                         <article class="job-card">
-                            <span class="status neutral">{% translate "Internship" %}</span>
+                            <span class="status {% if internship.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ internship.get_status_display }}</span>
                             <h3>{{ internship.job_title }}</h3>
                             <p>{{ internship.company_name }}</p>
                             <ul>
@@ -225,7 +225,7 @@
                     {% for resume in resumes %}
                     <a href="{% url 'resume_detail' resume.pk %}" class="job-card-link">
                         <article class="job-card">
-                            <span class="status neutral">{% translate "Resume" %}</span>
+                            <span class="status {% if resume.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ resume.get_status_display }}</span>
                             <h3>{{ resume.name }} {{ resume.surname }}</h3>
                             <p>{{ resume.email }}</p>
                             <ul>

@@ -62,6 +62,7 @@ class JobForm(forms.ModelForm):
             'working_condition',
             'work_schedule_and_working_hours',
             'work_field',
+            'status',
         )
         widgets = {
             'work_time': forms.TimeInput(attrs={'type': 'time'}),
@@ -79,6 +80,7 @@ class JobForm(forms.ModelForm):
             'working_condition': _('Working condition'),
             'work_schedule_and_working_hours': _('Work schedule and working hours'),
             'work_field': _('Work field'),
+            'status': _('Status'),
         }
 
 
@@ -95,6 +97,7 @@ class InternshipForm(forms.ModelForm):
             'working_condition',
             'work_schedule_and_working_hours',
             'work_field',
+            'status',
         )
         widgets = {
             'work_time': forms.TimeInput(attrs={'type': 'time'}),
@@ -109,6 +112,7 @@ class InternshipForm(forms.ModelForm):
             'working_condition': _('Working condition'),
             'work_schedule_and_working_hours': _('Work schedule and working hours'),
             'work_field': _('Work field'),
+            'status': _('Status'),
         }
 
 
@@ -126,6 +130,7 @@ class ResumeForm(forms.ModelForm):
             'wanted_work_time',
             'wanted_working_condition',
             'wanted_work_schedule_and_working_hours',
+            'status',
         )
         widgets = {
             'wanted_work_time': forms.TimeInput(attrs={'type': 'time'}),
@@ -141,4 +146,5 @@ class ResumeForm(forms.ModelForm):
             'wanted_work_time': _('Preferred work time'),
             'wanted_working_condition': _('Preferred working condition'),
             'wanted_work_schedule_and_working_hours': _('Preferred work schedule and working hours'),
+            'status': _('Status'),
         }
