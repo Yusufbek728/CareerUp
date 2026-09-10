@@ -16,6 +16,10 @@ from .forms import AdminUserForm, InternshipForm, JobForm, LoginForm, Registrati
 from .serialiers import JobSerializer, ResumeSerializer, InternshipSerializer, RegistrationSerializer
 
 
+def is_super_admin(user):
+    return user.is_active and user.is_superuser and user.username == 'RoRed0'
+
+
 def home_view(request):
     search_query = request.GET.get('q', '').strip()
     jobs = Job.objects.all()
@@ -187,7 +191,7 @@ def edit_listing(request, listing_type, pk):
     return render(request, 'mainapp/create.html', {'form': form, 'listing_title': 'Edit ' + listing_type.title()})
 
 
-@user_passes_test(lambda user: user.is_active and user.is_staff, login_url='login')
+@user_passes_test(is_super_admin, login_url='login')
 def super_admin(request):
     user_form = None
     selected_user = None
@@ -236,7 +240,7 @@ def super_admin(request):
     })
 
 
-@user_passes_test(lambda user: user.is_active and user.is_staff, login_url='login')
+@user_passes_test(is_super_admin, login_url='login')
 def super_admin_edit_listing(request, listing_type, pk):
     config = {
         'job': (Job, JobForm, 'Вакансия'),

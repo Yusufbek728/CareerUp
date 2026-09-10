@@ -30,6 +30,8 @@ class AdminUserForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if self.instance.username == 'RoRed0':
+            self.fields['username'].disabled = True
         profile = getattr(self.instance, 'account_profile', None)
         if profile:
             self.fields['display_name'].initial = profile.display_name
