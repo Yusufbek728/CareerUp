@@ -1,0 +1,47 @@
+{% load i18n static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% translate "Account settings" %} - CareerUp</title>
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}">
+</head>
+<body>
+    <main class="create-page container">
+        <div class="create-toolbar">
+            <a href="{% url 'my_listings' %}" class="back-link">&larr; {% translate "Back to my cards" %}</a>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="secondary-btn">{% translate "Log out" %}</button>
+            </form>
+        </div>
+        <section class="create-panel auth-panel">
+            <span class="tag">{% translate "ACCOUNT" %}</span>
+            <h1>{% translate "Account settings" %}</h1>
+            <p class="form-intro">{% translate "Update your profile and login details." %}</p>
+            <form method="post" class="listing-form">
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+                {% for field in form %}
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+                        {% if field.field.widget.input_type == 'password' %}
+                            <div class="password-field">
+                                {{ field }}
+                                <button class="password-toggle" type="button" data-password-toggle data-target="{{ field.id_for_label }}" aria-label="Показать пароль" title="Показать пароль">&#128065;</button>
+                            </div>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+                        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                        {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="primary-btn form-submit">{% translate "Save changes" %}</button>
+            </form>
+        </section>
+    </main>
+    <script src="{% static 'mainapp/forms.js' %}"></script>
+</body>
+</html>

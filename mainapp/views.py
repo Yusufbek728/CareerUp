@@ -1,5 +1,5 @@
 from django.db.models import Q
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden, HttpResponseNotAllowed
@@ -13,7 +13,16 @@ from rest_framework.response import Response
 from mainapp.pagination import InternshipPagination, JobPagination, ResumePagination
 from mainapp.throttling import InternshipThrottle, JobThrottle, ResumeThrottle
 from .models import AccountProfile, Job, Internship, resume
-from .forms import AdminUserForm, InternshipForm, JobForm, LoginForm, RegistrationForm, ResumeForm, RoleForm
+from .forms import (
+    AccountSettingsForm,
+    AdminUserForm,
+    InternshipForm,
+    JobForm,
+    LoginForm,
+    RegistrationForm,
+    ResumeForm,
+    RoleForm,
+)
 from .serialiers import JobSerializer, ResumeSerializer, InternshipSerializer, RegistrationSerializer
 
 
@@ -183,6 +192,21 @@ def my_listings(request):
         'resumes': resume.objects.filter(owner=request.user).order_by('-created_at'),
     }
     return render(request, 'mainapp/my_listings.html', context)
+
+
+@login_required
+def account_settings(request):
+    profile = getattr(request.user, 'account_profile', None)
+    form = AccountSettingsForm(
+        request.POST or None,
+        user=request.user,
+        profile=profile,
+    )
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        update_session_auth_hash(request, request.user)
+        return redirect('account_settings')
+    return render(request, 'mainapp/account_settings.html', {'form': form})
 
 
 @login_required

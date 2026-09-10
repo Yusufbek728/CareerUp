@@ -114,3 +114,26 @@ class SuperAdminTests(TestCase):
 		self.assertTrue(user.is_staff)
 		self.assertTrue(user.is_superuser)
 		self.assertTrue(user.check_password('deployment-password'))
+
+	def test_account_settings_updates_profile_and_password(self):
+		self.client.force_login(self.account)
+		response = self.client.post(reverse('account_settings'), {
+			'username': 'candidate-renamed',
+			'email': 'updated@example.com',
+			'display_name': 'Updated name',
+			'role': 'company',
+			'new_password': 'New-secure-password-9482',
+			'new_password_confirm': 'New-secure-password-9482',
+		})
+		self.assertRedirects(response, reverse('account_settings'))
+		self.account.refresh_from_db()
+		self.assertEqual(self.account.username, 'candidate-renamed')
+		self.assertEqual(self.account.email, 'updated@example.com')
+		self.assertTrue(self.account.check_password('New-secure-password-9482'))
+		self.assertEqual(self.account.account_profile.display_name, 'Updated name')
+		self.assertEqual(self.account.account_profile.role, 'company')
+
+	def test_account_settings_requires_login(self):
+		response = self.client.get(reverse('account_settings'))
+		self.assertEqual(response.status_code, 302)
+		self.assertIn('/login/', response['Location'])
