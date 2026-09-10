@@ -60,6 +60,7 @@
                         </div>
                     </details>
                     {% if request.user.is_authenticated %}
+                        <a href="{% url 'account_settings' %}" class="nav-account">{% translate "Account settings" %}</a>
                         <a href="{% url 'my_listings' %}" class="nav-account">{% translate "My cards" %}</a>
                         <form action="{% url 'logout' %}" method="post" class="nav-account-form">
                             {% csrf_token %}

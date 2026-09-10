@@ -122,6 +122,7 @@ class SuperAdminTests(TestCase):
 			'email': 'updated@example.com',
 			'display_name': 'Updated name',
 			'role': 'company',
+			'current_password': 'old-password',
 			'new_password': 'New-secure-password-9482',
 			'new_password_confirm': 'New-secure-password-9482',
 		})
@@ -132,6 +133,21 @@ class SuperAdminTests(TestCase):
 		self.assertTrue(self.account.check_password('New-secure-password-9482'))
 		self.assertEqual(self.account.account_profile.display_name, 'Updated name')
 		self.assertEqual(self.account.account_profile.role, 'company')
+
+	def test_account_settings_rejects_wrong_current_password(self):
+		self.client.force_login(self.account)
+		response = self.client.post(reverse('account_settings'), {
+			'username': self.account.username,
+			'email': self.account.email,
+			'display_name': 'Updated name',
+			'role': 'worker',
+			'current_password': 'wrong-password',
+			'new_password': 'New-secure-password-9482',
+			'new_password_confirm': 'New-secure-password-9482',
+		})
+		self.assertEqual(response.status_code, 200)
+		self.account.refresh_from_db()
+		self.assertTrue(self.account.check_password('old-password'))
 
 	def test_account_settings_requires_login(self):
 		response = self.client.get(reverse('account_settings'))
