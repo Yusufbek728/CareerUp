@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import gettext_lazy as _
 
 from .models import AccountProfile, Internship, Job, resume
@@ -65,6 +66,11 @@ class RegistrationForm(forms.Form):
         if User.objects.filter(username__iexact=username).exists():
             raise forms.ValidationError(_('This username is already taken.'))
         return username
+
+    def clean_password(self):
+        password = self.cleaned_data['password']
+        validate_password(password, user=User(username=self.cleaned_data.get('username', '')))
+        return password
 
     def clean(self):
         cleaned_data = super().clean()

@@ -11,7 +11,10 @@
     <main class="create-page container">
         <div class="create-toolbar">
             <a href="{% url 'home' %}" class="back-link">&larr; {% translate "Back to CareerUp" %}</a>
-            <a href="{% url 'logout' %}" class="secondary-btn">{% translate "Log out" %}</a>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="secondary-btn">{% translate "Log out" %}</button>
+            </form>
         </div>
         <section class="section-head">
             <span class="tag">{% translate "ACCOUNT" %}</span>

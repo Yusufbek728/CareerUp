@@ -1,6 +1,6 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
 from .models import AccountProfile, Job, resume, Internship
 
 
@@ -12,6 +12,15 @@ class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email', 'password', 'role', 'display_name')
+
+    def validate_username(self, value):
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError('This username is already taken.')
+        return value
+
+    def validate_password(self, value):
+        validate_password(value, user=User(username=self.initial_data.get('username', '')))
+        return value
 
     def create(self, validated_data):
         role = validated_data.pop('role')
