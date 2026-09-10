@@ -55,3 +55,13 @@ class SuperAdminTests(TestCase):
 		self.assertEqual(self.account.username, 'candidate-updated')
 		self.assertTrue(self.account.check_password('new-password'))
 		self.assertEqual(self.account.account_profile.display_name, 'New name')
+
+	def test_named_admin_can_access_without_staff_flags(self):
+		self.admin.is_staff = False
+		self.admin.is_superuser = False
+		self.admin.save(update_fields=['is_staff', 'is_superuser'])
+
+		self.client.force_login(self.admin)
+		response = self.client.get(reverse('super_admin'))
+
+		self.assertEqual(response.status_code, 200)
