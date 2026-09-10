@@ -107,6 +107,12 @@ class AccountSettingsForm(forms.Form):
         choices=(('company', _('Company')), ('worker', _('Worker'))),
         label=_('Account type'),
     )
+    current_password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput,
+        label=_('Current password'),
+        help_text=_('Required only when changing the password.'),
+    )
     new_password = forms.CharField(
         required=False,
         widget=forms.PasswordInput,
@@ -137,6 +143,10 @@ class AccountSettingsForm(forms.Form):
     def clean_new_password(self):
         password = self.cleaned_data['new_password']
         if password:
+            if not self.cleaned_data.get('current_password'):
+                raise forms.ValidationError(_('Enter your current password first.'))
+            if not self.user.check_password(self.cleaned_data['current_password']):
+                raise forms.ValidationError(_('Current password is incorrect.'))
             validate_password(password, user=self.user)
         return password
 
