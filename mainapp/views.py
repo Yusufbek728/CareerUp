@@ -2,7 +2,7 @@ from django.db.models import Q
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.auth.decorators import user_passes_test
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, status, viewsets
@@ -17,7 +17,7 @@ from .serialiers import JobSerializer, ResumeSerializer, InternshipSerializer, R
 
 
 def is_super_admin(user):
-    return user.is_active and user.is_superuser and user.username == 'RoRed0'
+    return user.is_active and user.is_superuser
 
 
 def home_view(request):
@@ -191,8 +191,11 @@ def edit_listing(request, listing_type, pk):
     return render(request, 'mainapp/create.html', {'form': form, 'listing_title': 'Edit ' + listing_type.title()})
 
 
-@user_passes_test(is_super_admin, login_url='login')
+@login_required
 def super_admin(request):
+    if not is_super_admin(request.user):
+        return HttpResponseForbidden('Доступ запрещен.')
+
     user_form = None
     selected_user = None
     if request.method == 'POST':
@@ -240,8 +243,11 @@ def super_admin(request):
     })
 
 
-@user_passes_test(is_super_admin, login_url='login')
+@login_required
 def super_admin_edit_listing(request, listing_type, pk):
+    if not is_super_admin(request.user):
+        return HttpResponseForbidden('Доступ запрещен.')
+
     config = {
         'job': (Job, JobForm, 'Вакансия'),
         'internship': (Internship, InternshipForm, 'Стажировка'),
