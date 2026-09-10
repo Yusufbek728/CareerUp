@@ -20,7 +20,14 @@
                 {% for field in form %}
                     <div class="form-field">
                         <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
-                        {{ field }}
+                        {% if field.field.widget.input_type == 'password' %}
+                            <div class="password-field">
+                                {{ field }}
+                                <button class="password-toggle" type="button" data-password-toggle data-target="{{ field.id_for_label }}" aria-label="Показать пароль" title="Показать пароль">&#128065;</button>
+                            </div>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
                         {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
                     </div>
                 {% endfor %}
@@ -33,5 +40,6 @@
             {% endif %}
         </section>
     </main>
+    <script src="{% static 'mainapp/forms.js' %}"></script>
 </body>
 </html>

@@ -76,7 +76,43 @@ body::before {
 }
 
 .admin-toolbar input { width: min(320px, 45vw); }
-.admin-form input[type="checkbox"] { width: auto; }
+.admin-form .checkbox-field {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 54px;
+    padding: 10px 14px;
+    border: 1px solid rgba(132, 242, 212, 0.3);
+    border-radius: 12px;
+    background: rgba(132, 242, 212, 0.06);
+}
+.admin-form .checkbox-field label { order: 2; color: var(--text); font-size: 0.95rem; cursor: pointer; }
+.admin-form .checkbox-field input[type="checkbox"] {
+    appearance: none;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    margin: 0;
+    border: 2px solid var(--muted);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+.admin-form .checkbox-field input[type="checkbox"]:checked {
+    border-color: var(--accent);
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(132, 242, 212, 0.14);
+}
+.admin-form .checkbox-field input[type="checkbox"]:checked::after {
+    content: "✓";
+    display: block;
+    color: #07111f;
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 24px;
+    text-align: center;
+}
 
 .admin-section {
     margin-top: 22px;
@@ -101,6 +137,27 @@ body::before {
 .admin-form .full { grid-column: 1 / -1; }
 .admin-form label { color: var(--muted); font-size: 0.86rem; }
 .admin-error { color: #ffb5b5; }
+
+.password-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.password-field input { padding-right: 48px; }
+.password-toggle {
+    position: absolute;
+    right: 8px;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 1.1rem;
+    line-height: 1;
+}
+.password-toggle:hover, .password-toggle:focus-visible { color: var(--accent); background: rgba(132, 242, 212, 0.12); }
 
 @media (max-width: 700px) {
     .admin-toolbar, .admin-row { align-items: stretch; flex-direction: column; }
