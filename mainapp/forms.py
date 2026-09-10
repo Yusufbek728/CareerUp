@@ -19,14 +19,13 @@ class AdminUserForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff')
+        fields = ('username', 'email', 'first_name', 'last_name', 'is_active')
         labels = {
             'username': 'Логин',
             'email': 'Email',
             'first_name': 'Имя',
             'last_name': 'Фамилия',
             'is_active': 'Аккаунт активен',
-            'is_staff': 'Доступ к панели',
         }
 
     def __init__(self, *args, **kwargs):
