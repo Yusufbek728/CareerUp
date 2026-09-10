@@ -1,27 +1,28 @@
-{% load static %}
+{% load i18n static %}
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Admin | CareerUp</title>
+    <title>{% translate "Super Admin" %} | CareerUp</title>
     <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}">
 </head>
 <body>
+{% translate "email not provided" as email_not_provided %}
 <main class="admin-page container">
     <div class="admin-toolbar">
         <div>
-            <p class="eyebrow">CareerUp control</p>
-            <h1>Панель администратора</h1>
+            <p class="eyebrow">{% translate "CareerUp control" %}</p>
+            <h1>{% translate "Administrator panel" %}</h1>
         </div>
         <form method="get">
-            <input type="search" name="q" value="{{ search_query }}" placeholder="Поиск аккаунта">
-            <button class="primary-btn" type="submit">Найти</button>
+            <input type="search" name="q" value="{{ search_query }}" placeholder="{% translate 'Search accounts' %}">
+            <button class="primary-btn" type="submit">{% translate "Search" %}</button>
         </form>
     </div>
 
     <section class="admin-section">
-        <div class="admin-section-head"><h2>Аккаунты ({{ users|length }})</h2></div>
+        <div class="admin-section-head"><h2>{% translate "Accounts" %} ({{ users|length }})</h2></div>
         {% if selected_user %}
             <form class="admin-form" method="post">
                 {% csrf_token %}
@@ -34,7 +35,7 @@
                         {% if field.field.widget.input_type == 'password' %}
                             <span class="password-field">
                                 {{ field }}
-                                <button class="password-toggle" type="button" data-password-toggle data-target="{{ field.id_for_label }}" aria-label="Показать пароль" title="Показать пароль">&#128065;</button>
+                                <button class="password-toggle" type="button" data-password-toggle data-target="{{ field.id_for_label }}" aria-label="{% translate 'Show password' %}" title="{% translate 'Show password' %}">&#128065;</button>
                             </span>
                         {% else %}
                             {{ field }}
@@ -43,25 +44,28 @@
                         {% for error in field.errors %}<span class="admin-error">{{ error }}</span>{% endfor %}
                     </p>
                 {% endfor %}
-                <p class="full"><button class="primary-btn" type="submit">Сохранить аккаунт</button> <a class="secondary-btn" href="{% url 'super_admin' %}">Отмена</a></p>
+                <p class="full"><button class="primary-btn" type="submit">{% translate "Save account" %}</button> <a class="secondary-btn" href="{% url 'super_admin' %}">{% translate "Cancel" %}</a></p>
             </form>
         {% endif %}
         <div class="admin-table">
             {% for account in users %}
                 <div class="admin-row">
-                    <div><strong>{{ account.account_profile.display_name|default:account.username }}</strong><div class="admin-meta">@{{ account.username }} · {{ account.email|default:'email не указан' }} · {% if account.is_active %}активен{% else %}заблокирован{% endif %}</div></div>
+                    <div><strong>{{ account.account_profile.display_name|default:account.username }}</strong><div class="admin-meta">@{{ account.username }} · {{ account.email|default:email_not_provided }} · {% if account.is_active %}{% translate "Active" %}{% else %}{% translate "Blocked" %}{% endif %}</div></div>
                     <div class="admin-actions">
-                        <a href="?edit_user={{ account.pk }}">Изменить</a>
-                        {% if account != request.user %}<form method="post">{% csrf_token %}<input type="hidden" name="action" value="delete_user"><input type="hidden" name="user_id" value="{{ account.pk }}"><button class="danger" type="submit">Удалить</button></form>{% endif %}
+                        <a href="?edit_user={{ account.pk }}">{% translate "Edit" %}</a>
+                        {% if account != request.user %}<form method="post">{% csrf_token %}<input type="hidden" name="action" value="delete_user"><input type="hidden" name="user_id" value="{{ account.pk }}"><button class="danger" type="submit">{% translate "Delete" %}</button></form>{% endif %}
                     </div>
                 </div>
-            {% empty %}<p class="admin-meta">Аккаунты не найдены.</p>{% endfor %}
+            {% empty %}<p class="admin-meta">{% translate "No accounts found." %}</p>{% endfor %}
         </div>
     </section>
 
-    {% include 'mainapp/super_admin_listings.html' with title='Вакансии' listing_type='job' listings=jobs %}
-    {% include 'mainapp/super_admin_listings.html' with title='Стажировки' listing_type='internship' listings=internships %}
-    {% include 'mainapp/super_admin_listings.html' with title='Резюме' listing_type='resume' listings=resumes %}
+    {% translate "Jobs" as jobs_title %}
+    {% translate "Internships" as internships_title %}
+    {% translate "Resumes" as resumes_title %}
+    {% include 'mainapp/super_admin_listings.html' with title=jobs_title listing_type='job' listings=jobs %}
+    {% include 'mainapp/super_admin_listings.html' with title=internships_title listing_type='internship' listings=internships %}
+    {% include 'mainapp/super_admin_listings.html' with title=resumes_title listing_type='resume' listings=resumes %}
 </main>
 <script src="{% static 'mainapp/forms.js' %}"></script>
 </body>
