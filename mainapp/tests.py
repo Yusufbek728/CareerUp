@@ -148,6 +148,7 @@ class SuperAdminTests(TestCase):
 		self.assertEqual(response.status_code, 200)
 		self.account.refresh_from_db()
 		self.assertTrue(self.account.check_password('old-password'))
+		self.assertEqual(response.context['form']['current_password'].value(), '')
 
 	def test_account_settings_requires_login(self):
 		response = self.client.get(reverse('account_settings'))

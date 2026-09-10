@@ -206,6 +206,9 @@ def account_settings(request):
         form.save()
         update_session_auth_hash(request, request.user)
         return redirect('account_settings')
+    if request.method == 'POST':
+        form.data = form.data.copy()
+        form.data['current_password'] = ''
     return render(request, 'mainapp/account_settings.html', {'form': form})
 
 
