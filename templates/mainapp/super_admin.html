@@ -29,8 +29,17 @@
                 <input type="hidden" name="user_id" value="{{ selected_user.pk }}">
                 {{ user_form.non_field_errors }}
                 {% for field in user_form %}
-                    <p class="{% if field.name == 'new_password' %}full{% endif %}">
-                        {{ field.label_tag }}{{ field }}{{ field.help_text }}
+                    <p class="{% if field.name == 'new_password' %}full {% endif %}{% if field.field.widget.input_type == 'checkbox' %}checkbox-field{% endif %}">
+                        {{ field.label_tag }}
+                        {% if field.field.widget.input_type == 'password' %}
+                            <span class="password-field">
+                                {{ field }}
+                                <button class="password-toggle" type="button" data-password-toggle data-target="{{ field.id_for_label }}" aria-label="Показать пароль" title="Показать пароль">&#128065;</button>
+                            </span>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+                        {{ field.help_text }}
                         {% for error in field.errors %}<span class="admin-error">{{ error }}</span>{% endfor %}
                     </p>
                 {% endfor %}
@@ -54,5 +63,6 @@
     {% include 'mainapp/super_admin_listings.html' with title='Стажировки' listing_type='internship' listings=internships %}
     {% include 'mainapp/super_admin_listings.html' with title='Резюме' listing_type='resume' listings=resumes %}
 </main>
+<script src="{% static 'mainapp/forms.js' %}"></script>
 </body>
 </html>
