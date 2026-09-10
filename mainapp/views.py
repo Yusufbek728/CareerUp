@@ -17,7 +17,7 @@ from .serialiers import JobSerializer, ResumeSerializer, InternshipSerializer, R
 
 
 def is_super_admin(user):
-    return user.is_active and user.is_superuser
+    return user.is_active and (user.is_staff or user.is_superuser)
 
 
 def home_view(request):
