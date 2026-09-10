@@ -99,6 +99,69 @@ class RoleForm(forms.Form):
     )
 
 
+class AccountSettingsForm(forms.Form):
+    username = forms.CharField(max_length=150, label=_('Username'))
+    email = forms.EmailField(label=_('Email'))
+    display_name = forms.CharField(max_length=200, label=_('Display name'))
+    role = forms.ChoiceField(
+        choices=(('company', _('Company')), ('worker', _('Worker'))),
+        label=_('Account type'),
+    )
+    new_password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput,
+        label=_('New password'),
+        help_text=_('Leave empty to keep the current password.'),
+    )
+    new_password_confirm = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput,
+        label=_('Confirm new password'),
+    )
+
+    def __init__(self, *args, user, profile, **kwargs):
+        self.user = user
+        self.profile = profile
+        super().__init__(*args, **kwargs)
+        self.fields['username'].initial = user.username
+        self.fields['email'].initial = user.email
+        self.fields['display_name'].initial = profile.display_name if profile else ''
+        self.fields['role'].initial = profile.role if profile else ''
+
+    def clean_username(self):
+        username = self.cleaned_data['username'].strip()
+        if User.objects.filter(username__iexact=username).exclude(pk=self.user.pk).exists():
+            raise forms.ValidationError(_('This username is already taken.'))
+        return username
+
+    def clean_new_password(self):
+        password = self.cleaned_data['new_password']
+        if password:
+            validate_password(password, user=self.user)
+        return password
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get('new_password') != cleaned_data.get('new_password_confirm'):
+            raise forms.ValidationError(_('Passwords do not match.'))
+        return cleaned_data
+
+    def save(self):
+        self.user.username = self.cleaned_data['username']
+        self.user.email = self.cleaned_data['email']
+        if self.cleaned_data['new_password']:
+            self.user.set_password(self.cleaned_data['new_password'])
+        self.user.save()
+        AccountProfile.objects.update_or_create(
+            user=self.user,
+            defaults={
+                'role': self.cleaned_data['role'],
+                'display_name': self.cleaned_data['display_name'],
+            },
+        )
+        return self.user
+
+
 class JobForm(forms.ModelForm):
     class Meta:
         model = Job
