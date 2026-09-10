@@ -109,9 +109,8 @@ class AccountSettingsForm(forms.Form):
     )
     current_password = forms.CharField(
         required=False,
-        widget=forms.PasswordInput(attrs={'autocomplete': 'current-password'}),
-        label=_('Current password'),
-        help_text=_('Required only when changing the password.'),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'off'}),
+        label='',
     )
     new_password = forms.CharField(
         required=False,
