@@ -61,6 +61,24 @@ class SuperAdminTests(TestCase):
 		self.assertTrue(self.account.check_password('new-password'))
 		self.assertEqual(self.account.account_profile.display_name, 'New name')
 
+	def test_super_admin_can_set_new_password_without_current_password(self):
+		self.client.force_login(self.admin)
+		response = self.client.post(reverse('super_admin'), {
+			'action': 'save_user',
+			'user_id': self.account.pk,
+			'username': self.account.username,
+			'email': self.account.email,
+			'first_name': '',
+			'last_name': '',
+			'display_name': 'Old name',
+			'role': 'worker',
+			'new_password': 'Admin-set-password-9482',
+			'is_active': 'on',
+		})
+		self.assertRedirects(response, reverse('super_admin'))
+		self.account.refresh_from_db()
+		self.assertTrue(self.account.check_password('Admin-set-password-9482'))
+
 	def test_named_user_without_staff_flags_is_denied(self):
 		self.admin.is_staff = False
 		self.admin.is_superuser = False

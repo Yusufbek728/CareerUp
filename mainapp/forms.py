@@ -13,14 +13,14 @@ class AdminUserForm(forms.ModelForm):
     new_password = forms.CharField(
         required=False,
         min_length=8,
-        widget=forms.PasswordInput,
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
         label='Новый пароль',
         help_text='Оставьте пустым, чтобы пароль не менять.',
     )
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'is_active')
+        fields = ('username', 'email', 'first_name', 'last_name', 'is_active', 'new_password')
         labels = {
             'username': 'Логин',
             'email': 'Email',
