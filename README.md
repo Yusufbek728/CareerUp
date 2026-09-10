@@ -12,7 +12,7 @@ Set these environment variables in the Render service:
 Use this build command so the administrator is created without Render Shell:
 
 ```text
-python manage.py migrate && python manage.py ensure_admin && python manage.py collectstatic --noinput
+pip install -r requirements.txt && python manage.py migrate && python manage.py ensure_admin && python manage.py collectstatic --noinput
 ```
 
 The start command can be:
