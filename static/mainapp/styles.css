@@ -42,6 +42,73 @@ body::before {
     pointer-events: none;
 }
 
+.admin-page {
+    padding: 42px 0 80px;
+}
+
+.admin-toolbar,
+.admin-section-head,
+.admin-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.admin-toolbar {
+    margin-bottom: 28px;
+}
+
+.admin-toolbar form {
+    display: flex;
+    gap: 8px;
+}
+
+.admin-toolbar input,
+.admin-form input,
+.admin-form select {
+    min-width: 0;
+    padding: 11px 13px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text);
+}
+
+.admin-toolbar input { width: min(320px, 45vw); }
+.admin-form input[type="checkbox"] { width: auto; }
+
+.admin-section {
+    margin-top: 22px;
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+}
+
+.admin-section h2 { margin: 0; font-size: 1.15rem; }
+.admin-section-head { margin-bottom: 16px; }
+.admin-table { display: grid; gap: 8px; }
+.admin-row { padding: 13px 0; border-top: 1px solid var(--line); }
+.admin-row:first-child { border-top: 0; }
+.admin-meta { color: var(--muted); font-size: 0.86rem; }
+.admin-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.admin-actions button, .admin-actions a { padding: 8px 11px; border-radius: 8px; background: rgba(118, 169, 255, 0.14); color: var(--text); }
+.admin-actions .danger { background: rgba(255, 108, 108, 0.15); color: #ffb5b5; }
+.admin-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+.admin-form p { display: grid; gap: 6px; margin: 0; }
+.admin-form .full { grid-column: 1 / -1; }
+.admin-form label { color: var(--muted); font-size: 0.86rem; }
+.admin-error { color: #ffb5b5; }
+
+@media (max-width: 700px) {
+    .admin-toolbar, .admin-row { align-items: stretch; flex-direction: column; }
+    .admin-toolbar form, .admin-toolbar input { width: 100%; }
+    .admin-form { grid-template-columns: 1fr; }
+    .admin-form .full { grid-column: auto; }
+}
+
 img {
     max-width: 100%;
     display: block;

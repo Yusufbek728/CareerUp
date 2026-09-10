@@ -3,7 +3,52 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 
-from .models import Internship, Job, resume
+from .models import AccountProfile, Internship, Job, resume
+
+
+class AdminUserForm(forms.ModelForm):
+    display_name = forms.CharField(max_length=200, required=False, label='Имя')
+    role = forms.ChoiceField(choices=AccountProfile._meta.get_field('role').choices, label='Роль')
+    new_password = forms.CharField(
+        required=False,
+        min_length=8,
+        widget=forms.PasswordInput,
+        label='Новый пароль',
+        help_text='Оставьте пустым, чтобы пароль не менять.',
+    )
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff')
+        labels = {
+            'username': 'Логин',
+            'email': 'Email',
+            'first_name': 'Имя',
+            'last_name': 'Фамилия',
+            'is_active': 'Аккаунт активен',
+            'is_staff': 'Доступ к панели',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        profile = getattr(self.instance, 'account_profile', None)
+        if profile:
+            self.fields['display_name'].initial = profile.display_name
+            self.fields['role'].initial = profile.role
+
+    def save(self, commit=True):
+        user = super().save(commit=commit)
+        if self.cleaned_data.get('new_password'):
+            user.set_password(self.cleaned_data['new_password'])
+            user.save(update_fields=['password'])
+        AccountProfile.objects.update_or_create(
+            user=user,
+            defaults={
+                'role': self.cleaned_data['role'],
+                'display_name': self.cleaned_data.get('display_name', ''),
+            },
+        )
+        return user
 
 
 class RegistrationForm(forms.Form):

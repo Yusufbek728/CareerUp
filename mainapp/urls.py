@@ -17,6 +17,8 @@ from .views import (
     my_listings,
     register_view,
     RegistrationAPIView,
+    super_admin,
+    super_admin_edit_listing,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -37,6 +39,9 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('my-listings/', my_listings, name='my_listings'),
+    path('super_admin', super_admin, name='super_admin'),
+    path('super_admin/', super_admin),
+    path('super_admin/<str:listing_type>/<int:pk>/edit/', super_admin_edit_listing, name='super_admin_edit_listing'),
     path('api/', include(router.urls)),
     path('api/register/', RegistrationAPIView.as_view(), name='api_register'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
