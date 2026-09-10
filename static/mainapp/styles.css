@@ -222,6 +222,17 @@ button {
     font-weight: 700;
 }
 
+.nav-account-form {
+    margin: 0;
+}
+
+.nav-account-form button.nav-account {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
 .nav-account:hover {
     color: var(--text);
 }

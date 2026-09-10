@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+import sys
+from urllib.parse import unquote, urlparse
 
 from decouple import config
 
@@ -22,9 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = "c=vg$-0i!jo=4e6sg%_@fm8#lacfeqp7k2*a_9rf8gw^%(uw=x"
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool, default=False)
+TESTING = 'test' in sys.argv
 
 ALLOWED_HOSTS = [
     'careerup-i5eg.onrender.com',
@@ -87,12 +90,27 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+database_url = os.getenv('DATABASE_URL')
+if database_url:
+    parsed_database_url = urlparse(database_url)
+    database_engine = 'django.db.backends.postgresql'
+    DATABASES = {
+        'default': {
+            'ENGINE': database_engine,
+            'NAME': unquote(parsed_database_url.path.lstrip('/')),
+            'USER': unquote(parsed_database_url.username or ''),
+            'PASSWORD': unquote(parsed_database_url.password or ''),
+            'HOST': parsed_database_url.hostname or '',
+            'PORT': str(parsed_database_url.port or ''),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -178,3 +196,17 @@ CORS_ALLOWED_ORIGINS = [
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', cast=bool, default=not DEBUG and not TESTING)
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', cast=bool, default=not DEBUG and not TESTING)
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', cast=bool, default=not DEBUG and not TESTING)
+SECURE_HSTS_SECONDS = config(
+    'SECURE_HSTS_SECONDS',
+    cast=int,
+    default=31536000 if not DEBUG and not TESTING else 0,
+)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'

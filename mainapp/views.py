@@ -1,11 +1,10 @@
-import os
-
 from django.db.models import Q
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.filters import SearchFilter
@@ -18,15 +17,8 @@ from .forms import AdminUserForm, InternshipForm, JobForm, LoginForm, Registrati
 from .serialiers import JobSerializer, ResumeSerializer, InternshipSerializer, RegistrationSerializer
 
 
-SUPER_ADMIN_USERNAME = os.getenv('SUPER_ADMIN_USERNAME', 'RoRed0').casefold()
-
-
 def is_super_admin(user):
-    return user.is_active and (
-        user.is_staff
-        or user.is_superuser
-        or user.username.casefold() == SUPER_ADMIN_USERNAME
-    )
+    return user.is_active and (user.is_staff or user.is_superuser)
 
 
 def super_admin_forbidden(request):
@@ -169,11 +161,16 @@ def login_view(request):
     form = LoginForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         login(request, form.cleaned_data['user'])
-        return redirect(request.GET.get('next') or 'home')
+        next_url = request.GET.get('next', '')
+        if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+            return redirect(next_url)
+        return redirect('home')
     return render(request, 'mainapp/auth.html', {'form': form, 'auth_title': 'Login'})
 
 
 def logout_view(request):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
     logout(request)
     return redirect('home')
 
@@ -297,7 +294,7 @@ class RegistrationAPIView(generics.CreateAPIView):
 
 
 class OwnerModelViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
         if not self.request.user.is_authenticated:
@@ -306,20 +303,20 @@ class OwnerModelViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
     def perform_update(self, serializer):
-        if serializer.instance.owner_id != self.request.user.id:
+        if not self.request.user.is_authenticated or serializer.instance.owner_id != self.request.user.id:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied('You can edit only your own listings.')
         serializer.save()
 
     def perform_destroy(self, instance):
-        if instance.owner_id != self.request.user.id:
+        if not self.request.user.is_authenticated or instance.owner_id != self.request.user.id:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied('You can delete only your own listings.')
         instance.delete()
 
 
 class JobViewSet(OwnerModelViewSet):
-    queryset = Job.objects.all()
+    queryset = Job.objects.all().order_by('-created_at', '-pk')
     serializer_class = JobSerializer
     pagination_class = JobPagination
     throttle_classes = [JobThrottle]
@@ -329,7 +326,7 @@ class JobViewSet(OwnerModelViewSet):
 
 
 class ResumeViewSet(OwnerModelViewSet):
-    queryset = resume.objects.all()
+    queryset = resume.objects.all().order_by('-created_at', '-pk')
     serializer_class = ResumeSerializer
     pagination_class = ResumePagination
     throttle_classes = [ResumeThrottle]
@@ -339,7 +336,7 @@ class ResumeViewSet(OwnerModelViewSet):
 
 
 class InternshipViewSet(OwnerModelViewSet):
-    queryset = Internship.objects.all()
+    queryset = Internship.objects.all().order_by('-created_at', '-pk')
     serializer_class = InternshipSerializer
     pagination_class = InternshipPagination
     throttle_classes = [InternshipThrottle]
