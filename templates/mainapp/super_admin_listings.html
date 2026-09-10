@@ -3,7 +3,10 @@
     <div class="admin-table">
         {% for listing in listings %}
             <div class="admin-row">
-                <div><strong>{{ listing.job_title|default:listing.name }}{% if listing.surname %} {{ listing.surname }}{% endif %}</strong><div class="admin-meta">{{ listing.company_name|default:listing.email }} · владелец: {{ listing.owner.username|default:'не указан' }}</div></div>
+                <div>
+                    <strong>{% if listing_type == 'resume' %}{{ listing.name }} {{ listing.surname }}{% else %}{{ listing.job_title }}{% endif %}</strong>
+                    <div class="admin-meta">{% if listing_type == 'resume' %}{{ listing.email }}{% else %}{{ listing.company_name }}{% endif %} · владелец: {{ listing.owner.username|default:'не указан' }}</div>
+                </div>
                 <div class="admin-actions">
                     <a href="{% if listing_type == 'job' %}{% url 'job_detail' listing.pk %}{% elif listing_type == 'internship' %}{% url 'internship_detail' listing.pk %}{% else %}{% url 'resume_detail' listing.pk %}{% endif %}">Открыть</a>
                     <a href="{% url 'super_admin_edit_listing' listing_type listing.pk %}">Изменить</a>
