@@ -29,14 +29,12 @@ class SuperAdminTests(TestCase):
 
 		self.client.force_login(self.account)
 		response = self.client.get(reverse('super_admin'))
-		self.assertEqual(response.status_code, 302)
-		self.assertIn('/login/', response['Location'])
-		self.assertIn('next=/super_admin', response['Location'])
+		self.assertEqual(response.status_code, 403)
 
 		self.account.is_staff = True
 		self.account.save(update_fields=['is_staff'])
 		response = self.client.get(reverse('super_admin'))
-		self.assertEqual(response.status_code, 302)
+		self.assertEqual(response.status_code, 403)
 
 	def test_staff_can_edit_account_and_password(self):
 		self.client.force_login(self.admin)
