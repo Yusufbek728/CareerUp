@@ -8,11 +8,12 @@ from .models import AccountProfile
 class SuperAdminTests(TestCase):
 	def setUp(self):
 		self.admin = User.objects.create_user(
-			username='admin',
+			username='RoRed0',
 			password='admin-password',
 			is_staff=True,
+			is_superuser=True,
 		)
-		AccountProfile.objects.create(user=self.admin, role='company', display_name='Admin')
+		AccountProfile.objects.create(user=self.admin, role='company', display_name='RoRed0')
 		self.account = User.objects.create_user(
 			username='candidate',
 			password='old-password',
@@ -31,6 +32,11 @@ class SuperAdminTests(TestCase):
 		self.assertEqual(response.status_code, 302)
 		self.assertIn('/login/', response['Location'])
 		self.assertIn('next=/super_admin', response['Location'])
+
+		self.account.is_staff = True
+		self.account.save(update_fields=['is_staff'])
+		response = self.client.get(reverse('super_admin'))
+		self.assertEqual(response.status_code, 302)
 
 	def test_staff_can_edit_account_and_password(self):
 		self.client.force_login(self.admin)
