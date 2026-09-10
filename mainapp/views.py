@@ -1,3 +1,5 @@
+import os
+
 from django.db.models import Q
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -16,11 +18,20 @@ from .forms import AdminUserForm, InternshipForm, JobForm, LoginForm, Registrati
 from .serialiers import JobSerializer, ResumeSerializer, InternshipSerializer, RegistrationSerializer
 
 
+SUPER_ADMIN_USERNAME = os.getenv('SUPER_ADMIN_USERNAME', 'RoRed0').casefold()
+
+
 def is_super_admin(user):
     return user.is_active and (
         user.is_staff
         or user.is_superuser
-        or user.username.casefold() == 'rored0'
+        or user.username.casefold() == SUPER_ADMIN_USERNAME
+    )
+
+
+def super_admin_forbidden(request):
+    return HttpResponseForbidden(
+        f'Доступ запрещен для пользователя {request.user.username}.'
     )
 
 
@@ -198,7 +209,7 @@ def edit_listing(request, listing_type, pk):
 @login_required
 def super_admin(request):
     if not is_super_admin(request.user):
-        return HttpResponseForbidden('Доступ запрещен.')
+        return super_admin_forbidden(request)
 
     user_form = None
     selected_user = None
@@ -250,7 +261,7 @@ def super_admin(request):
 @login_required
 def super_admin_edit_listing(request, listing_type, pk):
     if not is_super_admin(request.user):
-        return HttpResponseForbidden('Доступ запрещен.')
+        return super_admin_forbidden(request)
 
     config = {
         'job': (Job, JobForm, 'Вакансия'),
