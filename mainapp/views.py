@@ -2,6 +2,7 @@ from django.db.models import Q
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import get_object_or_404, redirect, render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, status, viewsets
@@ -11,7 +12,7 @@ from rest_framework.response import Response
 from mainapp.pagination import InternshipPagination, JobPagination, ResumePagination
 from mainapp.throttling import InternshipThrottle, JobThrottle, ResumeThrottle
 from .models import AccountProfile, Job, Internship, resume
-from .forms import InternshipForm, JobForm, LoginForm, RegistrationForm, ResumeForm, RoleForm
+from .forms import AdminUserForm, InternshipForm, JobForm, LoginForm, RegistrationForm, ResumeForm, RoleForm
 from .serialiers import JobSerializer, ResumeSerializer, InternshipSerializer, RegistrationSerializer
 
 
@@ -184,6 +185,76 @@ def edit_listing(request, listing_type, pk):
         form.save()
         return redirect(detail_url, pk=item.pk)
     return render(request, 'mainapp/create.html', {'form': form, 'listing_title': 'Edit ' + listing_type.title()})
+
+
+@user_passes_test(lambda user: user.is_active and user.is_staff, login_url='login')
+def super_admin(request):
+    user_form = None
+    selected_user = None
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'save_user':
+            selected_user = get_object_or_404(User, pk=request.POST.get('user_id'))
+            user_form = AdminUserForm(request.POST, instance=selected_user)
+            if user_form.is_valid():
+                user_form.save()
+                return redirect('super_admin')
+        elif action == 'delete_user':
+            selected_user = get_object_or_404(User, pk=request.POST.get('user_id'))
+            if selected_user != request.user:
+                selected_user.delete()
+            return redirect('super_admin')
+        elif action == 'delete_listing':
+            listing_map = {'job': Job, 'internship': Internship, 'resume': resume}
+            model = listing_map.get(request.POST.get('listing_type'))
+            if model:
+                get_object_or_404(model, pk=request.POST.get('listing_id')).delete()
+            return redirect('super_admin')
+
+    search_query = request.GET.get('q', '').strip()
+    if request.method == 'GET' and request.GET.get('edit_user'):
+        selected_user = get_object_or_404(User, pk=request.GET['edit_user'])
+        user_form = AdminUserForm(instance=selected_user)
+    users = User.objects.select_related('account_profile').order_by('-date_joined')
+    if search_query:
+        users = users.filter(
+            Q(username__icontains=search_query)
+            | Q(email__icontains=search_query)
+            | Q(first_name__icontains=search_query)
+            | Q(last_name__icontains=search_query)
+            | Q(account_profile__display_name__icontains=search_query)
+        )
+
+    return render(request, 'mainapp/super_admin.html', {
+        'users': users,
+        'jobs': Job.objects.select_related('owner').order_by('-created_at'),
+        'internships': Internship.objects.select_related('owner').order_by('-created_at'),
+        'resumes': resume.objects.select_related('owner').order_by('-created_at'),
+        'search_query': search_query,
+        'user_form': user_form,
+        'selected_user': selected_user,
+    })
+
+
+@user_passes_test(lambda user: user.is_active and user.is_staff, login_url='login')
+def super_admin_edit_listing(request, listing_type, pk):
+    config = {
+        'job': (Job, JobForm, 'Вакансия'),
+        'internship': (Internship, InternshipForm, 'Стажировка'),
+        'resume': (resume, ResumeForm, 'Резюме'),
+    }
+    model, form_class, title = config.get(listing_type, (None, None, None))
+    if model is None:
+        return redirect('super_admin')
+    item = get_object_or_404(model, pk=pk)
+    form = form_class(request.POST or None, instance=item)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('super_admin')
+    return render(request, 'mainapp/create.html', {
+        'form': form,
+        'listing_title': 'Изменить ' + title,
+    })
 
 
 class RegistrationAPIView(generics.CreateAPIView):

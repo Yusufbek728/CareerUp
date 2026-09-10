@@ -1,0 +1,15 @@
+<section class="admin-section">
+    <div class="admin-section-head"><h2>{{ title }} ({{ listings|length }})</h2></div>
+    <div class="admin-table">
+        {% for listing in listings %}
+            <div class="admin-row">
+                <div><strong>{{ listing.job_title|default:listing.name }}{% if listing.surname %} {{ listing.surname }}{% endif %}</strong><div class="admin-meta">{{ listing.company_name|default:listing.email }} · владелец: {{ listing.owner.username|default:'не указан' }}</div></div>
+                <div class="admin-actions">
+                    <a href="{% if listing_type == 'job' %}{% url 'job_detail' listing.pk %}{% elif listing_type == 'internship' %}{% url 'internship_detail' listing.pk %}{% else %}{% url 'resume_detail' listing.pk %}{% endif %}">Открыть</a>
+                    <a href="{% url 'super_admin_edit_listing' listing_type listing.pk %}">Изменить</a>
+                    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="delete_listing"><input type="hidden" name="listing_type" value="{{ listing_type }}"><input type="hidden" name="listing_id" value="{{ listing.pk }}"><button class="danger" type="submit">Удалить</button></form>
+                </div>
+            </div>
+        {% empty %}<p class="admin-meta">Карточек пока нет.</p>{% endfor %}
+    </div>
+</section>
