@@ -51,7 +51,7 @@ class Job(models.Model):
     phone_number2 = models.CharField(max_length=20, blank=True, null=True, default='', validators=[phone_number_validator])
     salary = models.IntegerField()
     required_experience = models.IntegerField()
-    work_time = models.TimeField()
+    work_time = models.IntegerField()
     job_title = models.CharField(max_length=200)
     requirements_of_job = models.TextField()
     working_condition = models.CharField(max_length=20, choices=WORKING_CONDITIONS, default='full_time')
@@ -67,7 +67,7 @@ class Internship(models.Model):
     company_name = models.CharField(max_length=200)
     phone_number = models.CharField(max_length=20, default='', validators=[phone_number_validator])
     phone_number2 = models.CharField(max_length=20, blank=True, null=True, default='', validators=[phone_number_validator])
-    work_time = models.TimeField()
+    work_time = models.IntegerField()
     work_duration = models.IntegerField()
     job_title = models.CharField(max_length=200)
     working_condition = models.CharField(max_length=20, choices=WORKING_CONDITIONS, default='full_time')
@@ -78,7 +78,7 @@ class Internship(models.Model):
     def __str__(self):
         return self.job_title
     
-class resume(models.Model):
+class Resume(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='resumes', null=True, blank=True)
     name = models.CharField(max_length=200)
     surname = models.CharField(max_length=200)
@@ -87,7 +87,7 @@ class resume(models.Model):
     phone_number2 = models.CharField(max_length=20, blank=True, null=True, default='', validators=[phone_number_validator])
     experience = models.IntegerField()
     wanted_salary = models.IntegerField()
-    wanted_work_time = models.TimeField()
+    wanted_work_time = models.IntegerField()
     wanted_working_condition = models.CharField(max_length=20, choices=WORKING_CONDITIONS, default='full_time')
     wanted_work_schedule_and_working_hours = models.CharField(max_length=20, choices=WORKING_DAYS, default='6/1')
     created_at = models.DateTimeField(auto_now_add=True)

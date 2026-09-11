@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from .models import AccountProfile, Job, resume, Internship
+from .models import AccountProfile, Job, Resume, Internship
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -37,7 +37,7 @@ class JobSerializer(serializers.ModelSerializer):
 
 class ResumeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = resume
+        model = Resume
         fields = "__all__"
         read_only_fields = ('owner',)
 

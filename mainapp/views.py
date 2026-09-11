@@ -12,7 +12,7 @@ from rest_framework.response import Response
 
 from mainapp.pagination import InternshipPagination, JobPagination, ResumePagination
 from mainapp.throttling import InternshipThrottle, JobThrottle, ResumeThrottle
-from .models import AccountProfile, Job, Internship, resume
+from .models import AccountProfile, Job, Internship, Resume
 from .forms import (
     AccountSettingsForm,
     AdminUserForm,
@@ -27,7 +27,7 @@ from .serialiers import JobSerializer, ResumeSerializer, InternshipSerializer, R
 
 
 def is_super_admin(user):
-    return user.is_active and (user.is_staff or user.is_superuser)
+    return user.is_active and user.is_superuser
 
 
 def super_admin_forbidden(request):
@@ -40,7 +40,7 @@ def home_view(request):
     search_query = request.GET.get('q', '').strip()
     jobs = Job.objects.all()
     internships = Internship.objects.all()
-    resumes = resume.objects.all()
+    resumes = Resume.objects.all()
 
     if search_query:
         jobs = jobs.filter(
@@ -81,7 +81,7 @@ def home_view(request):
         'resumes': resumes,
         'job_count': Job.objects.count(),
         'internship_count': Internship.objects.count(),
-        'resume_count': resume.objects.count(),
+        'resume_count': Resume.objects.count(),
         'search_query': search_query,
     }
     return render(request, 'mainapp/index.html', context)
@@ -98,7 +98,7 @@ def internship_detail(request, pk):
 
 
 def resume_detail(request, pk):
-    item = get_object_or_404(resume, pk=pk)
+    item = get_object_or_404(Resume, pk=pk)
     return render(request, 'mainapp/detail.html', {'item': item, 'type': 'resume'})
 
 
@@ -189,7 +189,7 @@ def my_listings(request):
     context = {
         'jobs': Job.objects.filter(owner=request.user).order_by('-created_at'),
         'internships': Internship.objects.filter(owner=request.user).order_by('-created_at'),
-        'resumes': resume.objects.filter(owner=request.user).order_by('-created_at'),
+        'resumes': Resume.objects.filter(owner=request.user).order_by('-created_at'),
     }
     return render(request, 'mainapp/my_listings.html', context)
 
@@ -217,7 +217,7 @@ def edit_listing(request, listing_type, pk):
     config = {
         'job': (Job, JobForm, 'job_detail'),
         'internship': (Internship, InternshipForm, 'internship_detail'),
-        'resume': (resume, ResumeForm, 'resume_detail'),
+        'resume': (Resume, ResumeForm, 'resume_detail'),
     }
     model, form_class, detail_url = config.get(listing_type, (None, None, None))
     if model is None:
@@ -247,11 +247,11 @@ def super_admin(request):
                 return redirect('super_admin')
         elif action == 'delete_user':
             selected_user = get_object_or_404(User, pk=request.POST.get('user_id'))
-            if selected_user != request.user:
+            if selected_user != request.user and not selected_user.is_superuser:
                 selected_user.delete()
             return redirect('super_admin')
         elif action == 'delete_listing':
-            listing_map = {'job': Job, 'internship': Internship, 'resume': resume}
+            listing_map = {'job': Job, 'internship': Internship, 'resume': Resume}
             model = listing_map.get(request.POST.get('listing_type'))
             if model:
                 get_object_or_404(model, pk=request.POST.get('listing_id')).delete()
@@ -275,7 +275,7 @@ def super_admin(request):
         'users': users,
         'jobs': Job.objects.select_related('owner').order_by('-created_at'),
         'internships': Internship.objects.select_related('owner').order_by('-created_at'),
-        'resumes': resume.objects.select_related('owner').order_by('-created_at'),
+        'resumes': Resume.objects.select_related('owner').order_by('-created_at'),
         'search_query': search_query,
         'user_form': user_form,
         'selected_user': selected_user,
@@ -290,7 +290,7 @@ def super_admin_edit_listing(request, listing_type, pk):
     config = {
         'job': (Job, JobForm, 'Вакансия'),
         'internship': (Internship, InternshipForm, 'Стажировка'),
-        'resume': (resume, ResumeForm, 'Резюме'),
+        'resume': (Resume, ResumeForm, 'Резюме'),
     }
     model, form_class, title = config.get(listing_type, (None, None, None))
     if model is None:
@@ -353,7 +353,7 @@ class JobViewSet(OwnerModelViewSet):
 
 
 class ResumeViewSet(OwnerModelViewSet):
-    queryset = resume.objects.all().order_by('-created_at', '-pk')
+    queryset = Resume.objects.all().order_by('-created_at', '-pk')
     serializer_class = ResumeSerializer
     pagination_class = ResumePagination
     throttle_classes = [ResumeThrottle]
