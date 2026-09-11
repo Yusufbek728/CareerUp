@@ -301,14 +301,12 @@ button {
     letter-spacing: -0.04em;
 }
 
-.logo-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 12px;
-    display: grid;
-    place-items: center;
-    background: linear-gradient(135deg, var(--primary), var(--primary-2));
-    box-shadow: 0 18px 35px rgba(118, 169, 255, 0.45);
+.logo-image {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    object-fit: cover;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
 }
 
 .nav-links {
