@@ -10,19 +10,34 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        migrations.RemoveField(
             model_name='internship',
             name='work_time',
-            field=models.IntegerField(),
         ),
-        migrations.AlterField(
+        migrations.AddField(
+            model_name='internship',
+            name='work_time',
+            field=models.IntegerField(default=8),
+            preserve_default=False,
+        ),
+        migrations.RemoveField(
             model_name='job',
             name='work_time',
-            field=models.IntegerField(),
         ),
-        migrations.AlterField(
+        migrations.AddField(
+            model_name='job',
+            name='work_time',
+            field=models.IntegerField(default=8),
+            preserve_default=False,
+        ),
+        migrations.RemoveField(
             model_name='resume',
             name='wanted_work_time',
-            field=models.IntegerField(),
+        ),
+        migrations.AddField(
+            model_name='resume',
+            name='wanted_work_time',
+            field=models.IntegerField(default=8),
+            preserve_default=False,
         ),
     ]
