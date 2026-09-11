@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Job, Internship, resume
+from .models import Job, Internship, Resume
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
@@ -13,7 +13,7 @@ class InternshipAdmin(admin.ModelAdmin):
     search_fields = ('company_name', 'job_title', 'phone_number')
     list_filter = ('created_at',)
 
-@admin.register(resume)
+@admin.register(Resume)
 class ResumeAdmin(admin.ModelAdmin):
     list_display = ('name', 'surname', 'email', 'phone_number', 'phone_number2', 'experience', 'wanted_salary', 'wanted_work_time', 'wanted_working_condition', 'wanted_work_schedule_and_working_hours', 'created_at',)
     search_fields = ('name', 'surname', 'email', 'phone_number')

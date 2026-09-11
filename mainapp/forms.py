@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import gettext_lazy as _
 
-from .models import AccountProfile, Internship, Job, resume
+from .models import AccountProfile, Internship, Job, Resume
 
 
 class AdminUserForm(forms.ModelForm):
@@ -242,7 +242,7 @@ class InternshipForm(forms.ModelForm):
 
 class ResumeForm(forms.ModelForm):
     class Meta:
-        model = resume
+        model = Resume
         fields = (
             'name',
             'surname',
