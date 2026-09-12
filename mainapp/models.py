@@ -32,6 +32,7 @@ WORKING_DAYS = (
 ACCOUNT_ROLES = (
     ('company', 'Company'),
     ('worker', 'Worker'),
+    ('creator', 'Creator'),
 )
 
 

@@ -46,7 +46,11 @@
                         <summary class="nav-btn">{% translate "Create" %}</summary>
                         <div class="create-options">
                             {% if request.user.is_authenticated %}
-                                {% if request.user.account_profile.role == 'company' %}
+                                {% if request.user.is_superuser or request.user.account_profile.role == 'creator' %}
+                                    <a href="{% url 'create_listing' 'job' %}">{% translate "Job" %}</a>
+                                    <a href="{% url 'create_listing' 'internship' %}">{% translate "Internship" %}</a>
+                                    <a href="{% url 'create_listing' 'resume' %}">{% translate "Resume" %}</a>
+                                {% elif request.user.account_profile.role == 'company' %}
                                     <a href="{% url 'create_listing' 'job' %}">{% translate "Job" %}</a>
                                     <a href="{% url 'create_listing' 'internship' %}">{% translate "Internship" %}</a>
                                 {% elif request.user.account_profile.role == 'worker' %}
