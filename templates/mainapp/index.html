@@ -46,7 +46,7 @@
                         <summary class="nav-btn">{% translate "Create" %}</summary>
                         <div class="create-options">
                             {% if request.user.is_authenticated %}
-                                {% if request.user.is_superuser or request.user.account_profile.role == 'creator' %}
+                                {% if request.user.is_superuser %}
                                     <a href="{% url 'create_listing' 'job' %}">{% translate "Job" %}</a>
                                     <a href="{% url 'create_listing' 'internship' %}">{% translate "Internship" %}</a>
                                     <a href="{% url 'create_listing' 'resume' %}">{% translate "Resume" %}</a>
