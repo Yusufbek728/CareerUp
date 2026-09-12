@@ -6,7 +6,7 @@ from .models import AccountProfile, Job, Resume, Internship
 
 class RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
-    role = serializers.ChoiceField(choices=('company', 'worker'), write_only=True)
+    role = serializers.ChoiceField(choices=('company', 'worker', 'creator'), write_only=True)
     display_name = serializers.CharField(write_only=True, max_length=200)
 
     class Meta:

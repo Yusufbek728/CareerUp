@@ -58,7 +58,7 @@ class RegistrationForm(forms.Form):
     email = forms.EmailField(label=_('Email'))
     password = forms.CharField(min_length=8, widget=forms.PasswordInput, label=_('Password'))
     password_confirm = forms.CharField(widget=forms.PasswordInput, label=_('Confirm password'))
-    role = forms.ChoiceField(choices=(('company', _('Company')), ('worker', _('Worker'))), label=_('Account type'))
+    role = forms.ChoiceField(choices=(('company', _('Company')), ('worker', _('Worker')), ('creator', _('Creator'))), label=_('Account type'))
     display_name = forms.CharField(max_length=200, label=_('Display name'))
 
     def clean_username(self):
@@ -94,7 +94,7 @@ class LoginForm(forms.Form):
 
 class RoleForm(forms.Form):
     role = forms.ChoiceField(
-        choices=(('company', _('Company')), ('worker', _('Worker'))),
+        choices=(('company', _('Company')), ('worker', _('Worker')), ('creator', _('Creator'))),
         label=_('Account type'),
     )
 
@@ -104,7 +104,7 @@ class AccountSettingsForm(forms.Form):
     email = forms.EmailField(label=_('Email'))
     display_name = forms.CharField(max_length=200, label=_('Display name'))
     role = forms.ChoiceField(
-        choices=(('company', _('Company')), ('worker', _('Worker'))),
+        choices=(('company', _('Company')), ('worker', _('Worker')), ('creator', _('Creator'))),
         label=_('Account type'),
     )
     current_password = forms.CharField(

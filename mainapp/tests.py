@@ -168,6 +168,16 @@ class SuperAdminTests(TestCase):
 		self.assertTrue(self.account.check_password('old-password'))
 		self.assertEqual(response.context['form']['current_password'].value(), '')
 
+	def test_super_admin_creator_can_access_all_listing_types(self):
+		self.admin.account_profile.role = 'creator'
+		self.admin.account_profile.save(update_fields=['role'])
+		self.client.force_login(self.admin)
+
+		for listing_type in ('job', 'internship', 'resume'):
+			response = self.client.get(reverse('create_listing', args=[listing_type]))
+			self.assertEqual(response.status_code, 200)
+			self.assertIn('form', response.context)
+
 	def test_account_settings_requires_login(self):
 		response = self.client.get(reverse('account_settings'))
 		self.assertEqual(response.status_code, 302)

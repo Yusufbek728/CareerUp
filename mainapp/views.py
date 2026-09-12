@@ -30,6 +30,21 @@ def is_super_admin(user):
     return user.is_active and user.is_superuser
 
 
+def can_create_listing(user, listing_type):
+    if user.is_superuser:
+        return True
+
+    role = getattr(getattr(user, 'account_profile', None), 'role', None)
+    if role == 'creator':
+        return True
+
+    if listing_type in {'job', 'internship'}:
+        return role == 'company'
+    if listing_type == 'resume':
+        return role == 'worker'
+    return False
+
+
 def super_admin_forbidden(request):
     return HttpResponseForbidden(
         f'Доступ запрещен для пользователя {request.user.username}.'
@@ -113,8 +128,7 @@ def create_listing(request, listing_type):
     if form_class is None:
         return redirect('home')
 
-    role = getattr(getattr(request.user, 'account_profile', None), 'role', None)
-    if (listing_type in {'job', 'internship'} and role != 'company') or (listing_type == 'resume' and role != 'worker'):
+    if not can_create_listing(request.user, listing_type):
         return redirect('home')
 
     form = form_class(request.POST or None)
