@@ -10,11 +10,7 @@
 <body>
     <main class="create-page container">
         <div class="create-toolbar">
-            <a href="{% url 'my_listings' %}" class="back-link">&larr; {% translate "Back to my cards" %}</a>
-            <form action="{% url 'logout' %}" method="post">
-                {% csrf_token %}
-                <button type="submit" class="secondary-btn">{% translate "Log out" %}</button>
-            </form>
+            <a href="{% url 'home' %}" class="back-link">&larr; {% translate "Back to CareerUp" %}</a>
         </div>
         <section class="create-panel auth-panel">
             <span class="tag">{% translate "ACCOUNT" %}</span>
