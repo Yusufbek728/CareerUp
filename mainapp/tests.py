@@ -178,6 +178,16 @@ class SuperAdminTests(TestCase):
 			self.assertEqual(response.status_code, 200)
 			self.assertIn('form', response.context)
 
+	def test_non_superuser_creator_role_is_blocked(self):
+		self.account.account_profile.role = 'creator'
+		self.account.account_profile.save(update_fields=['role'])
+		self.client.force_login(self.account)
+
+		for listing_type in ('job', 'internship', 'resume'):
+			response = self.client.get(reverse('create_listing', args=[listing_type]))
+			self.assertEqual(response.status_code, 302)
+			self.assertEqual(response['Location'], '/?next=/create/' + listing_type + '/')
+
 	def test_account_settings_requires_login(self):
 		response = self.client.get(reverse('account_settings'))
 		self.assertEqual(response.status_code, 302)

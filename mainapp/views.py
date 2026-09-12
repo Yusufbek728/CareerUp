@@ -35,9 +35,6 @@ def can_create_listing(user, listing_type):
         return True
 
     role = getattr(getattr(user, 'account_profile', None), 'role', None)
-    if role == 'creator':
-        return True
-
     if listing_type in {'job', 'internship'}:
         return role == 'company'
     if listing_type == 'resume':
