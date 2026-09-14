@@ -1114,3 +1114,304 @@ button {
         display: none;
     }
 }
+
+/* Visual refresh */
+:root {
+    --bg: #f4f4ef;
+    --bg-2: #e8e9e2;
+    --panel: #ffffff;
+    --panel-strong: #18201c;
+    --primary: #c6f36b;
+    --primary-2: #9edb38;
+    --accent: #d7ff79;
+    --text: #18201c;
+    --muted: #68706a;
+    --line: #d8ddd5;
+    --success: #2f9b69;
+    --warning: #b87813;
+    --shadow: 0 24px 70px rgba(24, 32, 28, 0.1);
+}
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background:
+        linear-gradient(120deg, rgba(198, 243, 107, 0.18), transparent 32%),
+        radial-gradient(circle at 90% 4%, rgba(214, 224, 204, 0.7), transparent 24%),
+        var(--bg);
+    color: var(--text);
+}
+
+body::before {
+    background-image: linear-gradient(rgba(24, 32, 28, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(24, 32, 28, 0.035) 1px, transparent 1px);
+}
+
+h1, h2, h3, .logo-wrap, .nav-btn, .primary-btn, .secondary-btn {
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.header {
+    background: rgba(244, 244, 239, 0.84);
+    border-bottom-color: rgba(24, 32, 28, 0.1);
+}
+
+.logo-wrap {
+    letter-spacing: -0.06em;
+    font-size: 1.15rem;
+}
+
+.logo-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 18px rgba(24, 32, 28, 0.16);
+}
+
+.nav-links, .nav-account, .split-head a {
+    color: var(--muted);
+}
+
+.nav-links a:hover, .split-head a:hover, .nav-account:hover {
+    color: var(--text);
+}
+
+.header-search, .language-switcher select, .secondary-btn {
+    border-color: var(--line);
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--text);
+}
+
+.header-search input, .header-search input::placeholder {
+    color: var(--text);
+}
+
+.header-search button, .nav-btn, .primary-btn {
+    background: var(--text);
+    color: var(--primary);
+    box-shadow: 0 12px 24px rgba(24, 32, 28, 0.14);
+}
+
+.header-search button:hover, .nav-btn:hover, .primary-btn:hover {
+    background: #2b382f;
+}
+
+.tag {
+    border-color: rgba(105, 135, 40, 0.35);
+    background: rgba(198, 243, 107, 0.24);
+    color: #506b1d;
+}
+
+.hero {
+    min-height: 680px;
+    padding-top: 72px;
+}
+
+.hero-copy h1 {
+    max-width: 720px;
+    font-size: clamp(3.2rem, 6vw, 6.5rem);
+    line-height: 0.9;
+    letter-spacing: -0.09em;
+}
+
+.hero-copy p {
+    color: var(--muted);
+    max-width: 560px;
+}
+
+.secondary-btn {
+    color: var(--text);
+}
+
+.secondary-btn:hover {
+    border-color: var(--text);
+    background: var(--panel);
+}
+
+.mini-stats {
+    gap: 0;
+    margin-top: 42px;
+}
+
+.mini-stats div {
+    min-width: 130px;
+    padding-right: 26px;
+    margin-right: 26px;
+    border-right: 1px solid var(--line);
+}
+
+.mini-stats div:last-child {
+    border-right: 0;
+}
+
+.mini-stats strong {
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text);
+}
+
+.hero-visual {
+    min-height: 470px;
+    isolation: isolate;
+}
+
+.hero-visual::before {
+    content: '';
+    position: absolute;
+    inset: 8% 4%;
+    z-index: -1;
+    border: 1px solid rgba(24, 32, 28, 0.13);
+    background-image: linear-gradient(rgba(24, 32, 28, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(24, 32, 28, 0.06) 1px, transparent 1px);
+    background-size: 28px 28px;
+    transform: rotate(3deg);
+}
+
+.orb {
+    display: none;
+}
+
+.dashboard-card {
+    width: min(440px, 94%);
+    padding: 30px;
+    border: 1px solid rgba(24, 32, 28, 0.14);
+    border-radius: 4px;
+    background: var(--text);
+    box-shadow: 18px 22px 0 var(--primary), var(--shadow);
+    color: #fff;
+    animation: none;
+}
+
+.dashboard-card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(2rem, 3vw, 3.1rem);
+}
+
+.card-header, .card-row {
+    color: #aab7ad;
+}
+
+.online-dot {
+    background: var(--primary);
+    box-shadow: none;
+}
+
+.features, .listing-section {
+    padding-top: 74px;
+}
+
+.section-head h2 {
+    font-size: clamp(2.2rem, 4vw, 4rem);
+    line-height: 0.95;
+}
+
+.feature-grid, .job-grid {
+    gap: 14px;
+}
+
+.feature-card, .job-card, .detail-card, .create-panel {
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.7);
+    box-shadow: none;
+}
+
+.feature-card, .job-card {
+    padding: 24px;
+}
+
+.feature-card:hover, .job-card-link:hover .job-card, .job-card:hover {
+    transform: translateY(-4px);
+    border-color: #9bbf52;
+    box-shadow: 0 16px 28px rgba(24, 32, 28, 0.08);
+}
+
+.feature-icon {
+    border-radius: 4px;
+    background: var(--primary);
+    border: 0;
+    color: var(--text);
+}
+
+.feature-card p, .job-card p, .job-card li, .footer p, .form-intro, .form-field small {
+    color: var(--muted);
+}
+
+.status.success {
+    background: rgba(47, 155, 105, 0.12);
+    color: #24734f;
+    border-color: rgba(47, 155, 105, 0.26);
+}
+
+.status.pending {
+    background: rgba(184, 120, 19, 0.12);
+    color: #8b5e13;
+    border-color: rgba(184, 120, 19, 0.26);
+}
+
+.card-footer strong {
+    color: var(--text);
+}
+
+.band-content {
+    border-radius: 4px;
+    background: var(--text);
+    color: #fff;
+}
+
+.band-content .tag {
+    color: var(--text);
+}
+
+.detail-card {
+    padding: clamp(24px, 5vw, 56px);
+}
+
+.detail-card h1 {
+    font-size: clamp(2.5rem, 6vw, 5.5rem);
+    line-height: 0.92;
+}
+
+.form-field input, .form-field select, .form-field textarea {
+    border-color: var(--line);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.8);
+    color: var(--text);
+}
+
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+    border-color: #7fa83a;
+    box-shadow: 0 0 0 3px rgba(198, 243, 107, 0.3);
+}
+
+.back-link {
+    border-color: var(--line);
+    border-radius: 4px;
+    background: var(--panel);
+    color: var(--text);
+}
+
+.back-link:hover {
+    background: var(--primary);
+    box-shadow: none;
+}
+
+.create-options {
+    border-color: var(--line);
+    border-radius: 4px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+}
+
+.create-options a:hover {
+    background: rgba(198, 243, 107, 0.28);
+    color: var(--text);
+}
+
+@media (max-width: 560px) {
+    .hero-copy h1 {
+        font-size: clamp(3rem, 15vw, 4.8rem);
+    }
+
+    .mini-stats div {
+        min-width: 33%;
+        padding-right: 12px;
+        margin-right: 12px;
+    }
+}
