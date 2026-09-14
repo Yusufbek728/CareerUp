@@ -128,7 +128,7 @@ def create_listing(request, listing_type):
     if not can_create_listing(request.user, listing_type):
         return redirect('home')
 
-    form = form_class(request.POST or None)
+    form = form_class(request.POST or None, request.FILES or None)
     if request.method == 'POST' and form.is_valid():
         item = form.save(commit=False)
         item.owner = request.user
@@ -234,7 +234,7 @@ def edit_listing(request, listing_type, pk):
     if model is None:
         return redirect('home')
     item = get_object_or_404(model, pk=pk, owner=request.user)
-    form = form_class(request.POST or None, instance=item)
+    form = form_class(request.POST or None, request.FILES or None, instance=item)
     if request.method == 'POST' and form.is_valid():
         form.save()
         return redirect(detail_url, pk=item.pk)

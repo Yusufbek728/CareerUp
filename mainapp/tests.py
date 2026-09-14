@@ -1,13 +1,44 @@
+import base64
 import os
 
 from unittest.mock import patch
 
 from django.core.management import call_command
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import AccountProfile
+from .models import AccountProfile, Job
+
+
+class ImageUploadTests(TestCase):
+	def test_company_can_publish_job_with_logo(self):
+		company = User.objects.create_user(username='company', password='company-password')
+		AccountProfile.objects.create(user=company, role='company', display_name='Company')
+		self.client.force_login(company)
+
+		response = self.client.post(reverse('create_listing', args=['job']), {
+			'company_name': 'Example Company',
+			'company_logo': SimpleUploadedFile(
+				'logo.png',
+				base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='),
+				content_type='image/png',
+			),
+			'phone_number': '+998901234567',
+			'salary': 1000,
+			'required_experience': 1,
+			'work_time': 8,
+			'job_title': 'Developer',
+			'requirements_of_job': 'Python',
+			'working_condition': 'full_time',
+			'work_schedule_and_working_hours': '5/2',
+			'work_field': 'permament',
+			'status': 'qidirilyapti',
+		})
+
+		self.assertEqual(response.status_code, 302)
+		self.assertTrue(Job.objects.get().company_logo.name.startswith('company_logos/'))
 
 
 class SuperAdminTests(TestCase):

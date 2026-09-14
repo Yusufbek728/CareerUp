@@ -176,6 +176,7 @@ class JobForm(forms.ModelForm):
         model = Job
         fields = (
             'company_name',
+            'company_logo',
             'phone_number',
             'phone_number2',
             'salary',
@@ -194,6 +195,7 @@ class JobForm(forms.ModelForm):
         }
         labels = {
             'company_name': _('Company name'),
+            'company_logo': _('Company logo'),
             'phone_number': _('Phone number'),
             'phone_number2': _('Additional phone number'),
             'salary': _('Salary'),
@@ -213,6 +215,7 @@ class InternshipForm(forms.ModelForm):
         model = Internship
         fields = (
             'company_name',
+            'company_logo',
             'phone_number',
             'phone_number2',
             'work_time',
@@ -228,6 +231,7 @@ class InternshipForm(forms.ModelForm):
         }
         labels = {
             'company_name': _('Company name'),
+            'company_logo': _('Company logo'),
             'phone_number': _('Phone number'),
             'phone_number2': _('Additional phone number'),
             'work_time': _('Work time'),
@@ -246,6 +250,7 @@ class ResumeForm(forms.ModelForm):
         fields = (
             'name',
             'surname',
+            'photo',
             'email',
             'phone_number',
             'phone_number2',
@@ -262,6 +267,7 @@ class ResumeForm(forms.ModelForm):
         labels = {
             'name': _('First name'),
             'surname': _('Last name'),
+            'photo': _('Photo'),
             'email': _('Email'),
             'phone_number': _('Phone number'),
             'phone_number2': _('Additional phone number'),

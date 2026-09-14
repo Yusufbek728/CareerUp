@@ -167,6 +167,7 @@
                     {% for job in jobs %}
                     <a href="{% url 'job_detail' job.pk %}" class="job-card-link">
                         <article class="job-card">
+                            {% if job.company_logo %}<img class="listing-image card-image" src="{{ job.company_logo.url }}" alt="{{ job.company_name }}">{% endif %}
                             <span class="status {% if job.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ job.get_status_display }}</span>
                             <h3>{{ job.job_title }}</h3>
                             <p>{{ job.company_name }}</p>
@@ -200,6 +201,7 @@
                     {% for internship in internships %}
                     <a href="{% url 'internship_detail' internship.pk %}" class="job-card-link">
                         <article class="job-card">
+                            {% if internship.company_logo %}<img class="listing-image card-image" src="{{ internship.company_logo.url }}" alt="{{ internship.company_name }}">{% endif %}
                             <span class="status {% if internship.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ internship.get_status_display }}</span>
                             <h3>{{ internship.job_title }}</h3>
                             <p>{{ internship.company_name }}</p>
@@ -233,6 +235,7 @@
                     {% for resume in resumes %}
                     <a href="{% url 'resume_detail' resume.pk %}" class="job-card-link">
                         <article class="job-card">
+                            {% if resume.photo %}<img class="listing-image card-image profile-image" src="{{ resume.photo.url }}" alt="{{ resume.name }} {{ resume.surname }}">{% endif %}
                             <span class="status {% if resume.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ resume.get_status_display }}</span>
                             <h3>{{ resume.name }} {{ resume.surname }}</h3>
                             <p>{{ resume.email }}</p>
