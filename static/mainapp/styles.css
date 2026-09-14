@@ -1415,3 +1415,286 @@ h1, h2, h3, .logo-wrap, .nav-btn, .primary-btn, .secondary-btn {
         margin-right: 12px;
     }
 }
+
+/* The dark option keeps the original CareerUp visual language. */
+body.dark-theme {
+    --bg: #07111f;
+    --bg-2: #0e1f34;
+    --panel: rgba(15, 25, 38, 0.72);
+    --panel-strong: rgba(18, 28, 42, 0.92);
+    --primary: #76a9ff;
+    --primary-2: #a86bff;
+    --accent: #84f2d4;
+    --text: #edf4ff;
+    --muted: #a8b7cf;
+    --line: rgba(255, 255, 255, 0.08);
+    --success: #5ee7b5;
+    --warning: #f7c873;
+    --shadow: 0 30px 80px rgba(7, 17, 31, 0.5);
+    font-family: 'Inter', sans-serif;
+    background:
+        radial-gradient(circle at 15% 15%, rgba(118, 169, 255, 0.2), transparent 18%),
+        radial-gradient(circle at 85% 10%, rgba(168, 107, 255, 0.18), transparent 20%),
+        linear-gradient(135deg, #040b14, #07111f 45%, #0b1830);
+    color: var(--text);
+}
+
+body.dark-theme::before {
+    background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+}
+
+body.dark-theme h1,
+body.dark-theme h2,
+body.dark-theme h3,
+body.dark-theme .logo-wrap,
+body.dark-theme .nav-btn,
+body.dark-theme .primary-btn,
+body.dark-theme .secondary-btn {
+    font-family: 'Inter', sans-serif;
+}
+
+body.dark-theme .header {
+    background: rgba(4, 11, 20, 0.45);
+    border-bottom-color: var(--line);
+}
+
+body.dark-theme .header-search,
+body.dark-theme .language-switcher select,
+body.dark-theme .secondary-btn {
+    border-color: var(--line);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text);
+}
+
+body.dark-theme .header-search input,
+body.dark-theme .header-search input::placeholder {
+    color: var(--text);
+}
+
+body.dark-theme .header-search button,
+body.dark-theme .nav-btn,
+body.dark-theme .primary-btn {
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    color: white;
+    box-shadow: 0 18px 36px rgba(118, 169, 255, 0.28);
+}
+
+body.dark-theme .header-search button:hover,
+body.dark-theme .nav-btn:hover,
+body.dark-theme .primary-btn:hover {
+    background: var(--primary-2);
+}
+
+body.dark-theme .tag {
+    border-color: rgba(118, 169, 255, 0.35);
+    background: rgba(118, 169, 255, 0.12);
+    color: #dfeeff;
+}
+
+body.dark-theme .hero {
+    min-height: 0;
+    padding-top: 88px;
+}
+
+body.dark-theme .hero-copy h1 {
+    max-width: none;
+    font-size: clamp(3rem, 4vw, 5rem);
+    line-height: 0.96;
+    letter-spacing: -0.07em;
+}
+
+body.dark-theme .hero-visual {
+    min-height: 500px;
+}
+
+body.dark-theme .hero-visual::before {
+    display: none;
+}
+
+body.dark-theme .orb {
+    display: block;
+}
+
+body.dark-theme .orb-one {
+    background: rgba(118, 169, 255, 0.35);
+}
+
+body.dark-theme .orb-two {
+    background: rgba(168, 107, 255, 0.35);
+}
+
+body.dark-theme .dashboard-card {
+    padding: 24px 22px;
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(14, 26, 39, 0.94), rgba(11, 20, 31, 0.9));
+    box-shadow: var(--shadow);
+    color: var(--text);
+    animation: float 5s ease-in-out infinite;
+}
+
+body.dark-theme .floating-card {
+    background: rgba(10, 17, 28, 0.78);
+    border-color: var(--line);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+}
+
+body.dark-theme .features,
+body.dark-theme .listing-section {
+    padding-top: 48px;
+}
+
+body.dark-theme .section-head h2 {
+    font-size: clamp(2rem, 2.9vw, 3rem);
+    line-height: normal;
+}
+
+body.dark-theme .feature-card,
+body.dark-theme .job-card,
+body.dark-theme .detail-card,
+body.dark-theme .create-panel {
+    border-color: var(--line);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.03);
+    box-shadow: var(--shadow);
+}
+
+body.dark-theme .feature-card:hover,
+body.dark-theme .job-card-link:hover .job-card,
+body.dark-theme .job-card:hover {
+    border-color: rgba(118, 169, 255, 0.2);
+    box-shadow: 0 18px 30px rgba(5, 12, 19, 0.18);
+}
+
+body.dark-theme .feature-icon {
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(118,169,255,0.18), rgba(168,107,255,0.15));
+    border: 1px solid rgba(118,169,255,0.35);
+}
+
+body.dark-theme .status.success {
+    background: rgba(94,231,181,0.14);
+    color: #baf7e1;
+    border-color: rgba(94,231,181,0.38);
+}
+
+body.dark-theme .status.pending {
+    background: rgba(247,200,115,0.12);
+    color: #f9d68d;
+    border-color: rgba(247,200,115,0.4);
+}
+
+body.dark-theme .band-content {
+    border-radius: 30px;
+    background: linear-gradient(135deg, rgba(118,169,255,0.18), rgba(168,107,255,0.2));
+}
+
+body.dark-theme .form-field input,
+body.dark-theme .form-field select,
+body.dark-theme .form-field textarea {
+    border-color: var(--line);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text);
+}
+
+body.dark-theme .form-field input:focus,
+body.dark-theme .form-field select:focus,
+body.dark-theme .form-field textarea:focus {
+    border-color: var(--primary);
+    box-shadow: none;
+}
+
+body.dark-theme .back-link {
+    border-color: rgba(132, 242, 212, 0.38);
+    border-radius: 12px;
+    background: rgba(132, 242, 212, 0.1);
+    color: var(--accent);
+}
+
+body.dark-theme .back-link:hover {
+    background: rgba(132, 242, 212, 0.18);
+    box-shadow: 0 10px 24px rgba(132, 242, 212, 0.14);
+}
+
+.theme-switcher {
+    position: relative;
+}
+
+.theme-toggle,
+.theme-options button {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 38px;
+    padding: 8px 11px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    color: var(--text);
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.theme-toggle {
+    cursor: pointer;
+    list-style: none;
+}
+
+.theme-toggle::-webkit-details-marker {
+    display: none;
+}
+
+.theme-toggle:hover,
+.theme-options button:hover,
+.theme-options button.active {
+    border-color: var(--primary-2);
+    background: var(--primary);
+    transform: translateY(-1px);
+}
+
+body.dark-theme .theme-toggle,
+body.dark-theme .theme-options button {
+    border-color: rgba(132, 242, 212, 0.35);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text);
+}
+
+.theme-options {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 50;
+    display: grid;
+    gap: 6px;
+    min-width: 140px;
+    padding: 7px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+}
+
+.theme-options button {
+    width: 100%;
+    justify-content: flex-start;
+    cursor: pointer;
+}
+
+body.dark-theme .theme-options {
+    background: var(--panel-strong);
+}
+
+@media (max-width: 700px) {
+    .theme-switcher,
+    .theme-toggle {
+        flex: 1;
+    }
+
+    .theme-toggle {
+        justify-content: center;
+    }
+}
