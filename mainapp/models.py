@@ -48,6 +48,7 @@ class AccountProfile(models.Model):
 class Job(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='jobs', null=True, blank=True)
     company_name = models.CharField(max_length=200)
+    company_logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)
     phone_number = models.CharField(max_length=20, default='', validators=[phone_number_validator])
     phone_number2 = models.CharField(max_length=20, blank=True, null=True, default='', validators=[phone_number_validator])
     salary = models.IntegerField()
@@ -66,6 +67,7 @@ class Job(models.Model):
 class Internship(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='internships', null=True, blank=True)
     company_name = models.CharField(max_length=200)
+    company_logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)
     phone_number = models.CharField(max_length=20, default='', validators=[phone_number_validator])
     phone_number2 = models.CharField(max_length=20, blank=True, null=True, default='', validators=[phone_number_validator])
     work_time = models.IntegerField()
@@ -83,6 +85,7 @@ class Resume(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='resumes', null=True, blank=True)
     name = models.CharField(max_length=200)
     surname = models.CharField(max_length=200)
+    photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True)
     email = models.EmailField()
     phone_number = models.CharField(max_length=20, default='', validators=[phone_number_validator])
     phone_number2 = models.CharField(max_length=20, blank=True, null=True, default='', validators=[phone_number_validator])

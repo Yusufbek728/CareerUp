@@ -187,6 +187,28 @@ button {
     margin: 0 auto;
 }
 
+.listing-image {
+    display: block;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.card-image {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+}
+
+.detail-image {
+    width: min(100%, 240px);
+    height: 180px;
+    margin: 20px 0;
+}
+
+.profile-image {
+    border-radius: 50%;
+}
+
 .page-shell {
     position: relative;
     overflow: hidden;

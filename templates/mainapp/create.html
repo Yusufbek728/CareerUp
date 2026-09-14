@@ -28,7 +28,7 @@
             <h1>{% translate "Create" %} {% translate listing_title %}</h1>
             <p class="form-intro">{% translate "Add your information so people can contact you through CareerUp." %}</p>
 
-            <form method="post" class="listing-form" novalidate>
+            <form method="post" enctype="multipart/form-data" class="listing-form" novalidate>
                 {% csrf_token %}
                 {% if form.non_field_errors %}
                     <div class="form-errors">{{ form.non_field_errors }}</div>
