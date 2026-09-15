@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
 from django.db import models
@@ -52,6 +54,7 @@ class Job(models.Model):
     phone_number = models.CharField(max_length=20, default='', validators=[phone_number_validator])
     phone_number2 = models.CharField(max_length=20, blank=True, null=True, default='', validators=[phone_number_validator])
     salary = models.IntegerField()
+    hourly_income = models.DecimalField(max_digits=12, decimal_places=2, default=0, editable=False)
     required_experience = models.IntegerField()
     work_time = models.IntegerField()
     job_title = models.CharField(max_length=200)
@@ -61,6 +64,11 @@ class Job(models.Model):
     work_field = models.CharField(max_length=20, choices=WORK_FIELDS, default='full_time')
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='qidirilyapti')
+
+    def save(self, *args, **kwargs):
+        self.hourly_income = Decimal(self.salary) / Decimal(self.work_time) if self.work_time else 0
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.job_title
 

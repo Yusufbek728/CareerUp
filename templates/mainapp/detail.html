@@ -45,6 +45,7 @@
                     {% if item.company_logo %}<img class="listing-image detail-image" src="{{ item.company_logo.url }}" alt="{{ item.company_name }}">{% endif %}
                     <div class="detail-grid">
                         <div><strong>{% translate "Salary:" %}</strong> ${{ item.salary }}</div>
+                        <div><strong>{% translate "Hourly income:" %}</strong> ${{ item.hourly_income }}</div>
                         <div><strong>{% translate "Phone 1:" %}</strong> {% if item.phone_number %}{{ item.phone_number }}{% else %}{% translate "Not provided" %}{% endif %}</div>
                         <div><strong>{% translate "Phone 2:" %}</strong> {% if item.phone_number2 %}{{ item.phone_number2 }}{% else %}{% translate "Not provided" %}{% endif %}</div>
                         <div><strong>{% translate "Experience:" %}</strong> {{ item.required_experience }} {% translate "years" %}</div>
