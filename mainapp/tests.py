@@ -9,7 +9,45 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
+from .forms import JobForm
 from .models import AccountProfile, Job
+
+
+class JobHourlyIncomeTests(TestCase):
+	def test_hourly_income_is_calculated_when_job_is_created(self):
+		form = JobForm({
+			'company_name': 'Example Company',
+			'phone_number': '+998901234567',
+			'salary': 1000,
+			'required_experience': 1,
+			'work_time': 8,
+			'job_title': 'Developer',
+			'requirements_of_job': 'Python',
+			'working_condition': 'full_time',
+			'work_schedule_and_working_hours': '5/2',
+			'work_field': 'permament',
+			'status': 'qidirilyapti',
+		})
+
+		self.assertTrue(form.is_valid(), form.errors)
+		job = form.save()
+
+		self.assertEqual(job.hourly_income, 125)
+
+	def test_zero_work_time_does_not_raise_when_job_is_saved(self):
+		job = Job(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			salary=1000,
+			required_experience=1,
+			work_time=0,
+			job_title='Developer',
+			requirements_of_job='Python',
+		)
+
+		job.save()
+
+		self.assertEqual(job.hourly_income, 0)
 
 
 class ImageUploadTests(TestCase):

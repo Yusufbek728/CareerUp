@@ -190,7 +190,7 @@ class JobForm(forms.ModelForm):
             'status',
         )
         widgets = {
-            'work_time': forms.TimeInput(attrs={'type': 'time'}),
+            'work_time': forms.NumberInput(attrs={'min': 1}),
             'requirements_of_job': forms.Textarea(attrs={'rows': 4}),
         }
         labels = {
@@ -227,7 +227,7 @@ class InternshipForm(forms.ModelForm):
             'status',
         )
         widgets = {
-            'work_time': forms.TimeInput(attrs={'type': 'time'}),
+            'work_time': forms.NumberInput(attrs={'min': 1}),
         }
         labels = {
             'company_name': _('Company name'),
@@ -262,7 +262,7 @@ class ResumeForm(forms.ModelForm):
             'status',
         )
         widgets = {
-            'wanted_work_time': forms.TimeInput(attrs={'type': 'time'}),
+            'wanted_work_time': forms.NumberInput(attrs={'min': 1}),
         }
         labels = {
             'name': _('First name'),

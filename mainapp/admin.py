@@ -3,7 +3,7 @@ from .models import Job, Internship, Resume
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
-    list_display = ('company_name', 'phone_number', 'phone_number2', 'job_title', 'salary', 'required_experience', 'work_time', 'status', 'created_at', 'working_condition', 'work_schedule_and_working_hours', 'work_field', 'requirements_of_job',)
+    list_display = ('company_name', 'phone_number', 'phone_number2', 'job_title', 'salary', 'hourly_income', 'required_experience', 'work_time', 'status', 'created_at', 'working_condition', 'work_schedule_and_working_hours', 'work_field', 'requirements_of_job',)
     list_filter = ('status', 'created_at')
     search_fields = ('company_name', 'job_title', 'phone_number')
  
