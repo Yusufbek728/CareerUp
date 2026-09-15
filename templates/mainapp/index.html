@@ -167,19 +167,19 @@
                 <div class="job-grid">
                     {% for job in jobs %}
                     <a href="{% url 'job_detail' job.pk %}" class="job-card-link">
-                        <article class="job-card">
-                            {% if job.company_logo %}<img class="listing-image card-image" src="{{ job.company_logo.url }}" alt="{{ job.company_name }}">{% endif %}
-                            <span class="status {% if job.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ job.get_status_display }}</span>
-                            <h3>{{ job.job_title }}</h3>
-                            <p>{{ job.company_name }}</p>
-                            <ul>
-                                <li>{{ job.working_condition }}</li>
-                                <li>{{ job.work_schedule_and_working_hours }}</li>
-                                <li>{{ job.required_experience }} {% translate "years" %}</li>
-                            </ul>
-                            <div class="card-footer">
-                                <strong>${{ job.salary }}</strong>
-                                <span>{{ job.created_at|date:"M d, Y" }}</span>
+                        <article class="job-card listing-card">
+                            <div class="listing-card-media">
+                                {% if job.work_photo %}<img class="listing-image" src="{{ job.work_photo.url }}" alt="{{ job.job_title }}">{% endif %}
+                            </div>
+                            <div class="listing-card-content">
+                                <div class="listing-card-heading">
+                                    <h3>{{ job.job_title }}</h3>
+                                    <span class="status {% if job.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ job.get_status_display }}</span>
+                                </div>
+                                <div class="listing-card-income">
+                                    <span>{% translate "Monthly" %} <strong>${{ job.salary }}</strong></span>
+                                    <span>{% translate "Hourly" %} <strong>${{ job.hourly_income }}</strong></span>
+                                </div>
                             </div>
                         </article>
                     </a>
@@ -202,7 +202,7 @@
                     {% for internship in internships %}
                     <a href="{% url 'internship_detail' internship.pk %}" class="job-card-link">
                         <article class="job-card">
-                            {% if internship.company_logo %}<img class="listing-image card-image" src="{{ internship.company_logo.url }}" alt="{{ internship.company_name }}">{% endif %}
+                            {% if internship.work_photo %}<img class="listing-image card-image" src="{{ internship.work_photo.url }}" alt="{{ internship.job_title }}">{% endif %}
                             <span class="status {% if internship.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ internship.get_status_display }}</span>
                             <h3>{{ internship.job_title }}</h3>
                             <p>{{ internship.company_name }}</p>

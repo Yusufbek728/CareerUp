@@ -210,6 +210,7 @@ def account_settings(request):
     profile = getattr(request.user, 'account_profile', None)
     form = AccountSettingsForm(
         request.POST or None,
+        request.FILES or None,
         user=request.user,
         profile=profile,
     )

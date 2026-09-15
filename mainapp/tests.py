@@ -51,15 +51,15 @@ class JobHourlyIncomeTests(TestCase):
 
 
 class ImageUploadTests(TestCase):
-	def test_company_can_publish_job_with_logo(self):
+	def test_company_can_publish_job_with_work_photo(self):
 		company = User.objects.create_user(username='company', password='company-password')
 		AccountProfile.objects.create(user=company, role='company', display_name='Company')
 		self.client.force_login(company)
 
 		response = self.client.post(reverse('create_listing', args=['job']), {
 			'company_name': 'Example Company',
-			'company_logo': SimpleUploadedFile(
-				'logo.png',
+			'work_photo': SimpleUploadedFile(
+				'work.png',
 				base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='),
 				content_type='image/png',
 			),
@@ -76,7 +76,28 @@ class ImageUploadTests(TestCase):
 		})
 
 		self.assertEqual(response.status_code, 302)
-		self.assertTrue(Job.objects.get().company_logo.name.startswith('company_logos/'))
+		self.assertTrue(Job.objects.get().work_photo.name.startswith('work_photos/'))
+
+	def test_company_photo_is_saved_from_account_settings(self):
+		company = User.objects.create_user(username='photo-company', password='company-password')
+		AccountProfile.objects.create(user=company, role='company', display_name='Company')
+		self.client.force_login(company)
+
+		response = self.client.post(reverse('account_settings'), {
+			'username': 'photo-company',
+			'email': 'company@example.com',
+			'display_name': 'Company',
+			'role': 'company',
+			'company_photo': SimpleUploadedFile(
+				'company.png',
+				base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='),
+				content_type='image/png',
+			),
+		}, follow=True)
+
+		self.assertEqual(response.status_code, 200)
+		company.account_profile.refresh_from_db()
+		self.assertTrue(company.account_profile.company_photo.name.startswith('company_photos/'))
 
 
 class SuperAdminTests(TestCase):

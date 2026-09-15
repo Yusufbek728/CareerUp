@@ -42,6 +42,7 @@ class AccountProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='account_profile')
     role = models.CharField(max_length=20, choices=ACCOUNT_ROLES)
     display_name = models.CharField(max_length=200, blank=True)
+    company_photo = models.ImageField(upload_to='company_photos/', blank=True, null=True)
 
     def __str__(self):
         return self.display_name or self.user.username
@@ -50,7 +51,7 @@ class AccountProfile(models.Model):
 class Job(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='jobs', null=True, blank=True)
     company_name = models.CharField(max_length=200)
-    company_logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)
+    work_photo = models.ImageField(upload_to='work_photos/', blank=True, null=True)
     phone_number = models.CharField(max_length=20, default='', validators=[phone_number_validator])
     phone_number2 = models.CharField(max_length=20, blank=True, null=True, default='', validators=[phone_number_validator])
     salary = models.IntegerField()
@@ -75,7 +76,7 @@ class Job(models.Model):
 class Internship(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='internships', null=True, blank=True)
     company_name = models.CharField(max_length=200)
-    company_logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)
+    work_photo = models.ImageField(upload_to='work_photos/', blank=True, null=True)
     phone_number = models.CharField(max_length=20, default='', validators=[phone_number_validator])
     phone_number2 = models.CharField(max_length=20, blank=True, null=True, default='', validators=[phone_number_validator])
     work_time = models.IntegerField()

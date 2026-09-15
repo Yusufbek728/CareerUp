@@ -17,7 +17,7 @@
             <span class="tag">{% translate "ACCOUNT" %}</span>
             <h1>{% translate "Account settings" %}</h1>
             <p class="form-intro">{% translate "Update your profile and login details." %}</p>
-            <form method="post" class="listing-form">
+            <form method="post" enctype="multipart/form-data" class="listing-form">
                 {% csrf_token %}
                 {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
                 {% for field in form %}
