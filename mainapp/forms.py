@@ -103,6 +103,7 @@ class AccountSettingsForm(forms.Form):
     username = forms.CharField(max_length=150, label=_('Username'))
     email = forms.EmailField(label=_('Email'))
     display_name = forms.CharField(max_length=200, label=_('Display name'))
+    company_photo = forms.ImageField(required=False, label=_('Company photo'))
     role = forms.ChoiceField(
         choices=(('company', _('Company')), ('worker', _('Worker'))),
         label=_('Account type'),
@@ -132,6 +133,7 @@ class AccountSettingsForm(forms.Form):
         self.fields['email'].initial = user.email
         self.fields['display_name'].initial = profile.display_name if profile else ''
         self.fields['role'].initial = profile.role if profile else ''
+        self.fields['company_photo'].initial = profile.company_photo if profile else None
 
     def clean_username(self):
         username = self.cleaned_data['username'].strip()
@@ -166,6 +168,9 @@ class AccountSettingsForm(forms.Form):
             defaults={
                 'role': self.cleaned_data['role'],
                 'display_name': self.cleaned_data['display_name'],
+                'company_photo': self.cleaned_data.get('company_photo') or (
+                    self.profile.company_photo if self.profile else None
+                ),
             },
         )
         return self.user
@@ -176,7 +181,7 @@ class JobForm(forms.ModelForm):
         model = Job
         fields = (
             'company_name',
-            'company_logo',
+            'work_photo',
             'phone_number',
             'phone_number2',
             'salary',
@@ -195,7 +200,7 @@ class JobForm(forms.ModelForm):
         }
         labels = {
             'company_name': _('Company name'),
-            'company_logo': _('Company logo'),
+            'work_photo': _('Work photo'),
             'phone_number': _('Phone number'),
             'phone_number2': _('Additional phone number'),
             'salary': _('Salary'),
@@ -215,7 +220,7 @@ class InternshipForm(forms.ModelForm):
         model = Internship
         fields = (
             'company_name',
-            'company_logo',
+            'work_photo',
             'phone_number',
             'phone_number2',
             'work_time',
@@ -231,7 +236,7 @@ class InternshipForm(forms.ModelForm):
         }
         labels = {
             'company_name': _('Company name'),
-            'company_logo': _('Company logo'),
+            'work_photo': _('Work photo'),
             'phone_number': _('Phone number'),
             'phone_number2': _('Additional phone number'),
             'work_time': _('Work time'),

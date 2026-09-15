@@ -42,7 +42,7 @@
                     <span class="tag">{% translate "JOB" %}</span>
                     <h1>{{ item.job_title }}</h1>
                     <p class="company-name">{{ item.company_name }}</p>
-                    {% if item.company_logo %}<img class="listing-image detail-image" src="{{ item.company_logo.url }}" alt="{{ item.company_name }}">{% endif %}
+                    {% if item.work_photo %}<img class="listing-image detail-image" src="{{ item.work_photo.url }}" alt="{{ item.job_title }}">{% endif %}
                     <div class="detail-grid">
                         <div><strong>{% translate "Salary:" %}</strong> ${{ item.salary }}</div>
                         <div><strong>{% translate "Hourly income:" %}</strong> ${{ item.hourly_income }}</div>
@@ -65,7 +65,7 @@
                     <span class="tag">{% translate "INTERNSHIP" %}</span>
                     <h1>{{ item.job_title }}</h1>
                     <p class="company-name">{{ item.company_name }}</p>
-                    {% if item.company_logo %}<img class="listing-image detail-image" src="{{ item.company_logo.url }}" alt="{{ item.company_name }}">{% endif %}
+                    {% if item.work_photo %}<img class="listing-image detail-image" src="{{ item.work_photo.url }}" alt="{{ item.job_title }}">{% endif %}
                     <div class="detail-grid">
                         <div><strong>{% translate "Work duration:" %}</strong> {{ item.work_duration }} {% translate "weeks" %}</div>
                         <div><strong>{% translate "Phone 1:" %}</strong> {% if item.phone_number %}{{ item.phone_number }}{% else %}{% translate "Not provided" %}{% endif %}</div>

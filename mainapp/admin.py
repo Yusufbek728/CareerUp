@@ -1,5 +1,10 @@
 from django.contrib import admin
-from .models import Job, Internship, Resume
+from .models import AccountProfile, Job, Internship, Resume
+
+@admin.register(AccountProfile)
+class AccountProfileAdmin(admin.ModelAdmin):
+    list_display = ('display_name', 'user', 'role', 'company_photo')
+    search_fields = ('display_name', 'user__username')
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
