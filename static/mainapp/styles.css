@@ -374,10 +374,28 @@ button {
     color: var(--text);
 }
 
+.danger-btn {
+    border-color: rgba(255, 107, 107, 0.4);
+    background: rgba(255, 107, 107, 0.08);
+    color: #ffb5b5;
+}
+
 .nav-btn:hover,
 .primary-btn:hover,
 .secondary-btn:hover {
     transform: translateY(-2px) scale(1.01);
+}
+
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.delete-listing-form {
+    margin: 0;
 }
 
 .create-menu {

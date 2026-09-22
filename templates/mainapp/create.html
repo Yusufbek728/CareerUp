@@ -45,8 +45,17 @@
                         {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
                     </div>
                 {% endfor %}
-                <button type="submit" class="primary-btn form-submit">{% translate "Create" %} {% translate listing_title %}</button>
+                <div class="form-actions">
+                    <button type="submit" class="primary-btn form-submit">{% translate "Save" %}</button>
+                </div>
             </form>
+            {% if item %}
+                <form method="post" class="delete-listing-form" onsubmit="return confirm('{% translate "Are you sure you want to delete this listing?" %}');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete_listing">
+                    <button type="submit" class="secondary-btn danger-btn">{% translate "Delete" %}</button>
+                </form>
+            {% endif %}
         </section>
     </main>
 </body>

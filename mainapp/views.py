@@ -235,11 +235,21 @@ def edit_listing(request, listing_type, pk):
     if model is None:
         return redirect('home')
     item = get_object_or_404(model, pk=pk, owner=request.user)
+
+    if request.method == 'POST' and request.POST.get('action') == 'delete_listing':
+        item.delete()
+        return redirect('my_listings')
+
     form = form_class(request.POST or None, request.FILES or None, instance=item)
     if request.method == 'POST' and form.is_valid():
         form.save()
         return redirect(detail_url, pk=item.pk)
-    return render(request, 'mainapp/create.html', {'form': form, 'listing_title': 'Edit ' + listing_type.title()})
+    return render(request, 'mainapp/create.html', {
+        'form': form,
+        'listing_title': 'Edit ' + listing_type.title(),
+        'listing_type': listing_type,
+        'item': item,
+    })
 
 
 @login_required
