@@ -100,6 +100,30 @@ class ImageUploadTests(TestCase):
 		self.assertTrue(company.account_profile.company_photo.name.startswith('company_photos/'))
 
 
+class ListingCrudTests(TestCase):
+	def test_owner_can_delete_listing_from_edit_page(self):
+		company = User.objects.create_user(username='company-owner', password='company-password')
+		AccountProfile.objects.create(user=company, role='company', display_name='Company')
+		self.client.force_login(company)
+		job = Job.objects.create(
+			owner=company,
+			company_name='Example Company',
+			phone_number='+998901234567',
+			salary=1000,
+			required_experience=1,
+			work_time=8,
+			job_title='Developer',
+			requirements_of_job='Python',
+		)
+
+		response = self.client.post(reverse('edit_listing', args=['job', job.pk]), {
+			'action': 'delete_listing',
+		})
+
+		self.assertRedirects(response, reverse('my_listings'))
+		self.assertFalse(Job.objects.filter(pk=job.pk).exists())
+
+
 class SuperAdminTests(TestCase):
 	def setUp(self):
 		self.admin = User.objects.create_user(
