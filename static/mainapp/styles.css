@@ -893,14 +893,18 @@ button {
 
 .listing-card {
     display: grid;
-    grid-template-rows: 4fr 1fr;
-    min-height: 420px;
+    grid-template-rows: auto 1fr;
+    min-height: 0;
     padding: 0;
     overflow: hidden;
 }
 
 .listing-card-media {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    height: auto;
     min-height: 0;
+    align-self: start;
     background: rgba(255,255,255,0.04);
 }
 
@@ -908,6 +912,12 @@ button {
     width: 100%;
     height: 100%;
     border-radius: 0;
+}
+
+.job-card-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .listing-card-content {
@@ -936,6 +946,12 @@ button {
 .listing-card .status {
     flex: 0 0 auto;
     padding: 5px 8px;
+}
+
+@media (max-width: 700px) {
+    .listing-card-media {
+        aspect-ratio: 3 / 2;
+    }
 }
 
 .listing-card-income {
@@ -1666,6 +1682,30 @@ body.dark-theme .status.pending {
 body.dark-theme .band-content {
     border-radius: 30px;
     background: linear-gradient(135deg, rgba(118,169,255,0.18), rgba(168,107,255,0.2));
+}
+
+.job-card.listing-card {
+    height: auto;
+    padding: 0;
+}
+
+.listing-card .listing-card-content {
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.listing-card h3 {
+    margin: 0;
+}
+
+.listing-card p,
+.listing-card ul {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.listing-card ul {
+    line-height: 1.35;
 }
 
 body.dark-theme .form-field input,

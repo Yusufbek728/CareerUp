@@ -169,7 +169,7 @@
                     <a href="{% url 'job_detail' job.pk %}" class="job-card-link">
                         <article class="job-card listing-card">
                             <div class="listing-card-media">
-                                {% if job.work_photo %}<img class="listing-image" src="{{ job.work_photo.url }}" alt="{{ job.job_title }}">{% endif %}
+                                {% if job.work_photo %}<img class="listing-image job-card-photo" src="{{ job.work_photo.url }}" alt="{{ job.job_title }}">{% endif %}
                             </div>
                             <div class="listing-card-content">
                                 <div class="listing-card-heading">
@@ -201,19 +201,21 @@
                 <div class="job-grid">
                     {% for internship in internships %}
                     <a href="{% url 'internship_detail' internship.pk %}" class="job-card-link">
-                        <article class="job-card">
-                            {% if internship.work_photo %}<img class="listing-image card-image" src="{{ internship.work_photo.url }}" alt="{{ internship.job_title }}">{% endif %}
-                            <span class="status {% if internship.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ internship.get_status_display }}</span>
-                            <h3>{{ internship.job_title }}</h3>
-                            <p>{{ internship.company_name }}</p>
-                            <ul>
-                                <li>{{ internship.working_condition }}</li>
-                                <li>{{ internship.work_duration }} {% translate "weeks" %}</li>
-                                <li>{{ internship.work_schedule_and_working_hours }}</li>
-                            </ul>
-                            <div class="card-footer">
-                                <strong>{{ internship.work_time }}</strong>
-                                <span>{{ internship.created_at|date:"M d, Y" }}</span>
+                        <article class="job-card listing-card">
+                            <div class="listing-card-media">
+                                {% if internship.work_photo %}<img class="listing-image job-card-photo" src="{{ internship.work_photo.url }}" alt="{{ internship.job_title }}">{% endif %}
+                            </div>
+                            <div class="listing-card-content">
+                                <div class="listing-card-heading">
+                                    <h3>{{ internship.job_title }}</h3>
+                                    <span class="status {% if internship.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ internship.get_status_display }}</span>
+                                </div>
+                                <p>{{ internship.company_name }}</p>
+                                <ul>
+                                    <li>{{ internship.working_condition }}</li>
+                                    <li>{{ internship.work_duration }} {% translate "weeks" %}</li>
+                                    <li>{{ internship.work_schedule_and_working_hours }}</li>
+                                </ul>
                             </div>
                         </article>
                     </a>
