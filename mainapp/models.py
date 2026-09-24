@@ -14,13 +14,13 @@ STATUS_CHOICES = (
     ('topilgan', _('Not looking')),
 )
 WORKING_CONDITIONS = (
-    ('full_time', 'toliq vaqt'),
-    ('part_time', 'yarim vaqt'),
-    ('remote', 'masofaviy'),
+    ('full_time', _('Full time')),
+    ('part_time', _('Part time')),
+    ('remote', _('Remote')),
 )
 WORK_FIELDS = (
-    ('permament', 'har doimiy'),
-    ('temporary', 'vaqtinchalik'),
+    ('permament', _('Permanent')),
+    ('temporary', _('Temporary')),
 )
 WORKING_DAYS = (
     ('6/1', '6/1'),
@@ -32,9 +32,9 @@ WORKING_DAYS = (
 )
 
 ACCOUNT_ROLES = (
-    ('company', 'Company'),
-    ('worker', 'Worker'),
-    ('creator', 'Creator'),
+    ('company', _('Company')),
+    ('worker', _('Worker')),
+    ('creator', _('Creator')),
 )
 
 

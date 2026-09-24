@@ -4,7 +4,8 @@ document.querySelectorAll('[data-password-toggle]').forEach((button) => {
         const isVisible = input.type === 'text';
 
         input.type = isVisible ? 'password' : 'text';
-        button.setAttribute('aria-label', isVisible ? 'Показать пароль' : 'Скрыть пароль');
-        button.setAttribute('title', isVisible ? 'Показать пароль' : 'Скрыть пароль');
+        const label = isVisible ? button.dataset.showLabel : button.dataset.hideLabel;
+        button.setAttribute('aria-label', label);
+        button.setAttribute('title', label);
     });
 });

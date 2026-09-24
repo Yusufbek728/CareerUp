@@ -50,9 +50,9 @@
                         <div><strong>{% translate "Phone 2:" %}</strong> {% if item.phone_number2 %}{{ item.phone_number2 }}{% else %}{% translate "Not provided" %}{% endif %}</div>
                         <div><strong>{% translate "Experience:" %}</strong> {{ item.required_experience }} {% translate "years" %}</div>
                         <div><strong>{% translate "Work time:" %}</strong> {{ item.work_time }}</div>
-                        <div><strong>{% translate "Condition:" %}</strong> {{ item.working_condition }}</div>
-                        <div><strong>{% translate "Schedule:" %}</strong> {{ item.work_schedule_and_working_hours }}</div>
-                        <div><strong>{% translate "Field:" %}</strong> {{ item.work_field }}</div>
+                        <div><strong>{% translate "Condition:" %}</strong> {{ item.get_working_condition_display }}</div>
+                        <div><strong>{% translate "Schedule:" %}</strong> {{ item.get_work_schedule_and_working_hours_display }}</div>
+                        <div><strong>{% translate "Field:" %}</strong> {{ item.get_work_field_display }}</div>
                         <div><strong>{% translate "Status:" %}</strong> {{ item.get_status_display }}</div>
                         <div><strong>{% translate "Created:" %}</strong> {{ item.created_at|date:"M d, Y" }}</div>
                     </div>
@@ -71,9 +71,9 @@
                         <div><strong>{% translate "Phone 1:" %}</strong> {% if item.phone_number %}{{ item.phone_number }}{% else %}{% translate "Not provided" %}{% endif %}</div>
                         <div><strong>{% translate "Phone 2:" %}</strong> {% if item.phone_number2 %}{{ item.phone_number2 }}{% else %}{% translate "Not provided" %}{% endif %}</div>
                         <div><strong>{% translate "Work time:" %}</strong> {{ item.work_time }}</div>
-                        <div><strong>{% translate "Condition:" %}</strong> {{ item.working_condition }}</div>
-                        <div><strong>{% translate "Schedule:" %}</strong> {{ item.work_schedule_and_working_hours }}</div>
-                        <div><strong>{% translate "Field:" %}</strong> {{ item.work_field }}</div>
+                        <div><strong>{% translate "Condition:" %}</strong> {{ item.get_working_condition_display }}</div>
+                        <div><strong>{% translate "Schedule:" %}</strong> {{ item.get_work_schedule_and_working_hours_display }}</div>
+                        <div><strong>{% translate "Field:" %}</strong> {{ item.get_work_field_display }}</div>
                         <div><strong>{% translate "Status:" %}</strong> {{ item.get_status_display }}</div>
                         <div><strong>{% translate "Created:" %}</strong> {{ item.created_at|date:"M d, Y" }}</div>
                     </div>
@@ -89,9 +89,9 @@
                         <div><strong>{% translate "Experience:" %}</strong> {{ item.experience }} {% translate "years" %}</div>
                         <div><strong>{% translate "Wanted salary:" %}</strong> ${{ item.wanted_salary }}</div>
                         <div><strong>{% translate "Work time:" %}</strong> {{ item.wanted_work_time }}</div>
-                        <div><strong>{% translate "Condition:" %}</strong> {{ item.wanted_working_condition }}</div>
-                        <div><strong>{% translate "Schedule:" %}</strong> {{ item.wanted_work_schedule_and_working_hours }}</div>
-                        <div><strong>{% translate "Status:" %}</strong> {{ item.status }}</div>
+                        <div><strong>{% translate "Condition:" %}</strong> {{ item.get_wanted_working_condition_display }}</div>
+                        <div><strong>{% translate "Schedule:" %}</strong> {{ item.get_wanted_work_schedule_and_working_hours_display }}</div>
+                        <div><strong>{% translate "Status:" %}</strong> {{ item.get_status_display }}</div>
                     </div>
                 {% endif %}
             </div>
