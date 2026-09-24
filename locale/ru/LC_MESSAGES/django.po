@@ -298,6 +298,11 @@ msgstr "Открыть"
 msgid "No listings yet."
 msgstr "Карточек пока нет."
 
+msgid "Still looking"
+msgstr "В поиске"
+msgid "Not looking"
+msgstr "Найдено"
+
 msgid "Role"
 msgstr "Роль"
 msgid "Creator"
