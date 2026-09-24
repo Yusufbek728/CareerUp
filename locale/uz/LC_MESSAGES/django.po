@@ -298,6 +298,11 @@ msgstr "Ochish"
 msgid "No listings yet."
 msgstr "Hali kartalar yo'q."
 
+msgid "Still looking"
+msgstr "Izlanmoqda"
+msgid "Not looking"
+msgstr "Topilgan"
+
 msgid "Role"
 msgstr "Rol"
 msgid "Creator"
