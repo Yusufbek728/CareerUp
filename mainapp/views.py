@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.translation import gettext_lazy as _
 from django.utils.http import url_has_allowed_host_and_scheme
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, status, viewsets
@@ -44,7 +45,7 @@ def can_create_listing(user, listing_type):
 
 def super_admin_forbidden(request):
     return HttpResponseForbidden(
-        f'Доступ запрещен для пользователя {request.user.username}.'
+        _('Access denied for user %(username)s.') % {'username': request.user.username}
     )
 
 
@@ -117,9 +118,9 @@ def resume_detail(request, pk):
 @login_required
 def create_listing(request, listing_type):
     form_config = {
-        'job': (JobForm, 'Job', 'job_detail'),
-        'internship': (InternshipForm, 'Internship', 'internship_detail'),
-        'resume': (ResumeForm, 'Resume', 'resume_detail'),
+        'job': (JobForm, _('Job'), 'job_detail'),
+        'internship': (InternshipForm, _('Internship'), 'internship_detail'),
+        'resume': (ResumeForm, _('Resume'), 'resume_detail'),
     }
     form_class, listing_title, detail_url = form_config.get(listing_type, (None, None, None))
     if form_class is None:
@@ -172,7 +173,7 @@ def register_view(request):
         AccountProfile.objects.create(user=user, role=data['role'], display_name=data['display_name'])
         login(request, user)
         return redirect('home')
-    return render(request, 'mainapp/auth.html', {'form': form, 'auth_title': 'Register'})
+    return render(request, 'mainapp/auth.html', {'form': form, 'auth_title': _('Register')})
 
 
 def login_view(request):
@@ -185,7 +186,7 @@ def login_view(request):
         if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
             return redirect(next_url)
         return redirect('home')
-    return render(request, 'mainapp/auth.html', {'form': form, 'auth_title': 'Login'})
+    return render(request, 'mainapp/auth.html', {'form': form, 'auth_title': _('Login')})
 
 
 def logout_view(request):
@@ -246,7 +247,7 @@ def edit_listing(request, listing_type, pk):
         return redirect(detail_url, pk=item.pk)
     return render(request, 'mainapp/create.html', {
         'form': form,
-        'listing_title': 'Edit ' + listing_type.title(),
+        'listing_title': _('Edit %(listing_type)s') % {'listing_type': listing_type.title()},
         'listing_type': listing_type,
         'item': item,
     })
@@ -310,9 +311,9 @@ def super_admin_edit_listing(request, listing_type, pk):
         return super_admin_forbidden(request)
 
     config = {
-        'job': (Job, JobForm, 'Вакансия'),
-        'internship': (Internship, InternshipForm, 'Стажировка'),
-        'resume': (Resume, ResumeForm, 'Резюме'),
+        'job': (Job, JobForm, _('Job')),
+        'internship': (Internship, InternshipForm, _('Internship')),
+        'resume': (Resume, ResumeForm, _('Resume')),
     }
     model, form_class, title = config.get(listing_type, (None, None, None))
     if model is None:
@@ -324,7 +325,7 @@ def super_admin_edit_listing(request, listing_type, pk):
         return redirect('super_admin')
     return render(request, 'mainapp/create.html', {
         'form': form,
-        'listing_title': 'Изменить ' + title,
+        'listing_title': _('Edit %(listing_type)s') % {'listing_type': title},
     })
 
 

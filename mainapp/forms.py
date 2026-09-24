@@ -8,25 +8,25 @@ from .models import AccountProfile, Internship, Job, Resume
 
 
 class AdminUserForm(forms.ModelForm):
-    display_name = forms.CharField(max_length=200, required=False, label='Имя')
-    role = forms.ChoiceField(choices=AccountProfile._meta.get_field('role').choices, label='Роль')
+    display_name = forms.CharField(max_length=200, required=False, label=_('Display name'))
+    role = forms.ChoiceField(choices=AccountProfile._meta.get_field('role').choices, label=_('Role'))
     new_password = forms.CharField(
         required=False,
         min_length=8,
         widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
-        label='Новый пароль',
-        help_text='Оставьте пустым, чтобы пароль не менять.',
+        label=_('New password'),
+        help_text=_('Leave empty to keep the current password.'),
     )
 
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'is_active', 'new_password')
         labels = {
-            'username': 'Логин',
+            'username': _('Username'),
             'email': 'Email',
-            'first_name': 'Имя',
-            'last_name': 'Фамилия',
-            'is_active': 'Аккаунт активен',
+            'first_name': _('First name'),
+            'last_name': _('Last name'),
+            'is_active': _('Account active'),
         }
 
     def __init__(self, *args, **kwargs):

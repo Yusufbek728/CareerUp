@@ -27,7 +27,7 @@
                         {% if field.field.widget.input_type == 'password' %}
                             <div class="password-field">
                                 {{ field }}
-                                <button class="password-toggle" type="button" data-password-toggle data-target="{{ field.id_for_label }}" aria-label="Показать пароль" title="Показать пароль">&#128065;</button>
+                                <button class="password-toggle" type="button" data-password-toggle data-target="{{ field.id_for_label }}" aria-label="{% translate 'Show password' %}" title="{% translate 'Show password' %}">&#128065;</button>
                             </div>
                         {% else %}
                             {{ field }}
