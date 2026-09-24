@@ -9,6 +9,10 @@ Set these environment variables in the Render service:
 - `SUPER_ADMIN_USERNAME`: the administrator login
 - `SUPER_ADMIN_PASSWORD`: the administrator password
 
+Uploaded images are stored in `media/`. Add a Render Persistent Disk mounted at
+`/opt/render/project/src/media`; otherwise uploaded images are deleted whenever
+the service is redeployed or moved to another instance.
+
 Use this build command so the administrator is created without Render Shell:
 
 ```text

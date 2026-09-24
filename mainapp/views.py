@@ -318,7 +318,7 @@ def super_admin_edit_listing(request, listing_type, pk):
     if model is None:
         return redirect('super_admin')
     item = get_object_or_404(model, pk=pk)
-    form = form_class(request.POST or None, instance=item)
+    form = form_class(request.POST or None, request.FILES or None, instance=item)
     if request.method == 'POST' and form.is_valid():
         form.save()
         return redirect('super_admin')
