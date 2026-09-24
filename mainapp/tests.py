@@ -175,6 +175,42 @@ class SuperAdminTests(TestCase):
 		self.assertTrue(self.account.check_password('new-password'))
 		self.assertEqual(self.account.account_profile.display_name, 'New name')
 
+	def test_staff_can_edit_listing_with_work_photo(self):
+		self.client.force_login(self.admin)
+		job = Job.objects.create(
+			owner=self.account,
+			company_name='Example Company',
+			phone_number='+998901234567',
+			salary=1000,
+			required_experience=1,
+			work_time=8,
+			job_title='Developer',
+			requirements_of_job='Python',
+		)
+
+		response = self.client.post(reverse('super_admin_edit_listing', args=['job', job.pk]), {
+			'company_name': 'Example Company',
+			'work_photo': SimpleUploadedFile(
+				'admin-work.png',
+				base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='),
+				content_type='image/png',
+			),
+			'phone_number': '+998901234567',
+			'salary': 1000,
+			'required_experience': 1,
+			'work_time': 8,
+			'job_title': 'Developer',
+			'requirements_of_job': 'Python',
+			'working_condition': 'full_time',
+			'work_schedule_and_working_hours': '5/2',
+			'work_field': 'permament',
+			'status': 'qidirilyapti',
+		})
+
+		self.assertRedirects(response, reverse('super_admin'))
+		job.refresh_from_db()
+		self.assertTrue(job.work_photo.name.startswith('work_photos/'))
+
 	def test_super_admin_can_set_new_password_without_current_password(self):
 		self.client.force_login(self.admin)
 		response = self.client.post(reverse('super_admin'), {
