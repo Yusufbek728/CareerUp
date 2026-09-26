@@ -1597,6 +1597,11 @@ body.dark-theme .hero-copy h1 {
     letter-spacing: -0.07em;
 }
 
+html:lang(ru) :is(.logo-wrap, .hero-copy h1, .mini-stats strong, .dashboard-card h3, .feature-card h3, .job-card h3, .search-form h2, .section-head h2, .band-content h2, .detail-card h1),
+html:lang(uz) :is(.logo-wrap, .hero-copy h1, .mini-stats strong, .dashboard-card h3, .feature-card h3, .job-card h3, .search-form h2, .section-head h2, .band-content h2, .detail-card h1) {
+    letter-spacing: normal;
+}
+
 body.dark-theme .hero-visual {
     min-height: 500px;
 }
