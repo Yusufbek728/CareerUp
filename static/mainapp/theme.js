@@ -2,7 +2,7 @@
     const storageKey = 'careerup-theme';
     const savedTheme = window.localStorage.getItem(storageKey);
     const body = document.body;
-    const language = (document.documentElement.lang || 'en').toLowerCase();
+    const language = (document.documentElement.lang || 'en').toLowerCase().split(/[-_]/)[0];
     const translations = {
         en: {
             switchLabel: 'Change view',

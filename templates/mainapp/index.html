@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}">
-    <script src="{% static 'mainapp/theme.js' %}" defer></script>
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=back-to-top-1">
+    <script src="{% static 'mainapp/theme.js' %}?v=language-labels-1" defer></script>
 </head>
 <body>
     <div class="page-shell">
@@ -21,11 +21,10 @@
                     <img class="logo-image" src="{% static 'mainapp/logo.png' %}" alt="CareerUp">
                     <span>CareerUp</span>
                 </div>
-                <div class="nav-links">
-                    <a href="#career">{% translate "Career" %}</a>
-                    <a href="#features">{% translate "Features" %}</a>
-                    <a href="#jobs">{% translate "Jobs" %}</a>
-                    <a href="#internships">{% translate "Internships" %}</a>
+                <div class="nav-links" aria-label="Listing categories">
+                    <a href="{% url 'jobs_page' %}" class="nav-link {% if request.resolver_match.url_name == 'jobs_page' %}active{% endif %}">{% translate "Vacancies" %}</a>
+                    <a href="{% url 'internships_page' %}" class="nav-link {% if request.resolver_match.url_name == 'internships_page' %}active{% endif %}">{% translate "Internships" %}</a>
+                    <a href="{% url 'resumes_page' %}" class="nav-link {% if request.resolver_match.url_name == 'resumes_page' %}active{% endif %}">{% translate "Resumes" %}</a>
                 </div>
                 <div class="nav-actions">
                     <form method="get" class="header-search">
@@ -148,13 +147,14 @@
                 </div>
             </section>
 
+            {% if listing_type == None or listing_type == 'job' %}
             <section class="listing-section container reveal" id="jobs">
                 <div class="section-head split-head">
                     <div>
                         <span class="tag">{% translate "LATEST JOBS" %}</span>
                         <h2>{% translate "Fresh opportunities" %}</h2>
                     </div>
-                    <a href="#jobs">{% translate "View all" %}</a>
+                    <a href="{% url 'jobs_page' %}">{% translate "View all" %}</a>
                 </div>
 
                 <div class="job-grid">
@@ -197,21 +197,25 @@
                     {% if jobs.has_previous %}
                     <a href="{% querystring jobs_page=jobs.previous_page_number %}#jobs">{% translate "Previous" %}</a>
                     {% endif %}
-                    <span>{{ jobs.number }} / {{ jobs.paginator.num_pages }}</span>
+                    {% for page_number in jobs_page_numbers %}
+                    <a href="{% querystring jobs_page=page_number %}#jobs" class="pagination-page{% if page_number == jobs.number %} active{% endif %}"{% if page_number == jobs.number %} aria-current="page"{% endif %}>{{ page_number }}</a>
+                    {% endfor %}
                     {% if jobs.has_next %}
                     <a href="{% querystring jobs_page=jobs.next_page_number %}#jobs">{% translate "Next" %}</a>
                     {% endif %}
                 </nav>
                 {% endif %}
             </section>
+            {% endif %}
 
+            {% if listing_type == None or listing_type == 'internship' %}
             <section class="listing-section alt-section container reveal" id="internships">
                 <div class="section-head split-head">
                     <div>
                         <span class="tag">{% translate "INTERNSHIPS" %}</span>
                         <h2>{% translate "Learn while you grow" %}</h2>
                     </div>
-                    <a href="#internships">{% translate "View all" %}</a>
+                    <a href="{% url 'internships_page' %}">{% translate "View all" %}</a>
                 </div>
 
                 <div class="job-grid">
@@ -253,21 +257,25 @@
                     {% if internships.has_previous %}
                     <a href="{% querystring internships_page=internships.previous_page_number %}#internships">{% translate "Previous" %}</a>
                     {% endif %}
-                    <span>{{ internships.number }} / {{ internships.paginator.num_pages }}</span>
+                    {% for page_number in internships_page_numbers %}
+                    <a href="{% querystring internships_page=page_number %}#internships" class="pagination-page{% if page_number == internships.number %} active{% endif %}"{% if page_number == internships.number %} aria-current="page"{% endif %}>{{ page_number }}</a>
+                    {% endfor %}
                     {% if internships.has_next %}
                     <a href="{% querystring internships_page=internships.next_page_number %}#internships">{% translate "Next" %}</a>
                     {% endif %}
                 </nav>
                 {% endif %}
             </section>
+            {% endif %}
 
+            {% if listing_type == None or listing_type == 'resume' %}
             <section class="listing-section container reveal" id="resumes">
                 <div class="section-head split-head">
                     <div>
                         <span class="tag">{% translate "RESUMES" %}</span>
                         <h2>{% translate "People looking for their next opportunity" %}</h2>
                     </div>
-                    <a href="#resumes">{% translate "View all" %}</a>
+                    <a href="{% url 'resumes_page' %}">{% translate "View all" %}</a>
                 </div>
 
                 <div class="job-grid">
@@ -303,13 +311,16 @@
                     {% if resumes.has_previous %}
                     <a href="{% querystring resumes_page=resumes.previous_page_number %}#resumes">{% translate "Previous" %}</a>
                     {% endif %}
-                    <span>{{ resumes.number }} / {{ resumes.paginator.num_pages }}</span>
+                    {% for page_number in resumes_page_numbers %}
+                    <a href="{% querystring resumes_page=page_number %}#resumes" class="pagination-page{% if page_number == resumes.number %} active{% endif %}"{% if page_number == resumes.number %} aria-current="page"{% endif %}>{{ page_number }}</a>
+                    {% endfor %}
                     {% if resumes.has_next %}
                     <a href="{% querystring resumes_page=resumes.next_page_number %}#resumes">{% translate "Next" %}</a>
                     {% endif %}
                 </nav>
                 {% endif %}
             </section>
+            {% endif %}
 
             <section class="resume-band container reveal">
                 <div class="band-content">
@@ -332,5 +343,6 @@
             </div>
         </footer>
     </div>
+    <a href="#career" class="back-to-top" aria-label="{% translate 'Back to top' %}" title="{% translate 'Back to top' %}">&#8593;</a>
 </body>
 </html>

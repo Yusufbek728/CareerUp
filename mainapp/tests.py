@@ -46,7 +46,7 @@ class HomepagePaginationTests(TestCase):
 		response = self.client.get(reverse('home'))
 		self.assertEqual(response.status_code, 200)
 		for listing_type in ('jobs', 'internships', 'resumes'):
-			self.assertEqual(len(response.context[listing_type].object_list), 10)
+			self.assertEqual(len(response.context[listing_type].object_list), 9)
 			self.assertTrue(response.context[listing_type].has_next())
 
 		response = self.client.get(reverse('home'), {
@@ -60,9 +60,108 @@ class HomepagePaginationTests(TestCase):
 			'jobs_page=1&amp;internships_page=2&amp;resumes_page=2&amp;q=Example#jobs',
 		)
 		for listing_type in ('jobs', 'internships', 'resumes'):
-			self.assertEqual(len(response.context[listing_type].object_list), 1)
+			self.assertEqual(len(response.context[listing_type].object_list), 2)
 			self.assertFalse(response.context[listing_type].has_next())
 
+	def test_homepage_pagination_shows_at_most_nine_numbered_links(self):
+		for index in range(100):
+			Job.objects.create(
+				company_name='Example Company',
+				phone_number='+998901234567',
+				salary=1000,
+				required_experience=1,
+				work_time=8,
+				job_title=f'Job {index}',
+				requirements_of_job='Python',
+			)
+
+		response = self.client.get(reverse('home'))
+
+		self.assertEqual(len(response.context['jobs']), 9)
+		self.assertEqual(len(response.context['jobs_page_numbers']), 9)
+		self.assertContains(response, 'aria-label="Jobs pagination"')
+		self.assertContains(response, 'jobs_page=9')
+
+		response = self.client.get(reverse('home'), {'jobs_page': 2})
+		self.assertEqual(response.context['jobs'].number, 2)
+		self.assertEqual(len(response.context['jobs_page_numbers']), 9)
+
+	def test_homepage_keeps_all_listing_sections_visible(self):
+		Job.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			salary=1000,
+			required_experience=1,
+			work_time=8,
+			job_title='Developer',
+			requirements_of_job='Python',
+		)
+		Internship.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			work_time=8,
+			work_duration=12,
+			job_title='Internship',
+		)
+		Resume.objects.create(
+			name='Candidate',
+			surname='Example',
+			email='candidate@example.com',
+			phone_number='+998901234567',
+			experience=1,
+			wanted_salary=1000,
+			wanted_work_time=8,
+		)
+
+		response = self.client.get(reverse('home'))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'id="jobs"')
+		self.assertContains(response, 'id="internships"')
+		self.assertContains(response, 'id="resumes"')
+		self.assertContains(response, 'href="#career" class="back-to-top"')
+
+	def test_category_pages_render_only_selected_listing_type(self):
+		Job.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			salary=1000,
+			required_experience=1,
+			work_time=8,
+			job_title='Developer',
+			requirements_of_job='Python',
+		)
+		Internship.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			work_time=8,
+			work_duration=12,
+			job_title='Internship',
+		)
+		Resume.objects.create(
+			name='Candidate',
+			surname='Example',
+			email='candidate@example.com',
+			phone_number='+998901234567',
+			experience=1,
+			wanted_salary=1000,
+			wanted_work_time=8,
+		)
+
+		for view_name, expected_type in (
+			('jobs_page', 'job'),
+			('internships_page', 'internship'),
+			('resumes_page', 'resume'),
+		):
+			response = self.client.get(reverse(view_name))
+			self.assertEqual(response.status_code, 200)
+			self.assertEqual(response.context['listing_type'], expected_type)
+			self.assertTemplateUsed(response, 'mainapp/category_list.html')
+			self.assertNotContains(response, 'hero-copy')
+			self.assertNotContains(response, 'CareerUp')
+			self.assertContains(response, f'href="{reverse("home")}" class="back-link category-back-link"')
+			self.assertContains(response, 'styles.css?v=category-grid-4')
+			self.assertEqual(len(response.context['items']), 1)
 
 class SuperAdminPaginationTests(TestCase):
 	def setUp(self):
@@ -164,6 +263,7 @@ class ThemeSwitcherLanguageTests(TestCase):
 		self.assertIn('Theme selection', js_source)
 		self.assertIn('Выбор темы', js_source)
 		self.assertIn('Mavzu tanlovi', js_source)
+		self.assertIn(".toLowerCase().split(/[-_]/)[0]", js_source)
 
 
 class ImageUploadTests(TestCase):
@@ -214,6 +314,65 @@ class ImageUploadTests(TestCase):
 		self.assertEqual(response.status_code, 200)
 		company.account_profile.refresh_from_db()
 		self.assertTrue(company.account_profile.company_photo.name.startswith('company_photos/'))
+
+
+class ListingDetailPageTests(TestCase):
+	def test_each_listing_type_uses_its_own_detail_template(self):
+		job = Job.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			salary=1000,
+			required_experience=1,
+			work_time=8,
+			job_title='Developer',
+			requirements_of_job='Python',
+		)
+		internship = Internship.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			work_time=8,
+			work_duration=12,
+			job_title='Internship',
+		)
+		resume = Resume.objects.create(
+			name='Candidate',
+			surname='Example',
+			email='candidate@example.com',
+			phone_number='+998901234567',
+			experience=1,
+			wanted_salary=1000,
+			wanted_work_time=8,
+		)
+
+		job_response = self.client.get(reverse('job_detail', args=[job.pk]))
+		internship_response = self.client.get(reverse('internship_detail', args=[internship.pk]))
+		resume_response = self.client.get(reverse('resume_detail', args=[resume.pk]))
+
+		self.assertEqual(job_response.status_code, 200)
+		self.assertEqual(internship_response.status_code, 200)
+		self.assertEqual(resume_response.status_code, 200)
+		self.assertTemplateUsed(job_response, 'mainapp/job_detail.html')
+		self.assertTemplateUsed(internship_response, 'mainapp/internship_detail.html')
+		self.assertTemplateUsed(resume_response, 'mainapp/resume_detail.html')
+
+	def test_detail_pages_are_standalone_without_global_header(self):
+		job = Job.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			salary=1000,
+			required_experience=1,
+			work_time=8,
+			job_title='Developer',
+			requirements_of_job='Python',
+		)
+
+		response = self.client.get(reverse('job_detail', args=[job.pk]))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertNotContains(response, 'CareerUp')
+		self.assertNotContains(response, 'language-select')
+		self.assertNotContains(response, 'Back home')
+		self.assertContains(response, 'Developer')
 
 
 class ListingCrudTests(TestCase):
