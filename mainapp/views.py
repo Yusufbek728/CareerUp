@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.core.paginator import Paginator
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -84,14 +85,14 @@ def home_view(request):
             | Q(owner__account_profile__display_name__icontains=search_query)
         )
 
-    jobs = jobs.order_by('-created_at')[:6]
-    internships = internships.order_by('-created_at')[:4]
-    resumes = resumes.order_by('-created_at')[:4]
+    jobs = jobs.order_by('-created_at')
+    internships = internships.order_by('-created_at')
+    resumes = resumes.order_by('-created_at')
 
     context = {
-        'jobs': jobs,
-        'internships': internships,
-        'resumes': resumes,
+        'jobs': Paginator(jobs, 10).get_page(request.GET.get('jobs_page')),
+        'internships': Paginator(internships, 10).get_page(request.GET.get('internships_page')),
+        'resumes': Paginator(resumes, 10).get_page(request.GET.get('resumes_page')),
         'job_count': Job.objects.count(),
         'internship_count': Internship.objects.count(),
         'resume_count': Resume.objects.count(),
