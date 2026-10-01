@@ -1,5 +1,6 @@
 import base64
 import os
+from pathlib import Path
 
 from unittest.mock import patch
 
@@ -152,6 +153,17 @@ class JobHourlyIncomeTests(TestCase):
 		job.save()
 
 		self.assertEqual(job.hourly_income, 0)
+
+
+class ThemeSwitcherLanguageTests(TestCase):
+	def test_theme_switcher_includes_language_specific_labels(self):
+		js_source = (Path(__file__).resolve().parent.parent / 'static' / 'mainapp' / 'theme.js').read_text(encoding='utf-8')
+		self.assertIn('Change view', js_source)
+		self.assertIn('Сменить вид', js_source)
+		self.assertIn("Ko'rinishni o'zgartirish", js_source)
+		self.assertIn('Theme selection', js_source)
+		self.assertIn('Выбор темы', js_source)
+		self.assertIn('Mavzu tanlovi', js_source)
 
 
 class ImageUploadTests(TestCase):

@@ -2,6 +2,28 @@
     const storageKey = 'careerup-theme';
     const savedTheme = window.localStorage.getItem(storageKey);
     const body = document.body;
+    const language = (document.documentElement.lang || 'en').toLowerCase();
+    const translations = {
+        en: {
+            switchLabel: 'Change view',
+            themeLabel: 'Theme selection',
+            light: 'Light',
+            dark: 'Dark',
+        },
+        ru: {
+            switchLabel: 'Сменить вид',
+            themeLabel: 'Выбор темы',
+            light: 'Светлая',
+            dark: 'Тёмная',
+        },
+        uz: {
+            switchLabel: "Ko'rinishni o'zgartirish",
+            themeLabel: 'Mavzu tanlovi',
+            light: 'Yorqin',
+            dark: 'Qorong\'i',
+        },
+    };
+    const t = translations[language] || translations.en;
 
     if (savedTheme === 'dark') {
         body.classList.add('dark-theme');
@@ -10,10 +32,10 @@
     const switcher = document.createElement('details');
     switcher.className = 'theme-switcher';
     switcher.innerHTML = `
-        <summary class="theme-toggle">◐ <span>Сменить вид</span></summary>
-        <div class="theme-options" role="group" aria-label="Выбор темы">
-            <button type="button" data-theme-option="light">☀ <span>Светлая</span></button>
-            <button type="button" data-theme-option="dark">☾ <span>Тёмная</span></button>
+        <summary class="theme-toggle">◐ <span>${t.switchLabel}</span></summary>
+        <div class="theme-options" role="group" aria-label="${t.themeLabel}">
+            <button type="button" data-theme-option="light">☀ <span>${t.light}</span></button>
+            <button type="button" data-theme-option="dark">☾ <span>${t.dark}</span></button>
         </div>
     `;
 
