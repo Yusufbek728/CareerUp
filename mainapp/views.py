@@ -295,11 +295,36 @@ def super_admin(request):
             | Q(account_profile__display_name__icontains=search_query)
         )
 
+    jobs = Paginator(
+        Job.objects.select_related('owner').order_by('-created_at'), 10
+    ).get_page(request.GET.get('jobs_page'))
+    internships = Paginator(
+        Internship.objects.select_related('owner').order_by('-created_at'), 10
+    ).get_page(request.GET.get('internships_page'))
+    resumes = Paginator(
+        Resume.objects.select_related('owner').order_by('-created_at'), 10
+    ).get_page(request.GET.get('resumes_page'))
+
+    def page_links(page, page_parameter):
+        links = {}
+        if page.has_previous():
+            query_params = request.GET.copy()
+            query_params[page_parameter] = page.previous_page_number()
+            links['previous'] = f'?{query_params.urlencode()}'
+        if page.has_next():
+            query_params = request.GET.copy()
+            query_params[page_parameter] = page.next_page_number()
+            links['next'] = f'?{query_params.urlencode()}'
+        return links
+
     return render(request, 'mainapp/super_admin.html', {
         'users': users,
-        'jobs': Job.objects.select_related('owner').order_by('-created_at'),
-        'internships': Internship.objects.select_related('owner').order_by('-created_at'),
-        'resumes': Resume.objects.select_related('owner').order_by('-created_at'),
+        'jobs': jobs,
+        'internships': internships,
+        'resumes': resumes,
+        'job_page_links': page_links(jobs, 'jobs_page'),
+        'internship_page_links': page_links(internships, 'internships_page'),
+        'resume_page_links': page_links(resumes, 'resumes_page'),
         'search_query': search_query,
         'user_form': user_form,
         'selected_user': selected_user,

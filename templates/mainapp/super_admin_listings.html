@@ -1,6 +1,6 @@
-<section class="admin-section">
+<section class="admin-section" id="{{ listing_type }}-listings">
 {% load i18n %}
-    <div class="admin-section-head"><h2>{{ title }} ({{ listings|length }})</h2></div>
+    <div class="admin-section-head"><h2>{{ title }} ({{ listings.paginator.count }})</h2></div>
     <div class="admin-table">
         {% for listing in listings %}
             <div class="admin-row">
@@ -16,4 +16,15 @@
             </div>
         {% empty %}<p class="admin-meta">{% translate "No listings yet." %}</p>{% endfor %}
     </div>
+    {% if listings.has_other_pages %}
+    <nav class="listing-pagination" aria-label="{{ title }} {% translate 'pagination' %}">
+        {% if listings.has_previous %}
+        <a href="{{ page_links.previous }}#{{ listing_type }}-listings">{% translate "Previous" %}</a>
+        {% endif %}
+        <span>{{ listings.number }} / {{ listings.paginator.num_pages }}</span>
+        {% if listings.has_next %}
+        <a href="{{ page_links.next }}#{{ listing_type }}-listings">{% translate "Next" %}</a>
+        {% endif %}
+    </nav>
+    {% endif %}
 </section>

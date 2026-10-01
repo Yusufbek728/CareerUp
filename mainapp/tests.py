@@ -63,6 +63,60 @@ class HomepagePaginationTests(TestCase):
 			self.assertFalse(response.context[listing_type].has_next())
 
 
+class SuperAdminPaginationTests(TestCase):
+	def setUp(self):
+		self.admin = User.objects.create_superuser('pagination-admin', 'admin@example.com', 'password')
+		AccountProfile.objects.create(user=self.admin, role='company', display_name='Administrator')
+		self.client.force_login(self.admin)
+
+	def test_listing_sections_are_paginated_independently(self):
+		for index in range(11):
+			Job.objects.create(
+				company_name='Example Company',
+				phone_number='+998901234567',
+				salary=1000,
+				required_experience=1,
+				work_time=8,
+				job_title=f'Job {index}',
+				requirements_of_job='Python',
+			)
+			Internship.objects.create(
+				company_name='Example Company',
+				phone_number='+998901234567',
+				work_time=8,
+				work_duration=12,
+				job_title=f'Internship {index}',
+			)
+			Resume.objects.create(
+				name=f'Candidate {index}',
+				surname='Example',
+				email=f'candidate{index}@example.com',
+				phone_number='+998901234567',
+				experience=1,
+				wanted_salary=1000,
+				wanted_work_time=8,
+			)
+
+		response = self.client.get(reverse('super_admin'))
+		for listing_type in ('jobs', 'internships', 'resumes'):
+			self.assertEqual(len(response.context[listing_type].object_list), 10)
+			self.assertTrue(response.context[listing_type].has_next())
+
+		response = self.client.get(reverse('super_admin'), {
+			'jobs_page': 2,
+			'internships_page': 2,
+			'resumes_page': 2,
+			'q': 'Example',
+		})
+		self.assertContains(
+			response,
+			'jobs_page=1&amp;internships_page=2&amp;resumes_page=2&amp;q=Example#job-listings',
+		)
+		for listing_type in ('jobs', 'internships', 'resumes'):
+			self.assertEqual(len(response.context[listing_type].object_list), 1)
+			self.assertFalse(response.context[listing_type].has_next())
+
+
 class JobHourlyIncomeTests(TestCase):
 	def test_hourly_income_is_calculated_when_job_is_created(self):
 		form = JobForm({
