@@ -162,16 +162,28 @@
                     <a href="{% url 'job_detail' job.pk %}" class="job-card-link">
                         <article class="job-card listing-card">
                             <div class="listing-card-media">
-                                {% if job.work_photo %}<img class="listing-image job-card-photo" src="{{ job.work_photo.url }}" alt="{{ job.job_title }}">{% endif %}
+                                {% if job.work_photo %}
+                                    <img class="listing-image job-card-photo" src="{{ job.work_photo.url }}" alt="{{ job.job_title }}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                    <div class="listing-media-placeholder" style="display: none;">
+                                        <span class="placeholder-icon">💼</span>
+                                    </div>
+                                {% else %}
+                                    <div class="listing-media-placeholder">
+                                        <span class="placeholder-icon">💼</span>
+                                    </div>
+                                {% endif %}
                             </div>
                             <div class="listing-card-content">
                                 <div class="listing-card-heading">
-                                    <h3>{{ job.job_title }}</h3>
+                                    <h3 title="{{ job.job_title }}">{{ job.job_title }}</h3>
                                     <span class="status {% if job.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ job.get_status_display }}</span>
                                 </div>
+                                {% if job.company_name %}
+                                    <p class="listing-card-company">{{ job.company_name }}</p>
+                                {% endif %}
                                 <div class="listing-card-income">
-                                    <span>{% translate "Monthly" %} <strong>${{ job.salary }}</strong></span>
-                                    <span>{% translate "Hourly" %} <strong>${{ job.hourly_income }}</strong></span>
+                                    <span class="income-item">{% translate "Monthly" %} <strong>${{ job.salary }}</strong></span>
+                                    <span class="income-item">{% translate "Hourly" %} <strong>${{ job.hourly_income }}</strong></span>
                                 </div>
                             </div>
                         </article>
@@ -180,6 +192,17 @@
                     <p class="empty-text">{% translate "No jobs available yet." %}</p>
                     {% endfor %}
                 </div>
+                {% if jobs.has_other_pages %}
+                <nav class="listing-pagination" aria-label="{% translate 'Jobs pagination' %}">
+                    {% if jobs.has_previous %}
+                    <a href="{% querystring jobs_page=jobs.previous_page_number %}#jobs">{% translate "Previous" %}</a>
+                    {% endif %}
+                    <span>{{ jobs.number }} / {{ jobs.paginator.num_pages }}</span>
+                    {% if jobs.has_next %}
+                    <a href="{% querystring jobs_page=jobs.next_page_number %}#jobs">{% translate "Next" %}</a>
+                    {% endif %}
+                </nav>
+                {% endif %}
             </section>
 
             <section class="listing-section alt-section container reveal" id="internships">
@@ -196,15 +219,24 @@
                     <a href="{% url 'internship_detail' internship.pk %}" class="job-card-link">
                         <article class="job-card listing-card">
                             <div class="listing-card-media">
-                                {% if internship.work_photo %}<img class="listing-image job-card-photo" src="{{ internship.work_photo.url }}" alt="{{ internship.job_title }}">{% endif %}
+                                {% if internship.work_photo %}
+                                    <img class="listing-image job-card-photo" src="{{ internship.work_photo.url }}" alt="{{ internship.job_title }}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                    <div class="listing-media-placeholder" style="display: none;">
+                                        <span class="placeholder-icon">🎓</span>
+                                    </div>
+                                {% else %}
+                                    <div class="listing-media-placeholder">
+                                        <span class="placeholder-icon">🎓</span>
+                                    </div>
+                                {% endif %}
                             </div>
                             <div class="listing-card-content">
                                 <div class="listing-card-heading">
-                                    <h3>{{ internship.job_title }}</h3>
+                                    <h3 title="{{ internship.job_title }}">{{ internship.job_title }}</h3>
                                     <span class="status {% if internship.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ internship.get_status_display }}</span>
                                 </div>
-                                <p>{{ internship.company_name }}</p>
-                                <ul>
+                                <p class="listing-card-company">{{ internship.company_name }}</p>
+                                <ul class="listing-card-details">
                                     <li>{{ internship.get_working_condition_display }}</li>
                                     <li>{{ internship.work_duration }} {% translate "weeks" %}</li>
                                     <li>{{ internship.work_schedule_and_working_hours }}</li>
@@ -216,6 +248,17 @@
                     <p class="empty-text">{% translate "No internships available yet." %}</p>
                     {% endfor %}
                 </div>
+                {% if internships.has_other_pages %}
+                <nav class="listing-pagination" aria-label="{% translate 'Internships pagination' %}">
+                    {% if internships.has_previous %}
+                    <a href="{% querystring internships_page=internships.previous_page_number %}#internships">{% translate "Previous" %}</a>
+                    {% endif %}
+                    <span>{{ internships.number }} / {{ internships.paginator.num_pages }}</span>
+                    {% if internships.has_next %}
+                    <a href="{% querystring internships_page=internships.next_page_number %}#internships">{% translate "Next" %}</a>
+                    {% endif %}
+                </nav>
+                {% endif %}
             </section>
 
             <section class="listing-section container reveal" id="resumes">
@@ -230,12 +273,19 @@
                 <div class="job-grid">
                     {% for resume in resumes %}
                     <a href="{% url 'resume_detail' resume.pk %}" class="job-card-link">
-                        <article class="job-card">
-                            {% if resume.photo %}<img class="listing-image card-image profile-image" src="{{ resume.photo.url }}" alt="{{ resume.name }} {{ resume.surname }}">{% endif %}
-                            <span class="status {% if resume.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ resume.get_status_display }}</span>
-                            <h3>{{ resume.name }} {{ resume.surname }}</h3>
-                            <p>{{ resume.email }}</p>
-                            <ul>
+                        <article class="job-card resume-card">
+                            <div class="resume-card-header">
+                                {% if resume.photo %}
+                                    <img class="listing-image card-image profile-image" src="{{ resume.photo.url }}" alt="{{ resume.name }} {{ resume.surname }}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                    <div class="profile-image-placeholder" style="display: none;">👤</div>
+                                {% else %}
+                                    <div class="profile-image-placeholder">👤</div>
+                                {% endif %}
+                                <span class="status {% if resume.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ resume.get_status_display }}</span>
+                            </div>
+                            <h3 title="{{ resume.name }} {{ resume.surname }}">{{ resume.name }} {{ resume.surname }}</h3>
+                            <p class="listing-card-company">{{ resume.email }}</p>
+                            <ul class="listing-card-details">
                                 <li>{{ resume.experience }} {% translate "years experience" %}</li>
                             </ul>
                             <div class="card-footer">
@@ -248,6 +298,17 @@
                     <p class="empty-text">{% translate "No resumes available yet." %}</p>
                     {% endfor %}
                 </div>
+                {% if resumes.has_other_pages %}
+                <nav class="listing-pagination" aria-label="{% translate 'Resumes pagination' %}">
+                    {% if resumes.has_previous %}
+                    <a href="{% querystring resumes_page=resumes.previous_page_number %}#resumes">{% translate "Previous" %}</a>
+                    {% endif %}
+                    <span>{{ resumes.number }} / {{ resumes.paginator.num_pages }}</span>
+                    {% if resumes.has_next %}
+                    <a href="{% querystring resumes_page=resumes.next_page_number %}#resumes">{% translate "Next" %}</a>
+                    {% endif %}
+                </nav>
+                {% endif %}
             </section>
 
             <section class="resume-band container reveal">

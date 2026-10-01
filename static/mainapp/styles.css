@@ -914,6 +914,29 @@ button {
     gap: 22px;
 }
 
+.listing-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 28px;
+    color: var(--muted);
+}
+
+.listing-pagination a {
+    padding: 9px 13px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.listing-pagination a:hover,
+.listing-pagination a:focus-visible {
+    border-color: var(--accent);
+    background: rgba(132, 242, 212, 0.1);
+}
+
 .feature-card,
 .job-card {
     background: rgba(255,255,255,0.03);
@@ -926,83 +949,152 @@ button {
 }
 
 .listing-card {
-    display: grid;
-    grid-template-rows: auto 1fr;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     min-height: 0;
     padding: 0;
     overflow: hidden;
 }
 
 .listing-card-media {
+    position: relative;
     width: 100%;
-    aspect-ratio: 3 / 2;
-    height: auto;
-    min-height: 0;
-    align-self: start;
-    background: rgba(255,255,255,0.04);
+    height: 160px;
+    min-height: 160px;
+    max-height: 160px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(118, 169, 255, 0.08), rgba(168, 107, 255, 0.08));
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.listing-card-media .listing-image {
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-}
-
+.listing-card-media .listing-image,
 .job-card-photo {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
+}
+
+.listing-media-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(118, 169, 255, 0.06), rgba(94, 231, 181, 0.06));
+}
+
+.placeholder-icon {
+    font-size: 2.2rem;
+    opacity: 0.55;
+    user-select: none;
 }
 
 .listing-card-content {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    flex: 1 1 auto;
+    padding: 16px 18px;
     gap: 8px;
     min-height: 0;
-    padding: 14px 18px;
+    box-sizing: border-box;
 }
 
 .listing-card-heading {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
+    width: 100%;
 }
 
+.listing-card-heading h3,
 .listing-card h3 {
-    overflow: hidden;
+    flex: 1 1 auto;
+    min-width: 0;
     margin: 0;
+    font-size: 1.12rem;
+    font-weight: 700;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+    color: var(--text);
+}
+
+.listing-card .status,
+.status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.listing-card-company {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+    font-weight: 500;
+    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.listing-card .status {
-    flex: 0 0 auto;
-    padding: 5px 8px;
-}
-
-@media (max-width: 700px) {
-    .listing-card-media {
-        aspect-ratio: 3 / 2;
-    }
+.listing-card-details,
+.listing-card ul {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.45;
 }
 
 .listing-card-income {
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 8px 12px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
     color: var(--muted);
     font-size: 0.82rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.listing-card-income .income-item,
+.listing-card-income span {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    white-space: nowrap;
+    font-size: 0.82rem;
+    color: var(--muted);
 }
 
 .listing-card-income strong {
     color: var(--text);
-    margin-left: 4px;
+    font-weight: 700;
+    white-space: nowrap;
 }
 
 .job-card-link {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     color: inherit;
     text-decoration: none;
 }
@@ -1010,8 +1102,44 @@ button {
 .job-card-link:hover .job-card,
 .feature-card:hover,
 .job-card:hover {
-    transform: translateY(-6px);
-    border-color: rgba(118,169,255,0.2);
+    transform: translateY(-4px);
+    border-color: rgba(118,169,255,0.3);
+}
+
+.resume-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.resume-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+    width: 100%;
+}
+
+.profile-image-placeholder {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(118, 169, 255, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.resume-card .card-footer {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .feature-icon {
@@ -1735,13 +1863,16 @@ body.dark-theme .band-content {
 }
 
 .job-card.listing-card {
-    height: auto;
+    height: 100%;
     padding: 0;
 }
 
 .listing-card .listing-card-content {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
     justify-content: flex-start;
-    gap: 10px;
+    gap: 8px;
 }
 
 .listing-card h3 {
@@ -1865,4 +1996,31 @@ body.dark-theme .theme-options {
     .theme-toggle {
         justify-content: center;
     }
+}
+
+/* Responsive Grid & Dark Mode Card Styles */
+@media (max-width: 1080px) and (min-width: 681px) {
+    .job-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+}
+
+@media (max-width: 680px) {
+    .job-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+}
+
+body.dark-theme .listing-card-media {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+}
+
+body.dark-theme .listing-media-placeholder {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+}
+
+body.dark-theme .profile-image-placeholder {
+    background: rgba(255, 255, 255, 0.08);
 }
