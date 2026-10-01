@@ -64,9 +64,9 @@
     {% translate "Jobs" as jobs_title %}
     {% translate "Internships" as internships_title %}
     {% translate "Resumes" as resumes_title %}
-    {% include 'mainapp/super_admin_listings.html' with title=jobs_title listing_type='job' listings=jobs %}
-    {% include 'mainapp/super_admin_listings.html' with title=internships_title listing_type='internship' listings=internships %}
-    {% include 'mainapp/super_admin_listings.html' with title=resumes_title listing_type='resume' listings=resumes %}
+    {% include 'mainapp/super_admin_listings.html' with title=jobs_title listing_type='job' listings=jobs page_links=job_page_links %}
+    {% include 'mainapp/super_admin_listings.html' with title=internships_title listing_type='internship' listings=internships page_links=internship_page_links %}
+    {% include 'mainapp/super_admin_listings.html' with title=resumes_title listing_type='resume' listings=resumes page_links=resume_page_links %}
 </main>
 <script src="{% static 'mainapp/forms.js' %}"></script>
 </body>
