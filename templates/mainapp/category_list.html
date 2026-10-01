@@ -1,0 +1,93 @@
+{% load i18n static %}
+{% get_current_language as current_language %}
+<!DOCTYPE html>
+<html lang="{{ current_language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if listing_type == 'job' %}{% translate "Vacancies" %}{% elif listing_type == 'internship' %}{% translate "Internships" %}{% else %}{% translate "Resumes" %}{% endif %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=category-grid-4">
+</head>
+<body>
+    <main class="container category-listing-page">
+        <a href="{% url 'home' %}" class="back-link category-back-link">&#8592; {% translate "Back home" %}</a>
+        <div class="job-grid">
+            {% for item in items %}
+                {% if listing_type == 'job' %}
+                <a href="{% url 'job_detail' item.pk %}" class="job-card-link">
+                    <article class="job-card listing-card">
+                        <div class="listing-card-media">
+                            {% if item.work_photo %}
+                                <img class="listing-image job-card-photo" src="{{ item.work_photo.url }}" alt="{{ item.job_title }}">
+                            {% else %}
+                                <div class="listing-media-placeholder"><span class="placeholder-icon">💼</span></div>
+                            {% endif %}
+                        </div>
+                        <div class="listing-card-content">
+                            <div class="listing-card-heading">
+                                <h3>{{ item.job_title }}</h3>
+                                <span class="status {% if item.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ item.get_status_display }}</span>
+                            </div>
+                            <p class="listing-card-company">{{ item.company_name }}</p>
+                            <div class="listing-card-income">
+                                <span class="income-item">{% translate "Monthly" %} <strong>${{ item.salary }}</strong></span>
+                                <span class="income-item">{% translate "Hourly" %} <strong>${{ item.hourly_income }}</strong></span>
+                            </div>
+                        </div>
+                    </article>
+                </a>
+                {% elif listing_type == 'internship' %}
+                <a href="{% url 'internship_detail' item.pk %}" class="job-card-link">
+                    <article class="job-card listing-card">
+                        <div class="listing-card-media">
+                            {% if item.work_photo %}
+                                <img class="listing-image job-card-photo" src="{{ item.work_photo.url }}" alt="{{ item.job_title }}">
+                            {% else %}
+                                <div class="listing-media-placeholder"><span class="placeholder-icon">🎓</span></div>
+                            {% endif %}
+                        </div>
+                        <div class="listing-card-content">
+                            <div class="listing-card-heading">
+                                <h3>{{ item.job_title }}</h3>
+                                <span class="status {% if item.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ item.get_status_display }}</span>
+                            </div>
+                            <p class="listing-card-company">{{ item.company_name }}</p>
+                            <ul class="listing-card-details">
+                                <li>{{ item.get_working_condition_display }}</li>
+                                <li>{{ item.work_duration }} {% translate "weeks" %}</li>
+                                <li>{{ item.work_schedule_and_working_hours }}</li>
+                            </ul>
+                        </div>
+                    </article>
+                </a>
+                {% else %}
+                <a href="{% url 'resume_detail' item.pk %}" class="job-card-link">
+                    <article class="job-card resume-card">
+                        <div class="resume-card-header">
+                            {% if item.photo %}
+                                <img class="listing-image card-image profile-image" src="{{ item.photo.url }}" alt="{{ item.name }} {{ item.surname }}">
+                            {% else %}
+                                <div class="profile-image-placeholder">👤</div>
+                            {% endif %}
+                            <span class="status {% if item.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ item.get_status_display }}</span>
+                        </div>
+                        <h3>{{ item.name }} {{ item.surname }}</h3>
+                        <p class="listing-card-company">{{ item.email }}</p>
+                        <ul class="listing-card-details">
+                            <li>{{ item.experience }} {% translate "years experience" %}</li>
+                        </ul>
+                        <div class="card-footer">
+                            <strong>${{ item.wanted_salary }}</strong>
+                            <span>{{ item.created_at|date:"M d, Y" }}</span>
+                        </div>
+                    </article>
+                </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </main>
+</body>
+</html>

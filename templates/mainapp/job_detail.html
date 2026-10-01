@@ -1,0 +1,42 @@
+{% load i18n static %}
+{% get_current_language as current_language %}
+<!DOCTYPE html>
+<html lang="{{ current_language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ item.job_title }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}">
+</head>
+<body class="standalone-detail-body">
+    <main class="container standalone-detail-page">
+        <article class="standalone-detail-card reveal">
+            <a href="{% url 'home' %}" class="back-link">← {% translate "Back to all listings" %}</a>
+            <span class="tag">{% translate "JOB" %}</span>
+            <h1>{{ item.job_title }}</h1>
+            <p class="company-name">{{ item.company_name }}</p>
+            {% if item.work_photo %}<img class="listing-image detail-image" src="{{ item.work_photo.url }}" alt="{{ item.job_title }}">{% endif %}
+            <div class="detail-grid">
+                <div><strong>{% translate "Salary:" %}</strong> ${{ item.salary }}</div>
+                <div><strong>{% translate "Hourly income:" %}</strong> ${{ item.hourly_income }}</div>
+                <div><strong>{% translate "Phone 1:" %}</strong> {% if item.phone_number %}{{ item.phone_number }}{% else %}{% translate "Not provided" %}{% endif %}</div>
+                <div><strong>{% translate "Phone 2:" %}</strong> {% if item.phone_number2 %}{{ item.phone_number2 }}{% else %}{% translate "Not provided" %}{% endif %}</div>
+                <div><strong>{% translate "Experience:" %}</strong> {{ item.required_experience }} {% translate "years" %}</div>
+                <div><strong>{% translate "Work time:" %}</strong> {{ item.work_time }}</div>
+                <div><strong>{% translate "Condition:" %}</strong> {{ item.get_working_condition_display }}</div>
+                <div><strong>{% translate "Schedule:" %}</strong> {{ item.get_work_schedule_and_working_hours_display }}</div>
+                <div><strong>{% translate "Field:" %}</strong> {{ item.get_work_field_display }}</div>
+                <div><strong>{% translate "Status:" %}</strong> {{ item.get_status_display }}</div>
+                <div><strong>{% translate "Created:" %}</strong> {{ item.created_at|date:"M d, Y" }}</div>
+            </div>
+            <div class="detail-section">
+                <h3>{% translate "Requirements" %}</h3>
+                <p>{{ item.requirements_of_job }}</p>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

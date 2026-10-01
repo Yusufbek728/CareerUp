@@ -3,6 +3,9 @@ from rest_framework import routers
 
 from .views import (
     home_view,
+    jobs_page,
+    internships_page,
+    resumes_page,
     JobViewSet,
     ResumeViewSet,
     InternshipViewSet,
@@ -30,6 +33,9 @@ router.register(r'internships', InternshipViewSet)
 
 urlpatterns = [
     path('', home_view, name='home'),
+    path('jobs/', jobs_page, name='jobs_page'),
+    path('internships/', internships_page, name='internships_page'),
+    path('resumes/', resumes_page, name='resumes_page'),
     path('jobs/<int:pk>/', job_detail, name='job_detail'),
     path('internships/<int:pk>/', internship_detail, name='internship_detail'),
     path('resumes/<int:pk>/', resume_detail, name='resume_detail'),

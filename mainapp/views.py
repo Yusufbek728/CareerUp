@@ -50,70 +50,139 @@ def super_admin_forbidden(request):
     )
 
 
-def home_view(request):
+def filter_listings_by_query(queryset, query, fields):
+    if not query:
+        return queryset
+    conditions = Q()
+    for field in fields:
+        conditions |= Q(**{field: query})
+    return queryset.filter(conditions)
+
+
+def get_page_numbers(page_obj, max_pages=9):
+    first_page = max(1, page_obj.number - max_pages // 2)
+    last_page = min(page_obj.paginator.num_pages, first_page + max_pages - 1)
+    first_page = max(1, last_page - max_pages + 1)
+    return range(first_page, last_page + 1)
+
+
+def build_homepage_context(request, listing_type=None):
     search_query = request.GET.get('q', '').strip()
     jobs = Job.objects.all()
     internships = Internship.objects.all()
     resumes = Resume.objects.all()
 
-    if search_query:
-        jobs = jobs.filter(
-            Q(company_name__icontains=search_query)
-            | Q(job_title__icontains=search_query)
-            | Q(work_field__icontains=search_query)
-            | Q(working_condition__icontains=search_query)
-            | Q(work_schedule_and_working_hours__icontains=search_query)
-            | Q(owner__username__icontains=search_query)
-            | Q(owner__account_profile__display_name__icontains=search_query)
-        )
-        internships = internships.filter(
-            Q(company_name__icontains=search_query)
-            | Q(job_title__icontains=search_query)
-            | Q(work_field__icontains=search_query)
-            | Q(working_condition__icontains=search_query)
-            | Q(work_schedule_and_working_hours__icontains=search_query)
-            | Q(owner__username__icontains=search_query)
-            | Q(owner__account_profile__display_name__icontains=search_query)
-        )
-        resumes = resumes.filter(
-            Q(name__icontains=search_query)
-            | Q(surname__icontains=search_query)
-            | Q(email__icontains=search_query)
-            | Q(wanted_working_condition__icontains=search_query)
-            | Q(wanted_work_schedule_and_working_hours__icontains=search_query)
-            | Q(owner__username__icontains=search_query)
-            | Q(owner__account_profile__display_name__icontains=search_query)
-        )
+    if listing_type == 'job':
+        internships = Internship.objects.none()
+        resumes = Resume.objects.none()
+    elif listing_type == 'internship':
+        jobs = Job.objects.none()
+        resumes = Resume.objects.none()
+    elif listing_type == 'resume':
+        jobs = Job.objects.none()
+        internships = Internship.objects.none()
+
+    jobs = filter_listings_by_query(
+        jobs,
+        search_query,
+        [
+            'company_name__icontains',
+            'job_title__icontains',
+            'work_field__icontains',
+            'working_condition__icontains',
+            'work_schedule_and_working_hours__icontains',
+            'owner__username__icontains',
+            'owner__account_profile__display_name__icontains',
+        ],
+    )
+    internships = filter_listings_by_query(
+        internships,
+        search_query,
+        [
+            'company_name__icontains',
+            'job_title__icontains',
+            'work_field__icontains',
+            'working_condition__icontains',
+            'work_schedule_and_working_hours__icontains',
+            'owner__username__icontains',
+            'owner__account_profile__display_name__icontains',
+        ],
+    )
+    resumes = filter_listings_by_query(
+        resumes,
+        search_query,
+        [
+            'name__icontains',
+            'surname__icontains',
+            'email__icontains',
+            'wanted_working_condition__icontains',
+            'wanted_work_schedule_and_working_hours__icontains',
+            'owner__username__icontains',
+            'owner__account_profile__display_name__icontains',
+        ],
+    )
 
     jobs = jobs.order_by('-created_at')
     internships = internships.order_by('-created_at')
     resumes = resumes.order_by('-created_at')
 
-    context = {
-        'jobs': Paginator(jobs, 10).get_page(request.GET.get('jobs_page')),
-        'internships': Paginator(internships, 10).get_page(request.GET.get('internships_page')),
-        'resumes': Paginator(resumes, 10).get_page(request.GET.get('resumes_page')),
+    jobs_page = Paginator(jobs, 9).get_page(request.GET.get('jobs_page'))
+    internships_page = Paginator(internships, 9).get_page(request.GET.get('internships_page'))
+    resumes_page = Paginator(resumes, 9).get_page(request.GET.get('resumes_page'))
+    max_pages = 9
+
+    return {
+        'jobs': jobs_page,
+        'internships': internships_page,
+        'resumes': resumes_page,
+        'jobs_page_numbers': get_page_numbers(jobs_page, max_pages),
+        'internships_page_numbers': get_page_numbers(internships_page, max_pages),
+        'resumes_page_numbers': get_page_numbers(resumes_page, max_pages),
+        'max_pages': max_pages,
         'job_count': Job.objects.count(),
         'internship_count': Internship.objects.count(),
         'resume_count': Resume.objects.count(),
         'search_query': search_query,
+        'listing_type': listing_type,
     }
-    return render(request, 'mainapp/index.html', context)
+
+
+def home_view(request):
+    return render(request, 'mainapp/index.html', build_homepage_context(request))
+
+
+def jobs_page(request):
+    return category_page(request, 'job')
+
+
+def internships_page(request):
+    return category_page(request, 'internship')
+
+
+def resumes_page(request):
+    return category_page(request, 'resume')
+
+
+def category_page(request, listing_type):
+    context = build_homepage_context(request, listing_type)
+    listing_name = {'job': 'jobs', 'internship': 'internships', 'resume': 'resumes'}[listing_type]
+    context['items'] = context[listing_name].paginator.object_list
+    return render(request, 'mainapp/category_list.html', context)
 
 
 def job_detail(request, pk):
     job = get_object_or_404(Job, pk=pk)
-    return render(request, 'mainapp/detail.html', {'item': job, 'type': 'job'})
+    return render(request, 'mainapp/job_detail.html', {'item': job})
 
 
 def internship_detail(request, pk):
     item = get_object_or_404(Internship, pk=pk)
-    return render(request, 'mainapp/detail.html', {'item': item, 'type': 'internship'})
+    return render(request, 'mainapp/internship_detail.html', {'item': item})
 
 
 def resume_detail(request, pk):
     item = get_object_or_404(Resume, pk=pk)
-    return render(request, 'mainapp/detail.html', {'item': item, 'type': 'resume'})
+    return render(request, 'mainapp/resume_detail.html', {'item': item})
 
 
 @login_required
