@@ -121,6 +121,27 @@ class HomepagePaginationTests(TestCase):
 		self.assertContains(response, 'id="resumes"')
 		self.assertContains(response, 'href="#career" class="back-to-top"')
 
+	def test_authenticated_user_actions_are_in_account_menu(self):
+		user = User.objects.create_user(username='shukhrat', password='test-password')
+		AccountProfile.objects.create(
+			user=user,
+			role='company',
+			display_name='Shuhrat Atakhanov',
+			company_photo='company_photos/company.png',
+		)
+		self.client.force_login(user)
+
+		response = self.client.get(reverse('home'))
+
+		self.assertContains(response, 'class="account-menu"')
+		self.assertContains(response, 'Shuhrat Atakhanov')
+		self.assertContains(response, 'class="account-avatar-image"')
+		self.assertContains(response, 'company_photos/company.png')
+		self.assertNotContains(response, 'Free')
+		self.assertContains(response, 'My cards')
+		self.assertContains(response, 'Account settings')
+		self.assertContains(response, 'Log out')
+
 	def test_category_pages_render_only_selected_listing_type(self):
 		Job.objects.create(
 			company_name='Example Company',
@@ -157,10 +178,12 @@ class HomepagePaginationTests(TestCase):
 			self.assertEqual(response.status_code, 200)
 			self.assertEqual(response.context['listing_type'], expected_type)
 			self.assertTemplateUsed(response, 'mainapp/category_list.html')
+			self.assertContains(response, 'theme.js?v=dark-pages-1')
+			self.assertContains(response, 'data-theme-switcher="off"')
 			self.assertNotContains(response, 'hero-copy')
 			self.assertNotContains(response, 'CareerUp')
 			self.assertContains(response, f'href="{reverse("home")}" class="back-link category-back-link"')
-			self.assertContains(response, 'styles.css?v=category-grid-4')
+			self.assertContains(response, 'styles.css?v=dark-controls-2')
 			self.assertEqual(len(response.context['items']), 1)
 
 class SuperAdminPaginationTests(TestCase):
@@ -264,6 +287,10 @@ class ThemeSwitcherLanguageTests(TestCase):
 		self.assertIn('Выбор темы', js_source)
 		self.assertIn('Mavzu tanlovi', js_source)
 		self.assertIn(".toLowerCase().split(/[-_]/)[0]", js_source)
+		self.assertIn("body.dataset.themeSwitcher === 'off'", js_source)
+		css_source = (Path(__file__).resolve().parent.parent / 'static' / 'mainapp' / 'styles.css').read_text(encoding='utf-8')
+		self.assertIn('body.dark-theme .listing-pagination a.pagination-page.active', css_source)
+		self.assertIn('body.dark-theme .back-to-top', css_source)
 
 
 class ImageUploadTests(TestCase):
@@ -354,6 +381,9 @@ class ListingDetailPageTests(TestCase):
 		self.assertTemplateUsed(job_response, 'mainapp/job_detail.html')
 		self.assertTemplateUsed(internship_response, 'mainapp/internship_detail.html')
 		self.assertTemplateUsed(resume_response, 'mainapp/resume_detail.html')
+		for response in (job_response, internship_response, resume_response):
+			self.assertContains(response, 'theme.js?v=dark-pages-1')
+			self.assertContains(response, 'data-theme-switcher="off"')
 
 	def test_detail_pages_are_standalone_without_global_header(self):
 		job = Job.objects.create(
