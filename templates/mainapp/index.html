@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=back-to-top-1">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=dark-controls-2">
     <script src="{% static 'mainapp/theme.js' %}?v=language-labels-1" defer></script>
 </head>
 <body>
@@ -64,12 +64,29 @@
                         </div>
                     </details>
                     {% if request.user.is_authenticated %}
-                        <a href="{% url 'account_settings' %}" class="nav-account">{% translate "Account settings" %}</a>
-                        <a href="{% url 'my_listings' %}" class="nav-account">{% translate "My cards" %}</a>
-                        <form action="{% url 'logout' %}" method="post" class="nav-account-form">
-                            {% csrf_token %}
-                            <button type="submit" class="nav-account">{% translate "Log out" %}</button>
-                        </form>
+                        <details class="account-menu">
+                            <summary class="account-summary" aria-label="{% translate 'Account menu' %}">
+                                <span class="account-avatar">
+                                    {% if request.user.account_profile.company_photo %}
+                                    <img class="account-avatar-image" src="{{ request.user.account_profile.company_photo.url }}" alt="{{ request.user.account_profile.display_name|default:request.user.username }}">
+                                    {% else %}
+                                    {{ request.user.account_profile.display_name|default:request.user.username|slice:":2"|upper }}
+                                    {% endif %}
+                                </span>
+                                <span class="account-identity">
+                                    <strong>{{ request.user.account_profile.display_name|default:request.user.username }}</strong>
+                                </span>
+                                <span class="account-chevron" aria-hidden="true">&#9662;</span>
+                            </summary>
+                            <div class="account-menu-panel">
+                                <a href="{% url 'my_listings' %}">{% translate "My cards" %}</a>
+                                <a href="{% url 'account_settings' %}">{% translate "Account settings" %}</a>
+                                <form action="{% url 'logout' %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit">{% translate "Log out" %}</button>
+                                </form>
+                            </div>
+                        </details>
                     {% else %}
                         <a href="{% url 'login' %}" class="nav-account">{% translate "Log in" %}</a>
                         <a href="{% url 'register' %}" class="nav-account">{% translate "Register" %}</a>

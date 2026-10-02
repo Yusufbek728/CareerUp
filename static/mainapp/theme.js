@@ -29,6 +29,10 @@
         body.classList.add('dark-theme');
     }
 
+    if (body.dataset.themeSwitcher === 'off') {
+        return;
+    }
+
     const switcher = document.createElement('details');
     switcher.className = 'theme-switcher';
     switcher.innerHTML = `
