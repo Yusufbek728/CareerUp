@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=all-card-photos-larger-1">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=visible-language-flags-menu-22">
     <script src="{% static 'mainapp/theme.js' %}?v=language-labels-1" defer></script>
 </head>
 <body>
@@ -35,12 +35,17 @@
                     <form action="{% url 'set_language' %}" method="post" class="language-switcher">
                         {% csrf_token %}
                         <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                        <label class="sr-only" for="language-select">{% translate "Language" %}</label>
-                        <select id="language-select" name="language" aria-label="{% translate 'Language' %}" onchange="this.form.submit()">
-                            <option value="en"{% if current_language == 'en' %} selected{% endif %}>ENG</option>
-                            <option value="ru"{% if current_language == 'ru' %} selected{% endif %}>RUS</option>
-                            <option value="uz"{% if current_language == 'uz' %} selected{% endif %}>UZB</option>
-                        </select>
+                        <details class="language-dropdown">
+                            <summary class="language-current" aria-label="{% translate 'Language' %}">
+                                <img class="language-flag" src="{% if current_language == 'en' %}{% static 'mainapp/flags/uk.svg' %}{% elif current_language == 'ru' %}{% static 'mainapp/flags/ru.svg' %}{% else %}{% static 'mainapp/flags/uzbekistan.svg' %}{% endif %}" alt="">
+                                <span>{% if current_language == 'en' %}ENG{% elif current_language == 'ru' %}RUS{% else %}UZB{% endif %}</span>
+                            </summary>
+                            <div class="language-options" role="group" aria-label="{% translate 'Language' %}">
+                                <button class="language-option" type="submit" name="language" value="en"{% if current_language == 'en' %} aria-pressed="true"{% endif %}><img class="language-flag" src="{% static 'mainapp/flags/uk.svg' %}" alt=""> ENG</button>
+                                <button class="language-option" type="submit" name="language" value="ru"{% if current_language == 'ru' %} aria-pressed="true"{% endif %}><img class="language-flag" src="{% static 'mainapp/flags/ru.svg' %}" alt=""> RUS</button>
+                                <button class="language-option" type="submit" name="language" value="uz"{% if current_language == 'uz' %} aria-pressed="true"{% endif %}><img class="language-flag" src="{% static 'mainapp/flags/uzbekistan.svg' %}" alt=""> UZB</button>
+                            </div>
+                        </details>
                     </form>
                     <details class="create-menu">
                         <summary class="nav-btn">{% translate "Create" %}</summary>
