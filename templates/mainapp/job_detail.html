@@ -9,17 +9,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=dark-controls-2">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=detail-work-image-6">
     <script src="{% static 'mainapp/theme.js' %}?v=dark-pages-1" defer></script>
 </head>
 <body class="standalone-detail-body" data-theme-switcher="off">
     <main class="container standalone-detail-page">
         <article class="standalone-detail-card reveal">
-            <a href="{% url 'home' %}" class="back-link">← {% translate "Back to all listings" %}</a>
+            <a href="{{ return_url }}" class="back-link">← {% translate "Back to all listings" %}</a>
             <span class="tag">{% translate "JOB" %}</span>
             <h1>{{ item.job_title }}</h1>
             <p class="company-name">{{ item.company_name }}</p>
-            {% if item.work_photo %}<img class="listing-image detail-image" src="{{ item.work_photo.url }}" alt="{{ item.job_title }}">{% endif %}
+            {% if item.work_photo %}<img class="listing-image detail-image work-detail-image" src="{{ item.work_photo.url }}" alt="{{ item.job_title }}">{% endif %}
             <div class="detail-grid">
                 <div><strong>{% translate "Salary:" %}</strong> ${{ item.salary }}</div>
                 <div><strong>{% translate "Hourly income:" %}</strong> ${{ item.hourly_income }}</div>

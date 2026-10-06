@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=dark-controls-2">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=all-card-photos-larger-1">
     <script src="{% static 'mainapp/theme.js' %}?v=language-labels-1" defer></script>
 </head>
 <body>
@@ -176,7 +176,7 @@
 
                 <div class="job-grid">
                     {% for job in jobs %}
-                    <a href="{% url 'job_detail' job.pk %}" class="job-card-link">
+                    <a href="{% url 'job_detail' job.pk %}?return_to=home" class="job-card-link">
                         <article class="job-card listing-card">
                             <div class="listing-card-media">
                                 {% if job.work_photo %}
@@ -237,7 +237,7 @@
 
                 <div class="job-grid">
                     {% for internship in internships %}
-                    <a href="{% url 'internship_detail' internship.pk %}" class="job-card-link">
+                    <a href="{% url 'internship_detail' internship.pk %}?return_to=home" class="job-card-link">
                         <article class="job-card listing-card">
                             <div class="listing-card-media">
                                 {% if internship.work_photo %}
@@ -297,25 +297,29 @@
 
                 <div class="job-grid">
                     {% for resume in resumes %}
-                    <a href="{% url 'resume_detail' resume.pk %}" class="job-card-link">
-                        <article class="job-card resume-card">
-                            <div class="resume-card-header">
+                    <a href="{% url 'resume_detail' resume.pk %}?return_to=home" class="job-card-link">
+                        <article class="job-card resume-card listing-card">
+                            <div class="listing-card-media resume-card-media">
                                 {% if resume.photo %}
-                                    <img class="listing-image card-image profile-image" src="{{ resume.photo.url }}" alt="{{ resume.name }} {{ resume.surname }}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
-                                    <div class="profile-image-placeholder" style="display: none;">👤</div>
+                                    <img class="listing-image" src="{{ resume.photo.url }}" alt="{{ resume.name }} {{ resume.surname }}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                    <div class="listing-media-placeholder" style="display: none;"><span class="placeholder-icon">👤</span></div>
                                 {% else %}
-                                    <div class="profile-image-placeholder">👤</div>
+                                    <div class="listing-media-placeholder"><span class="placeholder-icon">👤</span></div>
                                 {% endif %}
-                                <span class="status {% if resume.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ resume.get_status_display }}</span>
                             </div>
-                            <h3 title="{{ resume.name }} {{ resume.surname }}">{{ resume.name }} {{ resume.surname }}</h3>
-                            <p class="listing-card-company">{{ resume.email }}</p>
-                            <ul class="listing-card-details">
-                                <li>{{ resume.experience }} {% translate "years experience" %}</li>
-                            </ul>
-                            <div class="card-footer">
-                                <strong>${{ resume.wanted_salary }}</strong>
-                                <span>{{ resume.created_at|date:"M d, Y" }}</span>
+                            <div class="listing-card-content">
+                                <div class="listing-card-heading">
+                                    <h3 title="{{ resume.name }} {{ resume.surname }}">{{ resume.name }} {{ resume.surname }}</h3>
+                                    <span class="status {% if resume.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ resume.get_status_display }}</span>
+                                </div>
+                                <p class="listing-card-company">{{ resume.email }}</p>
+                                <ul class="listing-card-details">
+                                    <li>{{ resume.experience }} {% translate "years experience" %}</li>
+                                </ul>
+                                <div class="card-footer">
+                                    <strong>${{ resume.wanted_salary }}</strong>
+                                    <span>{{ resume.created_at|date:"M d, Y" }}</span>
+                                </div>
                             </div>
                         </article>
                     </a>
