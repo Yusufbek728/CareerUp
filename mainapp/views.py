@@ -1,10 +1,11 @@
-from django.db.models import Q
+from django.db.models import Max, Q
 from django.core.paginator import Paginator
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.utils.http import url_has_allowed_host_and_scheme
 from django_filters.rest_framework import DjangoFilterBackend
@@ -20,6 +21,7 @@ from .forms import (
     AdminUserForm,
     InternshipForm,
     JobForm,
+    ListingFilterForm,
     LoginForm,
     RegistrationForm,
     ResumeForm,
@@ -71,16 +73,20 @@ def build_homepage_context(request, listing_type=None):
     jobs = Job.objects.all()
     internships = Internship.objects.all()
     resumes = Resume.objects.all()
+    filters = ListingFilterForm(request.GET) if listing_type in {'job', 'internship', 'resume'} else None
+    salary_slider_max = 0
 
     if listing_type == 'job':
         internships = Internship.objects.none()
         resumes = Resume.objects.none()
+        salary_slider_max = Job.objects.aggregate(max_salary=Max('salary'))['max_salary'] or 0
     elif listing_type == 'internship':
         jobs = Job.objects.none()
         resumes = Resume.objects.none()
     elif listing_type == 'resume':
         jobs = Job.objects.none()
         internships = Internship.objects.none()
+        salary_slider_max = Resume.objects.aggregate(max_salary=Max('wanted_salary'))['max_salary'] or 0
 
     jobs = filter_listings_by_query(
         jobs,
@@ -122,6 +128,42 @@ def build_homepage_context(request, listing_type=None):
         ],
     )
 
+    if filters is not None and filters.is_valid():
+        filter_fields = (
+            ('status', 'status'),
+            ('working_condition', 'working_condition'),
+            ('work_field', 'work_field'),
+            ('work_schedule_and_working_hours', 'work_schedule_and_working_hours'),
+        )
+        if listing_type == 'job':
+            for form_field, model_field in filter_fields:
+                value = filters.cleaned_data[form_field]
+                if value:
+                    jobs = jobs.filter(**{model_field: value})
+            if filters.cleaned_data['salary_min'] is not None:
+                jobs = jobs.filter(salary__gte=filters.cleaned_data['salary_min'])
+            if filters.cleaned_data['salary_max'] is not None:
+                jobs = jobs.filter(salary__lte=filters.cleaned_data['salary_max'])
+        elif listing_type == 'internship':
+            for form_field, model_field in filter_fields:
+                value = filters.cleaned_data[form_field]
+                if value:
+                    internships = internships.filter(**{model_field: value})
+        elif listing_type == 'resume':
+            resume_filter_fields = (
+                ('status', 'status'),
+                ('working_condition', 'wanted_working_condition'),
+                ('work_schedule_and_working_hours', 'wanted_work_schedule_and_working_hours'),
+            )
+            for form_field, model_field in resume_filter_fields:
+                value = filters.cleaned_data[form_field]
+                if value:
+                    resumes = resumes.filter(**{model_field: value})
+            if filters.cleaned_data['salary_min'] is not None:
+                resumes = resumes.filter(wanted_salary__gte=filters.cleaned_data['salary_min'])
+            if filters.cleaned_data['salary_max'] is not None:
+                resumes = resumes.filter(wanted_salary__lte=filters.cleaned_data['salary_max'])
+
     jobs = jobs.order_by('-created_at')
     internships = internships.order_by('-created_at')
     resumes = resumes.order_by('-created_at')
@@ -144,6 +186,8 @@ def build_homepage_context(request, listing_type=None):
         'resume_count': Resume.objects.count(),
         'search_query': search_query,
         'listing_type': listing_type,
+        'filters': filters,
+        'salary_slider_max': salary_slider_max,
     }
 
 
@@ -167,22 +211,43 @@ def category_page(request, listing_type):
     context = build_homepage_context(request, listing_type)
     listing_name = {'job': 'jobs', 'internship': 'internships', 'resume': 'resumes'}[listing_type]
     context['items'] = context[listing_name].paginator.object_list
+    context['detail_return_to'] = listing_type
     return render(request, 'mainapp/category_list.html', context)
+
+
+def get_detail_return_url(request):
+    return_pages = {
+        'home': 'home',
+        'job': 'jobs_page',
+        'internship': 'internships_page',
+        'resume': 'resumes_page',
+    }
+    page_name = return_pages.get(request.GET.get('return_to'), 'home')
+    return reverse(page_name)
 
 
 def job_detail(request, pk):
     job = get_object_or_404(Job, pk=pk)
-    return render(request, 'mainapp/job_detail.html', {'item': job})
+    return render(request, 'mainapp/job_detail.html', {
+        'item': job,
+        'return_url': get_detail_return_url(request),
+    })
 
 
 def internship_detail(request, pk):
     item = get_object_or_404(Internship, pk=pk)
-    return render(request, 'mainapp/internship_detail.html', {'item': item})
+    return render(request, 'mainapp/internship_detail.html', {
+        'item': item,
+        'return_url': get_detail_return_url(request),
+    })
 
 
 def resume_detail(request, pk):
     item = get_object_or_404(Resume, pk=pk)
-    return render(request, 'mainapp/resume_detail.html', {'item': item})
+    return render(request, 'mainapp/resume_detail.html', {
+        'item': item,
+        'return_url': get_detail_return_url(request),
+    })
 
 
 @login_required
@@ -488,4 +553,3 @@ class InternshipViewSet(OwnerModelViewSet):
     filter_backends = [SearchFilter, DjangoFilterBackend]
     search_fields = ['company_name', 'job_title', 'working_condition', 'work_schedule_and_working_hours', 'work_field', 'status', 'owner__username', 'owner__account_profile__display_name']
     filterset_fields = ['company_name', 'work_time', 'work_duration', 'job_title', 'working_condition', 'work_schedule_and_working_hours', 'work_field']
-

@@ -9,16 +9,91 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=dark-controls-2">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=all-card-photos-larger-1">
     <script src="{% static 'mainapp/theme.js' %}?v=dark-pages-1" defer></script>
+    <script src="{% static 'mainapp/filters.js' %}" defer></script>
 </head>
-<body data-theme-switcher="off">
+<body class="category-listing-body" data-theme-switcher="off">
     <main class="container category-listing-page">
         <a href="{% url 'home' %}" class="back-link category-back-link">&#8592; {% translate "Back home" %}</a>
-        <div class="job-grid">
+        {% if filters %}
+        <form method="get" class="listing-layout">
+            <aside class="listing-filters">
+            <div class="listing-filters-heading">
+                <h1>{% translate "Filter listings" %}</h1>
+                <a href="{{ request.path }}" class="clear-filters">{% translate "Clear filters" %}</a>
+            </div>
+            {% if filters.non_field_errors %}
+                <div class="filter-errors">{{ filters.non_field_errors }}</div>
+            {% endif %}
+            {% if listing_type == 'job' or listing_type == 'resume' %}
+            <fieldset class="salary-filter">
+                <legend>{% if listing_type == 'resume' %}{% translate "Wanted salary, UZS" %}{% else %}{% translate "Salary, UZS" %}{% endif %}</legend>
+                <div class="salary-filter-inputs">
+                    <label>
+                        <span>{{ filters.salary_min.label }}</span>
+                        {{ filters.salary_min }}
+                        {% for error in filters.salary_min.errors %}<small class="filter-errors">{{ error }}</small>{% endfor %}
+                    </label>
+                    <label>
+                        <span>{{ filters.salary_max.label }}</span>
+                        {{ filters.salary_max }}
+                        {% for error in filters.salary_max.errors %}<small class="filter-errors">{{ error }}</small>{% endfor %}
+                    </label>
+                </div>
+                <div class="salary-range-sliders" data-max="{{ salary_slider_max|default:10000000 }}">
+                    <input type="range" min="0" max="{{ salary_slider_max|default:10000000 }}" value="{{ filters.salary_min.value|default:0 }}" data-salary-min-range aria-label="{% translate 'Minimum salary slider' %}">
+                    <input type="range" min="0" max="{{ salary_slider_max|default:10000000 }}" value="{{ filters.salary_max.value|default:salary_slider_max|default:10000000 }}" data-salary-max-range aria-label="{% translate 'Maximum salary slider' %}">
+                </div>
+            </fieldset>
+            {% endif %}
+            <div class="listing-filter-options">
+                <label>
+                    <span>{{ filters.status.label }}</span>
+                    {{ filters.status }}
+                </label>
+                {% if listing_type != 'resume' %}
+                <label>
+                    <span>{{ filters.working_condition.label }}</span>
+                    {{ filters.working_condition }}
+                </label>
+                {% endif %}
+                {% if listing_type == 'job' or listing_type == 'internship' %}
+                <label>
+                    <span>{{ filters.work_field.label }}</span>
+                    {{ filters.work_field }}
+                </label>
+                {% endif %}
+                {% if listing_type != 'resume' %}
+                <label>
+                    <span>{{ filters.work_schedule_and_working_hours.label }}</span>
+                    {{ filters.work_schedule_and_working_hours }}
+                </label>
+                {% endif %}
+                {% if listing_type == 'resume' %}
+                <label>
+                    <span>{{ filters.working_condition.label }}</span>
+                    {{ filters.working_condition }}
+                </label>
+                <label>
+                    <span>{{ filters.work_schedule_and_working_hours.label }}</span>
+                    {{ filters.work_schedule_and_working_hours }}
+                </label>
+                {% endif %}
+            </div>
+            <button type="submit" class="apply-filters">{% translate "Apply filters" %}</button>
+            </aside>
+            <section class="listing-results">
+                <div class="listing-search">
+                    <label class="sr-only" for="listing-search-input">{% translate "Search listings" %}</label>
+                    <input id="listing-search-input" name="q" type="search" value="{{ search_query }}" placeholder="{% translate 'Search' %}">
+                    <button type="submit" aria-label="{% translate 'Search' %}">&#8594;</button>
+                </div>
+                <div class="job-grid">
+        {% endif %}
             {% for item in items %}
                 {% if listing_type == 'job' %}
-                <a href="{% url 'job_detail' item.pk %}" class="job-card-link">
+                <a href="{% url 'job_detail' item.pk %}?return_to={{ detail_return_to }}" class="job-card-link">
                     <article class="job-card listing-card">
                         <div class="listing-card-media">
                             {% if item.work_photo %}
@@ -30,7 +105,6 @@
                         <div class="listing-card-content">
                             <div class="listing-card-heading">
                                 <h3>{{ item.job_title }}</h3>
-                                <span class="status {% if item.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ item.get_status_display }}</span>
                             </div>
                             <p class="listing-card-company">{{ item.company_name }}</p>
                             <div class="listing-card-income">
@@ -41,7 +115,7 @@
                     </article>
                 </a>
                 {% elif listing_type == 'internship' %}
-                <a href="{% url 'internship_detail' item.pk %}" class="job-card-link">
+                <a href="{% url 'internship_detail' item.pk %}?return_to={{ detail_return_to }}" class="job-card-link">
                     <article class="job-card listing-card">
                         <div class="listing-card-media">
                             {% if item.work_photo %}
@@ -53,7 +127,6 @@
                         <div class="listing-card-content">
                             <div class="listing-card-heading">
                                 <h3>{{ item.job_title }}</h3>
-                                <span class="status {% if item.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ item.get_status_display }}</span>
                             </div>
                             <p class="listing-card-company">{{ item.company_name }}</p>
                             <ul class="listing-card-details">
@@ -65,30 +138,39 @@
                     </article>
                 </a>
                 {% else %}
-                <a href="{% url 'resume_detail' item.pk %}" class="job-card-link">
-                    <article class="job-card resume-card">
-                        <div class="resume-card-header">
+                <a href="{% url 'resume_detail' item.pk %}?return_to={{ detail_return_to }}" class="job-card-link">
+                    <article class="job-card resume-card listing-card">
+                        <div class="listing-card-media resume-card-media">
                             {% if item.photo %}
-                                <img class="listing-image card-image profile-image" src="{{ item.photo.url }}" alt="{{ item.name }} {{ item.surname }}">
+                                <img class="listing-image" src="{{ item.photo.url }}" alt="{{ item.name }} {{ item.surname }}">
                             {% else %}
-                                <div class="profile-image-placeholder">👤</div>
+                                <div class="listing-media-placeholder"><span class="placeholder-icon">👤</span></div>
                             {% endif %}
                             <span class="status {% if item.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ item.get_status_display }}</span>
                         </div>
-                        <h3>{{ item.name }} {{ item.surname }}</h3>
-                        <p class="listing-card-company">{{ item.email }}</p>
-                        <ul class="listing-card-details">
-                            <li>{{ item.experience }} {% translate "years experience" %}</li>
-                        </ul>
-                        <div class="card-footer">
-                            <strong>${{ item.wanted_salary }}</strong>
-                            <span>{{ item.created_at|date:"M d, Y" }}</span>
+                        <div class="listing-card-content">
+                            <div class="listing-card-heading">
+                                <h3>{{ item.name }} {{ item.surname }}</h3>
+                                <span class="status {% if item.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ item.get_status_display }}</span>
+                            </div>
+                            <p class="listing-card-company">{{ item.email }}</p>
+                            <ul class="listing-card-details">
+                                <li>{{ item.experience }} {% translate "years experience" %}</li>
+                            </ul>
+                            <div class="card-footer">
+                                <strong>${{ item.wanted_salary }}</strong>
+                                <span>{{ item.created_at|date:"M d, Y" }}</span>
+                            </div>
                         </div>
                     </article>
                 </a>
                 {% endif %}
             {% endfor %}
+        {% if filters %}
         </div>
+            </section>
+        </form>
+        {% endif %}
     </main>
 </body>
 </html>

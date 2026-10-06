@@ -9,13 +9,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=dark-controls-2">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=wide-card-images-1">
     <script src="{% static 'mainapp/theme.js' %}?v=dark-pages-1" defer></script>
 </head>
 <body class="standalone-detail-body" data-theme-switcher="off">
     <main class="container standalone-detail-page">
         <article class="standalone-detail-card reveal">
-            <a href="{% url 'home' %}" class="back-link">← {% translate "Back to all listings" %}</a>
+            <a href="{{ return_url }}" class="back-link">← {% translate "Back to all listings" %}</a>
             <span class="tag">{% translate "RESUME" %}</span>
             <h1>{{ item.name }} {{ item.surname }}</h1>
             <p class="company-name">{{ item.email }}</p>

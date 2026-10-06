@@ -4,7 +4,59 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import gettext_lazy as _
 
-from .models import AccountProfile, Internship, Job, Resume
+from .models import (
+    AccountProfile,
+    Internship,
+    Job,
+    Resume,
+    STATUS_CHOICES,
+    WORKING_CONDITIONS,
+    WORKING_DAYS,
+    WORK_FIELDS,
+)
+
+
+class ListingFilterForm(forms.Form):
+    salary_min = forms.IntegerField(
+        required=False,
+        min_value=0,
+        label=_('From'),
+        widget=forms.NumberInput(attrs={'min': 0, 'inputmode': 'numeric'}),
+    )
+    salary_max = forms.IntegerField(
+        required=False,
+        min_value=0,
+        label=_('To'),
+        widget=forms.NumberInput(attrs={'min': 0, 'inputmode': 'numeric'}),
+    )
+    status = forms.ChoiceField(
+        required=False,
+        choices=(('', _('Any')), *STATUS_CHOICES),
+        label=_('Status'),
+    )
+    working_condition = forms.ChoiceField(
+        required=False,
+        choices=(('', _('Any')), *WORKING_CONDITIONS),
+        label=_('Working conditions'),
+    )
+    work_field = forms.ChoiceField(
+        required=False,
+        choices=(('', _('Any')), *WORK_FIELDS),
+        label=_('Work field'),
+    )
+    work_schedule_and_working_hours = forms.ChoiceField(
+        required=False,
+        choices=(('', _('Any')), *WORKING_DAYS),
+        label=_('Working days'),
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        salary_min = cleaned_data.get('salary_min')
+        salary_max = cleaned_data.get('salary_max')
+        if salary_min is not None and salary_max is not None and salary_min > salary_max:
+            self.add_error('salary_max', _('Maximum salary must be greater than or equal to minimum salary.'))
+        return cleaned_data
 
 
 class AdminUserForm(forms.ModelForm):

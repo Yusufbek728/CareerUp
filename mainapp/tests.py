@@ -119,6 +119,8 @@ class HomepagePaginationTests(TestCase):
 		self.assertContains(response, 'id="jobs"')
 		self.assertContains(response, 'id="internships"')
 		self.assertContains(response, 'id="resumes"')
+		self.assertContains(response, 'class="listing-card-media resume-card-media"')
+		self.assertContains(response, 'class="job-card resume-card listing-card"')
 		self.assertContains(response, 'href="#career" class="back-to-top"')
 
 	def test_authenticated_user_actions_are_in_account_menu(self):
@@ -179,12 +181,132 @@ class HomepagePaginationTests(TestCase):
 			self.assertEqual(response.context['listing_type'], expected_type)
 			self.assertTemplateUsed(response, 'mainapp/category_list.html')
 			self.assertContains(response, 'theme.js?v=dark-pages-1')
-			self.assertContains(response, 'data-theme-switcher="off"')
+			self.assertContains(response, 'class="category-listing-body" data-theme-switcher="off"')
 			self.assertNotContains(response, 'hero-copy')
 			self.assertNotContains(response, 'CareerUp')
 			self.assertContains(response, f'href="{reverse("home")}" class="back-link category-back-link"')
-			self.assertContains(response, 'styles.css?v=dark-controls-2')
+			self.assertContains(response, 'styles.css?v=all-card-photos-larger-1')
 			self.assertEqual(len(response.context['items']), 1)
+			self.assertContains(response, f'return_to={expected_type}')
+			if expected_type == 'resume':
+				self.assertContains(response, 'class="listing-card-media resume-card-media"')
+
+	def test_job_page_filters_salary_and_all_work_attributes_together(self):
+		matching_job = Job.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			salary=5000000,
+			required_experience=1,
+			work_time=8,
+			job_title='Matching developer',
+			requirements_of_job='Python',
+			status='qidirilyapti',
+			working_condition='remote',
+			work_field='temporary',
+			work_schedule_and_working_hours='5/2',
+		)
+		Job.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			salary=8000000,
+			required_experience=1,
+			work_time=8,
+			job_title='Other developer',
+			requirements_of_job='Python',
+			status='topilgan',
+			working_condition='full_time',
+			work_field='permament',
+			work_schedule_and_working_hours='6/1',
+		)
+
+		response = self.client.get(reverse('jobs_page'), {
+			'salary_min': 4000000,
+			'salary_max': 6000000,
+			'status': 'qidirilyapti',
+			'working_condition': 'remote',
+			'work_field': 'temporary',
+			'work_schedule_and_working_hours': '5/2',
+		})
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual([item.pk for item in response.context['items']], [matching_job.pk])
+
+	def test_internship_filters_work_attributes_without_salary(self):
+		matching_internship = Internship.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			work_time=8,
+			work_duration=12,
+			job_title='Remote internship',
+			status='qidirilyapti',
+			working_condition='remote',
+			work_field='temporary',
+			work_schedule_and_working_hours='5/2',
+		)
+		Internship.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			work_time=8,
+			work_duration=12,
+			job_title='On-site internship',
+			working_condition='full_time',
+		)
+
+		response = self.client.get(reverse('internships_page'), {
+			'status': 'qidirilyapti',
+			'working_condition': 'remote',
+			'work_field': 'temporary',
+			'work_schedule_and_working_hours': '5/2',
+		})
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual([item.pk for item in response.context['items']], [matching_internship.pk])
+		self.assertNotContains(response, 'data-salary-min-range')
+
+	def test_resume_page_filters_wanted_salary_and_work_preferences(self):
+		matching_resume = Resume.objects.create(
+			name='Candidate',
+			surname='Example',
+			email='candidate@example.com',
+			phone_number='+998901234567',
+			experience=1,
+			wanted_salary=5000000,
+			wanted_work_time=8,
+			wanted_working_condition='remote',
+			wanted_work_schedule_and_working_hours='5/2',
+		)
+		Resume.objects.create(
+			name='Other',
+			surname='Candidate',
+			email='other@example.com',
+			phone_number='+998901234568',
+			experience=1,
+			wanted_salary=8000000,
+			wanted_work_time=8,
+			wanted_working_condition='full_time',
+		)
+
+		response = self.client.get(reverse('resumes_page'), {
+			'salary_min': 4000000,
+			'salary_max': 6000000,
+			'status': 'qidirilyapti',
+			'working_condition': 'remote',
+			'work_schedule_and_working_hours': '5/2',
+		})
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual([item.pk for item in response.context['items']], [matching_resume.pk])
+		self.assertNotContains(response, 'name="work_field"')
+
+	def test_category_filter_reports_invalid_salary_range(self):
+		response = self.client.get(reverse('jobs_page'), {
+			'salary_min': 6000000,
+			'salary_max': 4000000,
+		})
+
+		self.assertEqual(response.status_code, 200)
+		self.assertTrue(response.context['filters'].errors['salary_max'])
+		self.assertContains(response, 'Maximum salary must be greater than or equal to minimum salary.')
 
 class SuperAdminPaginationTests(TestCase):
 	def setUp(self):
@@ -384,6 +506,25 @@ class ListingDetailPageTests(TestCase):
 		for response in (job_response, internship_response, resume_response):
 			self.assertContains(response, 'theme.js?v=dark-pages-1')
 			self.assertContains(response, 'data-theme-switcher="off"')
+
+	def test_detail_back_link_returns_to_originating_listing_page(self):
+		job = Job.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			salary=1000,
+			required_experience=1,
+			work_time=8,
+			job_title='Developer',
+			requirements_of_job='Python',
+		)
+
+		home_response = self.client.get(reverse('job_detail', args=[job.pk]), {'return_to': 'home'})
+		jobs_response = self.client.get(reverse('job_detail', args=[job.pk]), {'return_to': 'job'})
+		invalid_response = self.client.get(reverse('job_detail', args=[job.pk]), {'return_to': '//example.com'})
+
+		self.assertContains(home_response, f'href="{reverse("home")}" class="back-link"')
+		self.assertContains(jobs_response, f'href="{reverse("jobs_page")}" class="back-link"')
+		self.assertContains(invalid_response, f'href="{reverse("home")}" class="back-link"')
 
 	def test_detail_pages_are_standalone_without_global_header(self):
 		job = Job.objects.create(

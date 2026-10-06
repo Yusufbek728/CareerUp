@@ -205,6 +205,14 @@ button {
     margin: 20px 0;
 }
 
+.standalone-detail-card .work-detail-image,
+.detail-card .work-detail-image {
+    width: 100%;
+    height: 450px;
+    border-radius: 18px;
+    box-shadow: 0 12px 30px rgba(20, 30, 24, 0.14);
+}
+
 .profile-image {
     border-radius: 50%;
 }
@@ -1084,7 +1092,7 @@ button {
 .listing-card {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: 320px;
     min-height: 0;
     padding: 0;
     overflow: hidden;
@@ -1093,9 +1101,9 @@ button {
 .listing-card-media {
     position: relative;
     width: 100%;
-    height: 160px;
-    min-height: 160px;
-    max-height: 160px;
+    height: 220px;
+    min-height: 220px;
+    max-height: 220px;
     overflow: hidden;
     background: linear-gradient(135deg, rgba(118, 169, 255, 0.08), rgba(168, 107, 255, 0.08));
     display: flex;
@@ -1130,8 +1138,8 @@ button {
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
-    padding: 16px 18px;
-    gap: 8px;
+    padding: 10px 12px;
+    gap: 6px;
     min-height: 0;
     box-sizing: border-box;
 }
@@ -1401,6 +1409,7 @@ button {
 
 .category-back-link {
     margin-bottom: 24px;
+    margin-left: calc((100% - 100vw) / 2 + 14px);
 }
 
 .category-listing-page .job-grid {
@@ -1554,6 +1563,55 @@ button {
     .floating-card {
         display: none;
     }
+}
+
+body.category-listing-body:not(.dark-theme) {
+    --bg: #f4f4ef;
+    --bg-2: #e8e9e2;
+    --panel: rgba(255, 255, 255, 0.96);
+    --panel-strong: #18201c;
+    --primary: #c6f36b;
+    --primary-2: #9edb38;
+    --accent: #d7ff79;
+    --text: #18201c;
+    --muted: #68706a;
+    --line: #d8ddd5;
+    --success: #2f9b69;
+    --warning: #b87813;
+    --shadow: 0 24px 70px rgba(24, 32, 28, 0.1);
+    color-scheme: light;
+    background:
+        linear-gradient(120deg, rgba(198, 243, 107, 0.18), transparent 32%),
+        radial-gradient(circle at 90% 4%, rgba(214, 224, 204, 0.7), transparent 24%),
+        var(--bg);
+    color: var(--text);
+}
+
+body.category-listing-body:not(.dark-theme) .job-card,
+body.category-listing-body:not(.dark-theme) .resume-card {
+    border-color: var(--line);
+    background: #ffffff;
+    box-shadow: 0 10px 28px rgba(40, 52, 76, 0.08);
+}
+
+body.category-listing-body:not(.dark-theme) .listing-filters,
+body.category-listing-body:not(.dark-theme) .listing-search input {
+    border-color: var(--line);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 12px 32px rgba(40, 52, 76, 0.08);
+}
+
+body.category-listing-body:not(.dark-theme) .listing-filter-options select,
+body.category-listing-body:not(.dark-theme) .salary-filter-inputs input {
+    border-color: var(--line);
+    background: #ffffff;
+    color: var(--text);
+}
+
+body.category-listing-body:not(.dark-theme) .salary-range-sliders input[type="range"]::-webkit-slider-thumb,
+body.category-listing-body:not(.dark-theme) .salary-range-sliders input[type="range"]::-moz-range-thumb {
+    border-color: #9bbf52;
+    background: #ffffff;
 }
 
 /* Visual refresh */
@@ -2049,7 +2107,7 @@ body.dark-theme .band-content {
 }
 
 .job-card.listing-card {
-    height: 100%;
+    height: 320px;
     padding: 0;
 }
 
@@ -2212,7 +2270,7 @@ body.dark-theme .profile-image-placeholder {
     background: rgba(255, 255, 255, 0.08);
 }
 
-.category-listing-page > .job-grid {
+.category-listing-page .job-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
@@ -2255,8 +2313,8 @@ body.dark-theme .listing-pagination a:focus-visible {
 
 body.dark-theme .listing-pagination a.pagination-page.active {
     border-color: var(--primary);
-    background: var(--primary);
-    color: #07111f;
+    background: var(--text);
+    color: var(--primary);
 }
 
 body.dark-theme .back-to-top {
@@ -2278,7 +2336,7 @@ html {
 }
 
 @media (max-width: 680px) {
-    .category-listing-page > .job-grid {
+    .category-listing-page .job-grid {
         grid-template-columns: 1fr;
     }
 
@@ -2287,5 +2345,238 @@ html {
         bottom: 16px;
         width: 46px;
         height: 46px;
+    }
+}
+
+.listing-layout {
+    display: grid;
+    grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+    align-items: start;
+    gap: 24px;
+    width: 100vw;
+    padding: 0 14px;
+    margin: 24px 0 30px;
+    margin-left: calc((100% - 100vw) / 2);
+}
+
+.listing-filters {
+    position: sticky;
+    top: 20px;
+    display: grid;
+    gap: 20px;
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+}
+
+.listing-results {
+    min-width: 0;
+}
+
+.listing-results > .job-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.listing-search {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.listing-search input {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 11px 15px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    color: var(--text);
+    font: inherit;
+}
+
+.listing-search button {
+    display: grid;
+    width: 48px;
+    min-width: 48px;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--primary);
+    color: #07111f;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.listing-filters-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.listing-filters-heading h1 {
+    margin: 0;
+    font-size: 1.3rem;
+}
+
+.clear-filters {
+    color: var(--primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.listing-filter-options {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.listing-filter-options label,
+.salary-filter-inputs label {
+    display: grid;
+    gap: 7px;
+    color: var(--muted);
+    font-size: 0.88rem;
+}
+
+.listing-filter-options select,
+.salary-filter-inputs input {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel-strong);
+    color: var(--text);
+    font: inherit;
+}
+
+.salary-filter {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.salary-filter legend {
+    margin-bottom: 10px;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.salary-filter-inputs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.salary-range-sliders {
+    position: relative;
+    height: 26px;
+    margin: 6px 12px 0;
+}
+
+.salary-range-sliders input[type="range"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 26px;
+    margin: 0;
+    appearance: none;
+    background: transparent;
+    pointer-events: none;
+}
+
+.salary-range-sliders input[type="range"]::-webkit-slider-runnable-track {
+    height: 2px;
+    background: var(--line);
+}
+
+.salary-range-sliders input[type="range"]::-moz-range-track {
+    height: 2px;
+    background: var(--line);
+}
+
+.salary-range-sliders input[type="range"]::-webkit-slider-thumb {
+    width: 15px;
+    height: 15px;
+    margin-top: -6px;
+    appearance: none;
+    border: 1px solid var(--primary-2);
+    border-radius: 50%;
+    background: var(--panel-strong);
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.salary-range-sliders input[type="range"]::-moz-range-thumb {
+    width: 13px;
+    height: 13px;
+    border: 1px solid var(--primary-2);
+    border-radius: 50%;
+    background: var(--panel-strong);
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.apply-filters {
+    justify-self: start;
+    padding: 10px 18px;
+    border-radius: 9px;
+    background: var(--text);
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.filter-errors {
+    color: #ffb5b5;
+    font-size: 0.82rem;
+}
+
+@media (max-width: 1080px) and (min-width: 761px) {
+    .listing-layout {
+        grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+    }
+
+    .listing-results > .job-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .listing-layout {
+        grid-template-columns: 1fr;
+        width: auto;
+        margin-left: 0;
+        padding: 0;
+    }
+
+    .listing-filters {
+        position: static;
+    }
+
+    .listing-results > .job-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .listing-results > .job-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .listing-filters {
+        padding: 16px;
+    }
+
+    .listing-filters-heading {
+        align-items: flex-start;
+        flex-direction: column;
     }
 }
