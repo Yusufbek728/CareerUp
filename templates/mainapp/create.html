@@ -9,10 +9,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=visible-language-flags-menu-22">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=site-header-global-1">
     <script src="{% static 'mainapp/theme.js' %}?v=language-labels-1" defer></script>
 </head>
 <body>
+    {% include "mainapp/partials/site_header.html" %}
     <main class="create-page container">
         <div class="create-toolbar">
             <a href="{% url 'home' %}" class="back-link">&larr; {% translate "Back to CareerUp" %}</a>
