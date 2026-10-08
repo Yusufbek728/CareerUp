@@ -180,12 +180,14 @@ class HomepagePaginationTests(TestCase):
 			self.assertEqual(response.status_code, 200)
 			self.assertEqual(response.context['listing_type'], expected_type)
 			self.assertTemplateUsed(response, 'mainapp/category_list.html')
-			self.assertContains(response, 'theme.js?v=dark-pages-1')
-			self.assertContains(response, 'class="category-listing-body" data-theme-switcher="off"')
+			self.assertContains(response, 'theme.js?v=dark-pages-1&switch=3')
+			self.assertContains(response, 'class="category-listing-body"')
 			self.assertNotContains(response, 'hero-copy')
-			self.assertNotContains(response, 'CareerUp')
+			self.assertContains(response, 'class="header site-header"')
+			self.assertNotContains(response, 'class="header-search"')
+			self.assertContains(response, 'class="listing-search"')
 			self.assertContains(response, f'href="{reverse("home")}" class="back-link category-back-link"')
-			self.assertContains(response, 'styles.css?v=all-card-photos-larger-1')
+			self.assertContains(response, 'styles.css?v=site-header-global-1&switch=4')
 			self.assertEqual(len(response.context['items']), 1)
 			self.assertContains(response, f'return_to={expected_type}')
 			if expected_type == 'resume':
@@ -504,8 +506,8 @@ class ListingDetailPageTests(TestCase):
 		self.assertTemplateUsed(internship_response, 'mainapp/internship_detail.html')
 		self.assertTemplateUsed(resume_response, 'mainapp/resume_detail.html')
 		for response in (job_response, internship_response, resume_response):
-			self.assertContains(response, 'theme.js?v=dark-pages-1')
-			self.assertContains(response, 'data-theme-switcher="off"')
+			self.assertContains(response, 'theme.js?v=dark-pages-1&switch=3')
+			self.assertContains(response, 'class="header site-header"')
 
 	def test_detail_back_link_returns_to_originating_listing_page(self):
 		job = Job.objects.create(
@@ -526,7 +528,7 @@ class ListingDetailPageTests(TestCase):
 		self.assertContains(jobs_response, f'href="{reverse("jobs_page")}" class="back-link"')
 		self.assertContains(invalid_response, f'href="{reverse("home")}" class="back-link"')
 
-	def test_detail_pages_are_standalone_without_global_header(self):
+	def test_detail_pages_use_shared_global_header(self):
 		job = Job.objects.create(
 			company_name='Example Company',
 			phone_number='+998901234567',
@@ -540,7 +542,10 @@ class ListingDetailPageTests(TestCase):
 		response = self.client.get(reverse('job_detail', args=[job.pk]))
 
 		self.assertEqual(response.status_code, 200)
-		self.assertNotContains(response, 'CareerUp')
+		self.assertContains(response, 'class="header site-header"')
+		self.assertContains(response, 'class="language-current"')
+		self.assertContains(response, 'theme.js?v=dark-pages-1&switch=3')
+		self.assertContains(response, 'aria-label="Listing categories"')
 		self.assertNotContains(response, 'language-select')
 		self.assertNotContains(response, 'Back home')
 		self.assertContains(response, 'Developer')

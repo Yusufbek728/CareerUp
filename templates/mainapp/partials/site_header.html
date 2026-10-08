@@ -7,27 +7,82 @@
             <span>CareerUp</span>
         </a>
         <div class="nav-links" aria-label="{% translate 'Listing categories' %}">
-            <a href="{% url 'jobs_page' %}" class="nav-link">{% translate "Vacancies" %}</a>
-            <a href="{% url 'internships_page' %}" class="nav-link">{% translate "Internships" %}</a>
-            <a href="{% url 'resumes_page' %}" class="nav-link">{% translate "Resumes" %}</a>
+            <a href="{% url 'jobs_page' %}" class="nav-link{% if request.resolver_match.url_name == 'jobs_page' %} active{% endif %}">{% translate "Vacancies" %}</a>
+            <a href="{% url 'internships_page' %}" class="nav-link{% if request.resolver_match.url_name == 'internships_page' %} active{% endif %}">{% translate "Internships" %}</a>
+            <a href="{% url 'resumes_page' %}" class="nav-link{% if request.resolver_match.url_name == 'resumes_page' %} active{% endif %}">{% translate "Resumes" %}</a>
         </div>
         <div class="nav-actions">
+            {% if show_header_search %}
+            <form method="get" class="header-search">
+                <label class="sr-only" for="header-search-input">{% translate "Search listings" %}</label>
+                <input id="header-search-input" name="q" type="search" value="{{ search_query }}" placeholder="{% translate 'Search' %}">
+                <button type="submit" aria-label="{% translate 'Search' %}">&#8594;</button>
+            </form>
+            {% endif %}
             <form action="{% url 'set_language' %}" method="post" class="language-switcher">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <details class="language-dropdown">
-                    <summary class="language-current" aria-label="{% translate 'Language' %}">
+                    <summary class="language-current" aria-label="{% translate 'Language' %}: {% if current_language == 'en' %}English{% elif current_language == 'ru' %}Русский{% else %}O‘zbekcha{% endif %}">
                         <img class="language-flag" src="{% if current_language == 'en' %}{% static 'mainapp/flags/uk.svg' %}{% elif current_language == 'ru' %}{% static 'mainapp/flags/ru.svg' %}{% else %}{% static 'mainapp/flags/uzbekistan.svg' %}{% endif %}" alt="">
-                        <span>{% if current_language == 'en' %}ENG{% elif current_language == 'ru' %}RUS{% else %}UZB{% endif %}</span>
                     </summary>
                     <div class="language-options" role="group" aria-label="{% translate 'Language' %}">
-                        <button class="language-option" type="submit" name="language" value="en"{% if current_language == 'en' %} aria-pressed="true"{% endif %}><img class="language-flag" src="{% static 'mainapp/flags/uk.svg' %}" alt=""> ENG</button>
-                        <button class="language-option" type="submit" name="language" value="ru"{% if current_language == 'ru' %} aria-pressed="true"{% endif %}><img class="language-flag" src="{% static 'mainapp/flags/ru.svg' %}" alt=""> RUS</button>
-                        <button class="language-option" type="submit" name="language" value="uz"{% if current_language == 'uz' %} aria-pressed="true"{% endif %}><img class="language-flag" src="{% static 'mainapp/flags/uzbekistan.svg' %}" alt=""> UZB</button>
+                        <button class="language-option" type="submit" name="language" value="en" aria-label="English"{% if current_language == 'en' %} aria-pressed="true"{% endif %}><img class="language-flag" src="{% static 'mainapp/flags/uk.svg' %}" alt=""></button>
+                        <button class="language-option" type="submit" name="language" value="ru" aria-label="Русский"{% if current_language == 'ru' %} aria-pressed="true"{% endif %}><img class="language-flag" src="{% static 'mainapp/flags/ru.svg' %}" alt=""></button>
+                        <button class="language-option" type="submit" name="language" value="uz" aria-label="O‘zbekcha"{% if current_language == 'uz' %} aria-pressed="true"{% endif %}><img class="language-flag" src="{% static 'mainapp/flags/uzbekistan.svg' %}" alt=""></button>
                     </div>
                 </details>
             </form>
-            <a href="{% url 'home' %}" class="nav-account">{% translate "Back home" %}</a>
+            <details class="create-menu">
+                <summary class="nav-btn">{% translate "Create" %}</summary>
+                <div class="create-options">
+                    {% if request.user.is_authenticated %}
+                        {% if request.user.is_superuser %}
+                            <a href="{% url 'create_listing' 'job' %}">{% translate "Job" %}</a>
+                            <a href="{% url 'create_listing' 'internship' %}">{% translate "Internship" %}</a>
+                            <a href="{% url 'create_listing' 'resume' %}">{% translate "Resume" %}</a>
+                        {% elif request.user.account_profile.role == 'company' %}
+                            <a href="{% url 'create_listing' 'job' %}">{% translate "Job" %}</a>
+                            <a href="{% url 'create_listing' 'internship' %}">{% translate "Internship" %}</a>
+                        {% elif request.user.account_profile.role == 'worker' %}
+                            <a href="{% url 'create_listing' 'resume' %}">{% translate "Resume" %}</a>
+                        {% else %}
+                            <a href="{% url 'choose_role' %}">{% translate "Choose account type" %}</a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'login' %}?next={% url 'create_listing' 'job' %}">{% translate "Log in to create" %}</a>
+                    {% endif %}
+                </div>
+            </details>
+            {% if request.user.is_authenticated %}
+                <details class="account-menu">
+                    <summary class="account-summary" aria-label="{% translate 'Account menu' %}">
+                        <span class="account-avatar">
+                            {% if request.user.account_profile.company_photo %}
+                            <img class="account-avatar-image" src="{{ request.user.account_profile.company_photo.url }}" alt="{{ request.user.account_profile.display_name|default:request.user.username }}">
+                            {% else %}
+                            {{ request.user.account_profile.display_name|default:request.user.username|slice:":2"|upper }}
+                            {% endif %}
+                        </span>
+                        <span class="account-identity">
+                            <strong>{{ request.user.account_profile.display_name|default:request.user.username }}</strong>
+                        </span>
+                        <span class="account-chevron" aria-hidden="true">&#9662;</span>
+                    </summary>
+                    <div class="account-menu-panel">
+                        <a href="{% url 'my_listings' %}">{% translate "My cards" %}</a>
+                        <a href="{% url 'account_settings' %}">{% translate "Account settings" %}</a>
+                        {% if request.user.is_superuser %}<a href="{% url 'super_admin' %}">{% translate "Administrator panel" %}</a>{% endif %}
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit">{% translate "Log out" %}</button>
+                        </form>
+                    </div>
+                </details>
+            {% else %}
+                <a href="{% url 'login' %}" class="nav-account">{% translate "Log in" %}</a>
+                <a href="{% url 'register' %}" class="nav-account">{% translate "Register" %}</a>
+            {% endif %}
         </div>
     </nav>
 </header>
