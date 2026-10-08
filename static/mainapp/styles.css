@@ -1444,10 +1444,16 @@ button {
     background: linear-gradient(180deg, rgba(4, 11, 20, 0.2), rgba(4, 11, 20, 0.65));
 }
 
+body:not(.dark-theme) .footer {
+    border-top-color: rgba(15, 23, 42, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(241, 245, 249, 0.96));
+    color: #111827;
+}
+
 .footer-inner {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: start;
     gap: 28px;
 }
 
@@ -1457,15 +1463,55 @@ button {
     max-width: 440px;
 }
 
+.footer-categories {
+    display: grid;
+    justify-items: start;
+    gap: 10px;
+}
+
+.footer-categories a {
+    color: var(--text);
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.footer-categories a:hover,
+.footer-categories a:focus-visible {
+    color: var(--primary);
+}
+
 .footer-brand p {
     margin: 0;
     color: var(--muted);
     line-height: 1.7;
 }
 
+body:not(.dark-theme) .footer-brand p,
+body:not(.dark-theme) .footer-label {
+    color: #475467;
+}
+
 .footer-links {
     display: grid;
+    justify-self: end;
     gap: 10px;
+}
+
+.footer-contact {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.footer-phone {
+    color: var(--text);
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.footer-phone:hover,
+.footer-phone:focus-visible {
+    color: var(--primary);
 }
 
 .footer-label {
@@ -1524,8 +1570,12 @@ button {
 
 @media (max-width: 700px) {
     .footer-inner {
-        flex-direction: column;
+        grid-template-columns: 1fr;
         align-items: stretch;
+    }
+
+    .footer-links {
+        justify-self: stretch;
     }
 
     .footer-links {

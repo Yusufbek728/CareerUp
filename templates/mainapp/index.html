@@ -361,7 +361,18 @@
                     <p>© 2026 CareerUp.</p>
                 </div>
 
+                <nav class="footer-categories" aria-label="{% translate 'Work categories' %}">
+                    <span class="footer-label">{% translate "Explore" %}</span>
+                    <a href="{% url 'jobs_page' %}">{% translate "Vacancies" %}</a>
+                    <a href="{% url 'internships_page' %}">{% translate "Internships" %}</a>
+                    <a href="{% url 'resumes_page' %}">{% translate "Resumes" %}</a>
+                </nav>
+
                 <div class="footer-links">
+                    <div class="footer-contact">
+                        <span class="footer-label">{% translate "Contact" %}</span>
+                        <a class="footer-phone" href="tel:+998934001949">+998 93 400 19 49</a>
+                    </div>
                     <span class="footer-label">{% translate "Our community" %}</span>
                     <div class="footer-social-links">
                         <a class="footer-social-link footer-telegram" href="https://t.me/CareerUp_original" target="_blank" rel="noopener noreferrer">
