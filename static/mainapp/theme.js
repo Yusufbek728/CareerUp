@@ -22,8 +22,15 @@
             light: 'Yorqin',
             dark: 'Qorong\'i',
         },
+        uzb: {
+            switchLabel: "Ko'rinishni o'zgartirish",
+            themeLabel: 'Mavzu tanlovi',
+            light: 'Yorqin',
+            dark: 'Qorong\'i',
+        },
     };
-    const t = translations[language] || translations.en;
+    const normalizedLanguage = language === 'uzb' ? 'uz' : language;
+    const t = translations[normalizedLanguage] || translations.en;
 
     if (savedTheme === 'dark') {
         body.classList.add('dark-theme');
