@@ -1452,8 +1452,8 @@ button {
 
 .footer-social-links {
     display: flex;
-    align-items: center;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
     gap: 10px;
 }
 
@@ -1463,6 +1463,7 @@ button {
     justify-content: center;
     gap: 9px;
     min-height: 42px;
+    min-width: 170px;
     padding: 0 16px;
     border-radius: 11px;
     color: #fff;
