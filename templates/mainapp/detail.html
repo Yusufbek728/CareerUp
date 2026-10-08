@@ -9,37 +9,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=site-header-global-1">
-    <script src="{% static 'mainapp/theme.js' %}?v=language-labels-1" defer></script>
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=site-header-global-1&switch=4">
+    <script src="{% static 'mainapp/theme.js' %}?v=language-labels-1&switch=3" defer></script>
 </head>
 <body>
     <div class="page-shell">
-        <header class="header">
-            <nav class="nav container">
-                <div class="logo-wrap">
-                    <img class="logo-image" src="{% static 'mainapp/logo.png' %}" alt="CareerUp">
-                    <span>CareerUp</span>
-                </div>
-                <div class="nav-actions">
-                    <form action="{% url 'set_language' %}" method="post" class="language-switcher">
-                        {% csrf_token %}
-                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                        <details class="language-dropdown">
-                            <summary class="language-current" aria-label="{% translate 'Language' %}">
-                                <img class="language-flag" src="{% if current_language == 'en' %}{% static 'mainapp/flags/uk.svg' %}{% elif current_language == 'ru' %}{% static 'mainapp/flags/ru.svg' %}{% else %}{% static 'mainapp/flags/uzbekistan.svg' %}{% endif %}" alt="">
-                                <span>{% if current_language == 'en' %}ENG{% elif current_language == 'ru' %}RUS{% else %}UZB{% endif %}</span>
-                            </summary>
-                            <div class="language-options" role="group" aria-label="{% translate 'Language' %}">
-                                <button class="language-option" type="submit" name="language" value="en"{% if current_language == 'en' %} aria-pressed="true"{% endif %}><img class="language-flag" src="{% static 'mainapp/flags/uk.svg' %}" alt=""> ENG</button>
-                                <button class="language-option" type="submit" name="language" value="ru"{% if current_language == 'ru' %} aria-pressed="true"{% endif %}><img class="language-flag" src="{% static 'mainapp/flags/ru.svg' %}" alt=""> RUS</button>
-                                <button class="language-option" type="submit" name="language" value="uz"{% if current_language == 'uz' %} aria-pressed="true"{% endif %}><img class="language-flag" src="{% static 'mainapp/flags/uzbekistan.svg' %}" alt=""> UZB</button>
-                            </div>
-                        </details>
-                    </form>
-                    <a href="{% url 'home' %}" class="nav-btn">{% translate "Back home" %}</a>
-                </div>
-            </nav>
-        </header>
+        {% include "mainapp/partials/site_header.html" %}
 
         <main class="container detail-page">
             <div class="detail-card reveal">

@@ -336,10 +336,11 @@ button {
 .language-current {
     display: flex;
     align-items: center;
-    gap: 8px;
-    min-width: 92px;
+    justify-content: center;
+    gap: 7px;
+    min-width: 40px;
     min-height: 38px;
-    padding: 8px 11px;
+    padding: 8px 9px;
     border: 1px solid var(--line);
     border-radius: 10px;
     background: #fff;
@@ -352,16 +353,6 @@ button {
 
 .language-current::-webkit-details-marker {
     display: none;
-}
-
-.language-current::after {
-    width: 6px;
-    height: 6px;
-    margin-left: auto;
-    border-right: 1.5px solid currentColor;
-    border-bottom: 1.5px solid currentColor;
-    content: "";
-    transform: translateY(-2px) rotate(45deg);
 }
 
 .language-dropdown[open] .language-current,
@@ -386,8 +377,9 @@ button {
 .language-option {
     display: flex;
     align-items: center;
-    gap: 9px;
+    justify-content: center;
     width: 100%;
+    min-height: 36px;
     padding: 8px 9px;
     border: 0;
     border-radius: 7px;
@@ -396,7 +388,7 @@ button {
     font: inherit;
     font-size: 0.75rem;
     font-weight: 700;
-    text-align: left;
+    text-align: center;
     cursor: pointer;
 }
 
@@ -2359,82 +2351,99 @@ body.dark-theme .back-link:hover {
 
 .theme-switcher {
     position: relative;
-}
-
-.theme-toggle,
-.theme-options button {
     display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    min-height: 38px;
-    padding: 8px 11px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    background: var(--panel);
-    color: var(--text);
-    font-size: 0.78rem;
-    font-weight: 700;
-    white-space: nowrap;
-    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    flex: 0 0 auto;
 }
 
 .theme-toggle {
-    cursor: pointer;
-    list-style: none;
-}
-
-.theme-toggle::-webkit-details-marker {
-    display: none;
-}
-
-.theme-toggle:hover,
-.theme-options button:hover,
-.theme-options button.active {
-    border-color: var(--primary-2);
-    background: var(--primary);
-    transform: translateY(-1px);
-}
-
-body.dark-theme .theme-toggle,
-body.dark-theme .theme-options button {
-    border-color: rgba(132, 242, 212, 0.35);
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--text);
-}
-
-.theme-options {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    z-index: 50;
-    display: grid;
-    gap: 6px;
-    min-width: 140px;
-    padding: 7px;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 72px;
+    height: 38px;
+    padding: 4px;
     border: 1px solid var(--line);
-    border-radius: 10px;
-    background: var(--panel);
-    box-shadow: var(--shadow);
-}
-
-.theme-options button {
-    width: 100%;
-    justify-content: flex-start;
+    border-radius: 20px;
+    background: #e7edf5;
     cursor: pointer;
+    transition: background-color 0.24s ease, border-color 0.24s ease, box-shadow 0.2s ease;
 }
 
-body.dark-theme .theme-options {
-    background: var(--panel-strong);
+.theme-toggle:hover {
+    border-color: rgba(118, 169, 255, 0.4);
+    box-shadow: 0 2px 8px rgba(55, 75, 112, 0.1);
+}
+
+.theme-toggle-thumb {
+    position: relative;
+    display: grid;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    place-items: center;
+    border: 1px solid #d8e0eb;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #fff, #f5f7fb);
+    box-shadow: 0 2px 5px rgba(29, 41, 57, 0.16);
+    color: #d69b36;
+    transform: translateX(0);
+    transition: transform 0.26s cubic-bezier(0.2, 0.75, 0.25, 1), background 0.24s ease, border-color 0.24s ease;
+}
+
+.theme-icon {
+    position: absolute;
+    inset: 0;
+    width: 16px;
+    height: 16px;
+    margin: auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.6;
+    transition: opacity 0.18s ease, transform 0.24s ease;
+}
+
+.theme-icon-moon {
+    position: absolute;
+    opacity: 0;
+    transform: rotate(-35deg) scale(0.72);
+}
+
+body.dark-theme .theme-toggle {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: #27334e;
+}
+
+body.dark-theme .theme-toggle-thumb {
+    border-color: #7181b3;
+    background: linear-gradient(145deg, #8ba0d9, #7488c2);
+    color: #f0f3fc;
+    transform: translateX(34px);
+}
+
+body.dark-theme .theme-icon-sun {
+    opacity: 0;
+    transform: rotate(35deg) scale(0.72);
+}
+
+body.dark-theme .theme-icon-moon {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+}
+
+.theme-toggle:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+body.dark-theme .theme-toggle:focus-visible {
+    outline-color: var(--accent);
 }
 
 @media (max-width: 700px) {
-    .theme-switcher,
-    .theme-toggle {
-        flex: 1;
-    }
-
-    .theme-toggle {
-        justify-content: center;
+    .theme-switcher {
+        flex: 0 0 auto;
     }
 }
 
@@ -2563,10 +2572,15 @@ body.dark-theme .profile-image-placeholder {
     width: auto;
 }
 
-.header .language-switcher select,
-.header .theme-toggle {
+.header .language-switcher select {
     min-height: 38px;
     border-radius: 11px;
+}
+
+.header .theme-toggle {
+    width: 72px;
+    min-height: 38px;
+    border-radius: 20px;
 }
 
 .header .language-switcher select {
@@ -2623,11 +2637,15 @@ body.dark-theme .header .nav-link.active {
     color: var(--text);
 }
 
-body.dark-theme .header .header-search,
-body.dark-theme .header .theme-toggle {
+body.dark-theme .header .header-search {
     border-color: rgba(255, 255, 255, 0.14);
     background: rgba(255, 255, 255, 0.055);
     color: var(--text);
+}
+
+body.dark-theme .header .theme-toggle {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: #27334e;
 }
 
 body.dark-theme .header .language-current {
@@ -2636,10 +2654,14 @@ body.dark-theme .header .language-current {
     color: var(--text);
 }
 
-body.dark-theme .header .header-search:focus-within,
+body.dark-theme .header .header-search:focus-within {
+    border-color: rgba(132, 242, 212, 0.4);
+    background: #303b59;
+}
+
 body.dark-theme .header .theme-toggle:hover {
-    border-color: rgba(132, 242, 212, 0.55);
-    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.22);
+    background: #303b59;
 }
 
 body.dark-theme .header .language-dropdown[open] .language-current,
@@ -2742,17 +2764,6 @@ body.dark-theme .header .account-avatar {
     .header .account-identity,
     .header .account-chevron {
         display: none;
-    }
-}
-
-@media (max-width: 380px) {
-    .header .theme-toggle span {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
     }
 }
 
