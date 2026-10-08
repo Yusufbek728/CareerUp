@@ -352,20 +352,27 @@
 
         <footer class="footer">
             <div class="container footer-inner">
-                <div class="logo-wrap">
-                    <img class="logo-image" src="{% static 'mainapp/logo.png' %}" alt="CareerUp">
-                    <span>CareerUp</span>
+                <div class="footer-brand">
+                    <div class="logo-wrap">
+                        <img class="logo-image" src="{% static 'mainapp/logo.png' %}" alt="CareerUp">
+                        <span>CareerUp</span>
+                    </div>
+                    <p>{% translate "Connecting ambitious talent with meaningful opportunities — and businesses with the people who move them forward." %}</p>
+                    <p>© 2026 CareerUp.</p>
                 </div>
-                <p>© 2026 CareerUp. {% translate "Designed for smarter hiring." %}</p>
-                <div class="footer-social-links">
-                    <a class="footer-social-link footer-telegram" href="https://t.me/CareerUp_original" target="_blank" rel="noopener noreferrer">
-                        <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M21.7 3.3a1.2 1.2 0 0 0-1.3-.2L2.8 10.2a1.3 1.3 0 0 0 .1 2.4l4.5 1.5 1.7 5.2a1.2 1.2 0 0 0 2.1.4l2.6-3.2 4.4 3.3a1.2 1.2 0 0 0 1.9-.7l2.3-14.5a1.2 1.2 0 0 0-.7-1.3ZM9.1 13.6l8.6-6.1-6.7 7.7-.3 2.5-1.3-4.1-.3 0Z"/></svg>
-                        <span>Telegram</span>
-                    </a>
-                    <a class="footer-social-link footer-discord" href="https://discord.gg/TJEuv3wee" target="_blank" rel="noopener noreferrer">
-                        <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M19.7 5.1a18 18 0 0 0-4.4-1.4l-.5 1a16.7 16.7 0 0 0-5.6 0l-.5-1a18 18 0 0 0-4.4 1.4C1.5 9.2.7 13.2 1.1 17.1a18 18 0 0 0 5.4 2.7l1.2-2a11.6 11.6 0 0 1-1.9-.9l.5-.4a12.9 12.9 0 0 0 11.4 0l.5.4a11.6 11.6 0 0 1-1.9.9l1.2 2a18 18 0 0 0 5.4-2.7c.5-4.5-.8-8.5-3.2-12ZM8.7 14.8c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z"/></svg>
-                        <span>Discord</span>
-                    </a>
+
+                <div class="footer-links">
+                    <span class="footer-label">{% translate "Our community" %}</span>
+                    <div class="footer-social-links">
+                        <a class="footer-social-link footer-telegram" href="https://t.me/CareerUp_original" target="_blank" rel="noopener noreferrer">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M21.7 3.3a1.2 1.2 0 0 0-1.3-.2L2.8 10.2a1.3 1.3 0 0 0 .1 2.4l4.5 1.5 1.7 5.2a1.2 1.2 0 0 0 2.1.4l2.6-3.2 4.4 3.3a1.2 1.2 0 0 0 1.9-.7l2.3-14.5a1.2 1.2 0 0 0-.7-1.3ZM9.1 13.6l8.6-6.1-6.7 7.7-.3 2.5-1.3-4.1-.3 0Z"/></svg>
+                            <span>Telegram</span>
+                        </a>
+                        <a class="footer-social-link footer-discord" href="https://discord.gg/TJEuv3wee" target="_blank" rel="noopener noreferrer">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M19.7 5.1a18 18 0 0 0-4.4-1.4l-.5 1a16.7 16.7 0 0 0-5.6 0l-.5-1a18 18 0 0 0-4.4 1.4C1.5 9.2.7 13.2 1.1 17.1a18 18 0 0 0 5.4 2.7l1.2-2a11.6 11.6 0 0 1-1.9-.9l.5-.4a12.9 12.9 0 0 0 11.4 0l.5.4a11.6 11.6 0 0 1-1.9.9l1.2 2a18 18 0 0 0 5.4-2.7c.5-4.5-.8-8.5-3.2-12ZM8.7 14.8c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z"/></svg>
+                            <span>Discord</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </footer>
