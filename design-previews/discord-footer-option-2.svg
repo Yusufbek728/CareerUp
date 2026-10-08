@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="104" viewBox="0 0 640 104">
+  <rect width="640" height="104" rx="14" fill="#07111f"/>
+  <path d="M26 1h588" stroke="#293548"/>
+  <text x="32" y="59" fill="#edf4ff" font-family="Arial, sans-serif" font-size="20" font-weight="700">CareerUp</text>
+  <text x="214" y="59" fill="#a8b7cf" font-family="Arial, sans-serif" font-size="14">© 2026 CareerUp</text>
+  <text x="398" y="58" fill="#76a9ff" font-family="Arial, sans-serif" font-size="14" font-weight="700">Telegram ↗</text>
+  <rect x="505" y="31" width="103" height="42" rx="11" fill="#5865f2"/>
+  <text x="556" y="58" fill="#fff" font-family="Arial, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Join Discord</text>
+</svg>
