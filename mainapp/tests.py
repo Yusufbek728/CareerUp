@@ -187,7 +187,7 @@ class HomepagePaginationTests(TestCase):
 			self.assertNotContains(response, 'class="header-search"')
 			self.assertContains(response, 'class="listing-search"')
 			self.assertContains(response, f'href="{reverse("home")}" class="back-link category-back-link"')
-			self.assertContains(response, 'styles.css?v=site-header-global-1&switch=4')
+			self.assertContains(response, 'styles.css?v=resume-card-status-2&switch=4')
 			self.assertEqual(len(response.context['items']), 1)
 			self.assertContains(response, f'return_to={expected_type}')
 			if expected_type == 'resume':
