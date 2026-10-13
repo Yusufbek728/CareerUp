@@ -123,6 +123,50 @@ class HomepagePaginationTests(TestCase):
 		self.assertContains(response, 'class="job-card resume-card listing-card"')
 		self.assertContains(response, 'href="#career" class="back-to-top"')
 
+	def test_listing_cards_show_compensation_and_resume_experience(self):
+		Job.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			salary=1000,
+			required_experience=1,
+			work_time=8,
+			job_title='Developer',
+			requirements_of_job='Python',
+		)
+		Internship.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			work_time=8,
+			work_duration=12,
+			job_title='Internship',
+		)
+		Resume.objects.create(
+			name='Candidate',
+			surname='Example',
+			email='candidate@example.com',
+			phone_number='+998901234567',
+			experience=3,
+			wanted_salary=4000,
+			wanted_work_time=8,
+		)
+
+		home_response = self.client.get(reverse('home'))
+		self.assertContains(home_response, '$1000')
+		self.assertContains(home_response, '$125.00')
+		self.assertContains(home_response, 'Unpaid')
+		self.assertContains(home_response, '3 years experience')
+		self.assertContains(home_response, '$4000')
+		self.assertContains(home_response, '$500.00')
+
+		for url, expected_text in (
+			(reverse('jobs_page'), ('$1000', '$125.00')),
+			(reverse('internships_page'), ('Unpaid',)),
+			(reverse('resumes_page'), ('3 years experience', '$4000', '$500.00')),
+		):
+			response = self.client.get(url)
+			for text in expected_text:
+				self.assertContains(response, text)
+
 	def test_authenticated_user_actions_are_in_account_menu(self):
 		user = User.objects.create_user(username='shukhrat', password='test-password')
 		AccountProfile.objects.create(
@@ -187,7 +231,7 @@ class HomepagePaginationTests(TestCase):
 			self.assertNotContains(response, 'class="header-search"')
 			self.assertContains(response, 'class="listing-search"')
 			self.assertContains(response, f'href="{reverse("home")}" class="back-link category-back-link"')
-			self.assertContains(response, 'styles.css?v=resume-card-status-2&switch=4')
+			self.assertContains(response, 'styles.css?v=listing-compensation-3&switch=4')
 			self.assertEqual(len(response.context['items']), 1)
 			self.assertContains(response, f'return_to={expected_type}')
 			if expected_type == 'resume':
@@ -400,6 +444,22 @@ class JobHourlyIncomeTests(TestCase):
 
 		self.assertEqual(job.hourly_income, 0)
 
+	def test_resume_hourly_income_uses_preferred_work_time(self):
+		resume = Resume(
+			name='Candidate',
+			surname='Example',
+			email='candidate@example.com',
+			phone_number='+998901234567',
+			experience=3,
+			wanted_salary=4000,
+			wanted_work_time=8,
+		)
+
+		self.assertEqual(resume.wanted_hourly_income, 500)
+
+		resume.wanted_work_time = 0
+		self.assertEqual(resume.wanted_hourly_income, 0)
+
 
 class ThemeSwitcherLanguageTests(TestCase):
 	def test_theme_switcher_includes_language_specific_labels(self):
@@ -505,6 +565,11 @@ class ListingDetailPageTests(TestCase):
 		self.assertTemplateUsed(job_response, 'mainapp/job_detail.html')
 		self.assertTemplateUsed(internship_response, 'mainapp/internship_detail.html')
 		self.assertTemplateUsed(resume_response, 'mainapp/resume_detail.html')
+		self.assertContains(job_response, '$1000')
+		self.assertContains(job_response, '$125.00')
+		self.assertContains(internship_response, 'Unpaid')
+		self.assertContains(resume_response, '$1000')
+		self.assertContains(resume_response, '$125.00')
 		for response in (job_response, internship_response, resume_response):
 			self.assertContains(response, 'theme.js?v=dark-pages-1&switch=3')
 			self.assertContains(response, 'class="header site-header"')

@@ -1140,7 +1140,7 @@ button {
 .listing-card {
     display: flex;
     flex-direction: column;
-    height: 320px;
+    height: 380px;
     min-height: 0;
     padding: 0;
     overflow: hidden;
@@ -1149,9 +1149,9 @@ button {
 .listing-card-media {
     position: relative;
     width: 100%;
-    height: 220px;
-    min-height: 220px;
-    max-height: 220px;
+    height: 190px;
+    min-height: 190px;
+    max-height: 190px;
     overflow: hidden;
     background: linear-gradient(135deg, rgba(118, 169, 255, 0.08), rgba(168, 107, 255, 0.08));
     display: flex;
@@ -2321,7 +2321,7 @@ body.dark-theme .band-content {
 }
 
 .job-card.listing-card {
-    height: 320px;
+    height: 380px;
     padding: 0;
 }
 
@@ -3069,6 +3069,12 @@ html {
 
     .listing-results > .job-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1400px) and (min-width: 1081px) {
+    .listing-results > .job-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 

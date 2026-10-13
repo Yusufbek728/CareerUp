@@ -25,7 +25,8 @@
                 <div><strong>{% translate "Phone 1:" %}</strong> {{ item.phone_number }}</div>
                 <div><strong>{% translate "Phone 2:" %}</strong> {% if item.phone_number2 %}{{ item.phone_number2 }}{% else %}{% translate "Not provided" %}{% endif %}</div>
                 <div><strong>{% translate "Experience:" %}</strong> {{ item.experience }} {% translate "years" %}</div>
-                <div><strong>{% translate "Wanted salary:" %}</strong> ${{ item.wanted_salary }}</div>
+                <div><strong>{% translate "Monthly" %}:</strong> ${{ item.wanted_salary }}</div>
+                <div><strong>{% translate "Hourly" %}:</strong> ${{ item.wanted_hourly_income }}</div>
                 <div><strong>{% translate "Work time:" %}</strong> {{ item.wanted_work_time }}</div>
                 <div><strong>{% translate "Condition:" %}</strong> {{ item.get_wanted_working_condition_display }}</div>
                 <div><strong>{% translate "Schedule:" %}</strong> {{ item.get_wanted_work_schedule_and_working_hours_display }}</div>
