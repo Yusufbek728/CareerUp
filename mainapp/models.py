@@ -105,3 +105,9 @@ class Resume(models.Model):
     wanted_work_schedule_and_working_hours = models.CharField(max_length=20, choices=WORKING_DAYS, default='6/1')
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='qidirilyapti')
+
+    @property
+    def wanted_hourly_income(self):
+        if not self.wanted_work_time:
+            return Decimal('0.00')
+        return (Decimal(self.wanted_salary) / Decimal(self.wanted_work_time)).quantize(Decimal('0.01'))
