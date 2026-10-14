@@ -218,6 +218,54 @@ class HomepagePaginationTests(TestCase):
 		self.assertEqual(response.context['jobs'].number, 2)
 		self.assertEqual(len(response.context['jobs_page_numbers']), 9)
 
+	def test_category_pages_and_api_pagination_twenty_items_per_page(self):
+		for index in range(25):
+			Job.objects.create(
+				company_name=f'Company {index}',
+				phone_number='+998901234567',
+				salary=1000 + index,
+				required_experience=1,
+				work_time=8,
+				job_title=f'Job {index}',
+				requirements_of_job='Python',
+			)
+			Internship.objects.create(
+				company_name=f'Company {index}',
+				phone_number='+998901234567',
+				work_time=8,
+				work_duration=12,
+				job_title=f'Internship {index}',
+			)
+			Resume.objects.create(
+				name=f'Candidate {index}',
+				surname='Example',
+				email=f'candidate{index}@example.com',
+				phone_number='+998901234567',
+				experience=1,
+				wanted_salary=1000,
+				wanted_work_time=8,
+			)
+
+		for view_name in ('jobs_page', 'internships_page', 'resumes_page'):
+			page1_response = self.client.get(reverse(view_name))
+			self.assertEqual(page1_response.status_code, 200)
+			self.assertEqual(len(page1_response.context['items']), 20)
+			self.assertTrue(page1_response.context['items'].has_next())
+			self.assertEqual(page1_response.context['items'].paginator.num_pages, 2)
+			self.assertContains(page1_response, 'class="listing-pagination"')
+			self.assertContains(page1_response, 'page=2')
+
+			page2_response = self.client.get(reverse(view_name), {'page': 2})
+			self.assertEqual(page2_response.status_code, 200)
+			self.assertEqual(len(page2_response.context['items']), 5)
+			self.assertFalse(page2_response.context['items'].has_next())
+
+		for api_path in ('/api/jobs/', '/api/internships/', '/api/resumes/'):
+			api_response = self.client.get(api_path)
+			self.assertEqual(api_response.status_code, 200)
+			self.assertEqual(len(api_response.data['results']), 20)
+			self.assertEqual(api_response.data['count'], 25)
+
 	def test_homepage_keeps_all_listing_sections_visible(self):
 		Job.objects.create(
 			company_name='Example Company',
