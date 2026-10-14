@@ -33,18 +33,18 @@ class JobSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = "__all__"
-        read_only_fields = ('owner',)
+        read_only_fields = ('owner', 'view_count')
 
 class ResumeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Resume
         fields = "__all__"
-        read_only_fields = ('owner',)
+        read_only_fields = ('owner', 'view_count')
 
 class InternshipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Internship
         fields = "__all__"
-        read_only_fields = ('owner',)
+        read_only_fields = ('owner', 'view_count')
 
         

@@ -1,0 +1,40 @@
+{% load i18n static %}
+{% get_current_language as current_language %}
+<!DOCTYPE html>
+<html lang="{{ current_language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ activity_title }} - CareerUp</title>
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=account-engagement-1">
+    <script src="{% static 'mainapp/theme.js' %}?v=dark-pages-1&switch=3" defer></script>
+</head>
+<body>
+    {% include "mainapp/partials/site_header.html" %}
+    <main class="container account-activity-page">
+        <a href="{% url 'home' %}" class="back-link">← {% translate "Back to CareerUp" %}</a>
+        <section class="account-activity-panel">
+            <span class="tag">{% translate "ACCOUNT" %}</span>
+            <h1>{{ activity_title }}</h1>
+            {% if entries %}
+                <div class="account-activity-list">
+                    {% for entry in entries %}
+                        <a class="account-activity-entry" href="{{ entry.url }}">
+                            <span class="account-activity-entry-copy">
+                                <strong>{{ entry.title }}</strong>
+                                <span>{{ entry.subtitle }}</span>
+                            </span>
+                            <span class="account-activity-entry-meta">
+                                {% if entry.kind == 'job' %}{% translate "Job" %}{% elif entry.kind == 'internship' %}{% translate "Internship" %}{% else %}{% translate "Resume" %}{% endif %}
+                                <time datetime="{{ entry.timestamp|date:'c' }}">{{ entry.timestamp|date:"M d, Y H:i" }}</time>
+                            </span>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="form-intro">{% translate "Nothing here yet." %}</p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>
