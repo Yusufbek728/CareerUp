@@ -11,7 +11,139 @@ from django.test import TestCase
 from django.urls import reverse
 
 from .forms import JobForm
-from .models import AccountProfile, Internship, Job, Resume
+from .models import AccountProfile, Internship, Job, ListingInteraction, Resume
+
+
+class ListingEngagementTests(TestCase):
+	def setUp(self):
+		self.user = User.objects.create_user(username='engagement-user', password='test-password')
+		AccountProfile.objects.create(user=self.user, role='worker', display_name='Engagement User')
+		self.job = Job.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			salary=1000,
+			required_experience=1,
+			work_time=8,
+			job_title='Developer',
+			requirements_of_job='Python',
+		)
+		self.internship = Internship.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			work_time=8,
+			work_duration=12,
+			job_title='Intern',
+		)
+		self.resume = Resume.objects.create(
+			name='Candidate',
+			surname='Example',
+			email='candidate@example.com',
+			phone_number='+998901234567',
+			experience=1,
+			wanted_salary=1000,
+			wanted_work_time=8,
+		)
+		self.listings = (
+			('job', self.job, 'job_detail'),
+			('internship', self.internship, 'internship_detail'),
+			('resume', self.resume, 'resume_detail'),
+		)
+
+	def test_detail_visits_likes_and_favorites_are_tracked_for_each_listing_type(self):
+		self.client.force_login(self.user)
+
+		for listing_type, item, detail_route in self.listings:
+			detail_url = reverse(detail_route, args=[item.pk])
+			response = self.client.get(detail_url)
+			self.assertEqual(response.status_code, 200)
+			item.refresh_from_db()
+			self.assertEqual(item.view_count, 1)
+			self.assertContains(response, 'Views')
+			self.assertContains(response, 'Like')
+
+			for action in ('like', 'favorite'):
+				response = self.client.post(
+					reverse('listing_interaction', args=[listing_type, item.pk, action]),
+				)
+				self.assertRedirects(response, detail_url)
+
+			interaction = ListingInteraction.objects.get(
+				user=self.user,
+				content_type__model=listing_type,
+				object_id=item.pk,
+			)
+			self.assertIsNotNone(interaction.viewed_at)
+			self.assertIsNotNone(interaction.liked_at)
+			self.assertIsNotNone(interaction.favorited_at)
+
+		for activity in ('likes', 'views', 'favorites'):
+			response = self.client.get(reverse('account_activity', args=[activity]))
+			self.assertEqual(response.status_code, 200)
+			self.assertEqual(len(response.context['entries']), 3)
+
+	def test_like_and_favorite_actions_toggle_off(self):
+		self.client.force_login(self.user)
+		for action, timestamp_field in (('like', 'liked_at'), ('favorite', 'favorited_at')):
+			action_url = reverse('listing_interaction', args=['job', self.job.pk, action])
+			self.client.post(action_url)
+			self.client.post(action_url)
+			interaction = ListingInteraction.objects.get(user=self.user, object_id=self.job.pk)
+			self.assertIsNone(getattr(interaction, timestamp_field))
+
+	def test_view_count_is_once_per_account_and_once_per_guest_session(self):
+		detail_url = reverse('job_detail', args=[self.job.pk])
+		self.client.force_login(self.user)
+		self.client.get(detail_url)
+		first_view = ListingInteraction.objects.get(user=self.user, object_id=self.job.pk)
+		first_viewed_at = first_view.viewed_at
+
+		for _ in range(3):
+			self.client.get(detail_url)
+
+		self.job.refresh_from_db()
+		first_view.refresh_from_db()
+		self.assertEqual(self.job.view_count, 1)
+		self.assertEqual(first_view.viewed_at, first_viewed_at)
+
+		guest_client = self.client_class()
+		for _ in range(3):
+			guest_client.get(detail_url)
+
+		self.job.refresh_from_db()
+		self.assertEqual(self.job.view_count, 2)
+
+		another_guest_client = self.client_class()
+		another_guest_client.get(detail_url)
+		self.job.refresh_from_db()
+		self.assertEqual(self.job.view_count, 3)
+
+	def test_listing_cards_show_engagement_state_below_the_heading(self):
+		self.client.force_login(self.user)
+		for action in ('like', 'favorite'):
+			self.client.post(
+				reverse('listing_interaction', args=['job', self.job.pk, action]),
+				{'return_to': 'job'},
+			)
+
+		response = self.client.get(reverse('jobs_page'))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'class="listing-card-engagement"')
+		self.assertContains(response, 'aria-label="Views: 0"')
+		self.assertContains(response, 'aria-pressed="true"')
+		self.assertContains(response, 'class="listing-card-open"')
+		self.assertContains(response, reverse('job_detail', args=[self.job.pk]))
+		self.assertEqual(response.context['items'][0].like_count, 1)
+
+	def test_engagement_actions_require_login(self):
+		response = self.client.post(
+			reverse('listing_interaction', args=['job', self.job.pk, 'like']),
+		)
+		self.assertRedirects(
+			response,
+			f'{reverse("login")}?next={reverse("listing_interaction", args=["job", self.job.pk, "like"])}',
+		)
+		self.assertFalse(ListingInteraction.objects.exists())
 
 
 class HomepagePaginationTests(TestCase):
@@ -185,6 +317,9 @@ class HomepagePaginationTests(TestCase):
 		self.assertContains(response, 'company_photos/company.png')
 		self.assertNotContains(response, 'Free')
 		self.assertContains(response, 'My cards')
+		self.assertContains(response, 'Liked listings')
+		self.assertContains(response, 'Recently viewed')
+		self.assertContains(response, 'Favorites')
 		self.assertContains(response, 'Account settings')
 		self.assertContains(response, 'Log out')
 
@@ -231,7 +366,7 @@ class HomepagePaginationTests(TestCase):
 			self.assertNotContains(response, 'class="header-search"')
 			self.assertContains(response, 'class="listing-search"')
 			self.assertContains(response, f'href="{reverse("home")}" class="back-link category-back-link"')
-			self.assertContains(response, 'styles.css?v=listing-compensation-3&switch=4')
+			self.assertContains(response, 'styles.css?v=listing-engagement-cards-2')
 			self.assertEqual(len(response.context['items']), 1)
 			self.assertContains(response, f'return_to={expected_type}')
 			if expected_type == 'resume':

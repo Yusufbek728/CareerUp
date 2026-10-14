@@ -1,4 +1,6 @@
-from django.db.models import Max, Q
+from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
+from django.db.models import Count, F, Max, Q
 from django.core.paginator import Paginator
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -7,15 +9,15 @@ from django.http import HttpResponseForbidden, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.filters import SearchFilter
-from rest_framework.response import Response
 
 from mainapp.pagination import InternshipPagination, JobPagination, ResumePagination
 from mainapp.throttling import InternshipThrottle, JobThrottle, ResumeThrottle
-from .models import AccountProfile, Job, Internship, Resume
+from .models import AccountProfile, Internship, Job, ListingInteraction, Resume
 from .forms import (
     AccountSettingsForm,
     AdminUserForm,
@@ -66,6 +68,27 @@ def get_page_numbers(page_obj, max_pages=9):
     last_page = min(page_obj.paginator.num_pages, first_page + max_pages - 1)
     first_page = max(1, last_page - max_pages + 1)
     return range(first_page, last_page + 1)
+
+
+def annotate_listing_engagement(queryset, user):
+    user_id = user.pk if user.is_authenticated else -1
+    return queryset.annotate(
+        like_count=Count(
+            'interactions',
+            filter=Q(interactions__liked_at__isnull=False),
+            distinct=True,
+        ),
+        user_liked_count=Count(
+            'interactions',
+            filter=Q(interactions__user_id=user_id, interactions__liked_at__isnull=False),
+            distinct=True,
+        ),
+        user_favorited_count=Count(
+            'interactions',
+            filter=Q(interactions__user_id=user_id, interactions__favorited_at__isnull=False),
+            distinct=True,
+        ),
+    )
 
 
 def build_homepage_context(request, listing_type=None):
@@ -164,9 +187,9 @@ def build_homepage_context(request, listing_type=None):
             if filters.cleaned_data['salary_max'] is not None:
                 resumes = resumes.filter(wanted_salary__lte=filters.cleaned_data['salary_max'])
 
-    jobs = jobs.order_by('-created_at')
-    internships = internships.order_by('-created_at')
-    resumes = resumes.order_by('-created_at')
+    jobs = annotate_listing_engagement(jobs, request.user).order_by('-created_at')
+    internships = annotate_listing_engagement(internships, request.user).order_by('-created_at')
+    resumes = annotate_listing_engagement(resumes, request.user).order_by('-created_at')
 
     jobs_page = Paginator(jobs, 9).get_page(request.GET.get('jobs_page'))
     internships_page = Paginator(internships, 9).get_page(request.GET.get('internships_page'))
@@ -226,27 +249,161 @@ def get_detail_return_url(request):
     return reverse(page_name)
 
 
+def record_listing_view(request, item):
+    item_type = ContentType.objects.get_for_model(item, for_concrete_model=False)
+    viewer = {}
+    if request.user.is_authenticated:
+        viewer['user'] = request.user
+    else:
+        if request.session.session_key is None:
+            request.session.create()
+        viewer['session_key'] = request.session.session_key
+
+    with transaction.atomic():
+        interaction, created = ListingInteraction.objects.get_or_create(
+            **viewer,
+            content_type=item_type,
+            object_id=item.pk,
+            defaults={'viewed_at': timezone.now()},
+        )
+        if created:
+            item.__class__.objects.filter(pk=item.pk).update(view_count=F('view_count') + 1)
+        elif interaction.viewed_at is None:
+            counted = ListingInteraction.objects.filter(
+                pk=interaction.pk,
+                viewed_at__isnull=True,
+            ).update(viewed_at=timezone.now())
+            if counted:
+                item.__class__.objects.filter(pk=item.pk).update(view_count=F('view_count') + 1)
+
+    item.refresh_from_db(fields=['view_count'])
+    interaction.refresh_from_db(fields=['viewed_at', 'liked_at', 'favorited_at'])
+
+    return {
+        'listing_type': item._meta.model_name,
+        'like_count': item.interactions.filter(liked_at__isnull=False).count(),
+        'interaction': interaction,
+    }
+
+
+def build_activity_entries(user, activity):
+    timestamp_field = {
+        'likes': 'liked_at',
+        'views': 'viewed_at',
+        'favorites': 'favorited_at',
+    }[activity]
+    detail_routes = {
+        'job': 'job_detail',
+        'internship': 'internship_detail',
+        'resume': 'resume_detail',
+    }
+    entries = []
+    interactions = ListingInteraction.objects.filter(
+        user=user,
+        **{f'{timestamp_field}__isnull': False},
+    ).select_related('content_type').order_by(f'-{timestamp_field}')
+    for interaction in interactions:
+        item = interaction.content_object
+        if item is None:
+            continue
+        if isinstance(item, Resume):
+            title = f'{item.name} {item.surname}'
+            subtitle = item.email
+        else:
+            title = item.job_title
+            subtitle = item.company_name
+        entries.append({
+            'title': title,
+            'subtitle': subtitle,
+            'kind': interaction.content_type.model,
+            'url': reverse(detail_routes[interaction.content_type.model], args=[item.pk]),
+            'timestamp': getattr(interaction, timestamp_field),
+        })
+    return entries
+
+
 def job_detail(request, pk):
     job = get_object_or_404(Job, pk=pk)
+    engagement = record_listing_view(request, job)
     return render(request, 'mainapp/job_detail.html', {
         'item': job,
         'return_url': get_detail_return_url(request),
+        **engagement,
     })
 
 
 def internship_detail(request, pk):
     item = get_object_or_404(Internship, pk=pk)
+    engagement = record_listing_view(request, item)
     return render(request, 'mainapp/internship_detail.html', {
         'item': item,
         'return_url': get_detail_return_url(request),
+        **engagement,
     })
 
 
 def resume_detail(request, pk):
     item = get_object_or_404(Resume, pk=pk)
+    engagement = record_listing_view(request, item)
     return render(request, 'mainapp/resume_detail.html', {
         'item': item,
         'return_url': get_detail_return_url(request),
+        **engagement,
+    })
+
+
+@login_required
+def listing_interaction(request, listing_type, pk, action):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    models_by_type = {
+        'job': Job,
+        'internship': Internship,
+        'resume': Resume,
+    }
+    model = models_by_type.get(listing_type)
+    if model is None or action not in {'like', 'favorite'}:
+        return redirect('home')
+
+    item = get_object_or_404(model, pk=pk)
+    timestamp_field = 'liked_at' if action == 'like' else 'favorited_at'
+    with transaction.atomic():
+        interaction, _ = ListingInteraction.objects.get_or_create(
+            user=request.user,
+            content_type=ContentType.objects.get_for_model(item, for_concrete_model=False),
+            object_id=item.pk,
+        )
+        interaction = ListingInteraction.objects.select_for_update().get(pk=interaction.pk)
+        current_value = getattr(interaction, timestamp_field)
+        ListingInteraction.objects.filter(pk=interaction.pk).update(
+            **{timestamp_field: None if current_value else timezone.now()},
+        )
+    route_name = {'job': 'job_detail', 'internship': 'internship_detail', 'resume': 'resume_detail'}[listing_type]
+    detail_url = reverse(route_name, args=[item.pk])
+    next_url = request.POST.get('next', '')
+    if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        return redirect(next_url)
+
+    return_to = request.POST.get('return_to')
+    if return_to in {'home', 'job', 'internship', 'resume'}:
+        detail_url = f'{detail_url}?return_to={return_to}'
+    return redirect(detail_url)
+
+
+@login_required
+def account_activity(request, activity):
+    activity_titles = {
+        'likes': _('Liked listings'),
+        'views': _('Recently viewed'),
+        'favorites': _('Favorites'),
+    }
+    if activity not in activity_titles:
+        return redirect('home')
+    return render(request, 'mainapp/account_activity.html', {
+        'activity': activity,
+        'activity_title': activity_titles[activity],
+        'entries': build_activity_entries(request.user, activity),
     })
 
 
@@ -505,6 +662,11 @@ class RegistrationAPIView(generics.CreateAPIView):
 
 class OwnerModelViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        record_listing_view(request, instance)
+        return super().retrieve(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         if not self.request.user.is_authenticated:

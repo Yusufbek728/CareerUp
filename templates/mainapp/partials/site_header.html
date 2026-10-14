@@ -71,6 +71,9 @@
                     </summary>
                     <div class="account-menu-panel">
                         <a href="{% url 'my_listings' %}">{% translate "My cards" %}</a>
+                        <a href="{% url 'account_activity' 'likes' %}">{% translate "Liked listings" %}</a>
+                        <a href="{% url 'account_activity' 'views' %}">{% translate "Recently viewed" %}</a>
+                        <a href="{% url 'account_activity' 'favorites' %}">{% translate "Favorites" %}</a>
                         <a href="{% url 'account_settings' %}">{% translate "Account settings" %}</a>
                         {% if request.user.is_superuser %}<a href="{% url 'super_admin' %}">{% translate "Administrator panel" %}</a>{% endif %}
                         <form action="{% url 'logout' %}" method="post">

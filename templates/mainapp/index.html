@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=listing-compensation-3&switch=4">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=tag-contrast-fix-1">
     <script src="{% static 'mainapp/theme.js' %}?v=language-labels-1&switch=3" defer></script>
 </head>
 <body>
@@ -98,8 +98,9 @@
 
                 <div class="job-grid">
                     {% for job in jobs %}
-                    <a href="{% url 'job_detail' job.pk %}?return_to=home" class="job-card-link">
+                    <div class="job-card-link">
                         <article class="job-card listing-card">
+                            <a href="{% url 'job_detail' job.pk %}?return_to=home" class="listing-card-open" aria-label="{% translate 'Open listing' %}: {{ job.job_title }}"></a>
                             <div class="listing-card-media">
                                 {% if job.work_photo %}
                                     <img class="listing-image job-card-photo" src="{{ job.work_photo.url }}" alt="{{ job.job_title }}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
@@ -117,6 +118,7 @@
                                     <h3 title="{{ job.job_title }}">{{ job.job_title }}</h3>
                                     <span class="status {% if job.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ job.get_status_display }}</span>
                                 </div>
+                                {% include "mainapp/partials/listing_card_engagement.html" with item=job listing_type='job' return_to='home' %}
                                 {% if job.company_name %}
                                     <p class="listing-card-company">{{ job.company_name }}</p>
                                 {% endif %}
@@ -131,7 +133,7 @@
                                 </div>
                             </div>
                         </article>
-                    </a>
+                    </div>
                     {% empty %}
                     <p class="empty-text">{% translate "No jobs available yet." %}</p>
                     {% endfor %}
@@ -164,8 +166,9 @@
 
                 <div class="job-grid">
                     {% for internship in internships %}
-                    <a href="{% url 'internship_detail' internship.pk %}?return_to=home" class="job-card-link">
+                    <div class="job-card-link">
                         <article class="job-card listing-card">
+                            <a href="{% url 'internship_detail' internship.pk %}?return_to=home" class="listing-card-open" aria-label="{% translate 'Open listing' %}: {{ internship.job_title }}"></a>
                             <div class="listing-card-media">
                                 {% if internship.work_photo %}
                                     <img class="listing-image job-card-photo" src="{{ internship.work_photo.url }}" alt="{{ internship.job_title }}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
@@ -183,6 +186,7 @@
                                     <h3 title="{{ internship.job_title }}">{{ internship.job_title }}</h3>
                                     <span class="status {% if internship.status == 'topilgan' %}success{% else %}pending{% endif %}">{{ internship.get_status_display }}</span>
                                 </div>
+                                {% include "mainapp/partials/listing_card_engagement.html" with item=internship listing_type='internship' return_to='home' %}
                                 <p class="listing-card-company">{{ internship.company_name }}</p>
                                 <ul class="listing-card-details">
                                     <li>{{ internship.get_working_condition_display }}</li>
@@ -195,7 +199,7 @@
                                 </div>
                             </div>
                         </article>
-                    </a>
+                    </div>
                     {% empty %}
                     <p class="empty-text">{% translate "No internships available yet." %}</p>
                     {% endfor %}
@@ -228,8 +232,9 @@
 
                 <div class="job-grid">
                     {% for resume in resumes %}
-                    <a href="{% url 'resume_detail' resume.pk %}?return_to=home" class="job-card-link">
+                    <div class="job-card-link">
                         <article class="job-card resume-card listing-card">
+                            <a href="{% url 'resume_detail' resume.pk %}?return_to=home" class="listing-card-open" aria-label="{% translate 'Open listing' %}: {{ resume.name }} {{ resume.surname }}"></a>
                             <div class="listing-card-media resume-card-media">
                                 {% if resume.photo %}
                                     <img class="listing-image" src="{{ resume.photo.url }}" alt="{{ resume.name }} {{ resume.surname }}" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
@@ -242,6 +247,7 @@
                                 <div class="listing-card-heading">
                                     <h3 title="{{ resume.name }} {{ resume.surname }}">{{ resume.name }} {{ resume.surname }}</h3>
                                 </div>
+                                {% include "mainapp/partials/listing_card_engagement.html" with item=resume listing_type='resume' return_to='home' %}
                                 <p class="listing-card-company">{{ resume.email }}</p>
                                 <ul class="listing-card-details">
                                     <li>{{ resume.experience }} {% translate "years experience" %}</li>
@@ -254,7 +260,7 @@
                                 </div>
                             </div>
                         </article>
-                    </a>
+                    </div>
                     {% empty %}
                     <p class="empty-text">{% translate "No resumes available yet." %}</p>
                     {% endfor %}

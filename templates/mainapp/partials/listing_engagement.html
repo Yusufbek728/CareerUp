@@ -1,0 +1,57 @@
+{% load i18n %}
+<section class="listing-engagement" aria-label="{% translate 'Listing activity' %}">
+    <div class="engagement-left">
+        {# Просмотры — только счётчик, не кнопка #}
+        <div class="engagement-views">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>{{ item.view_count }}</span>
+            <span class="engagement-views-label">{% translate "views" %}</span>
+        </div>
+
+        {% if request.user.is_authenticated %}
+            {# Лайк #}
+            <form method="post" action="{% url 'listing_interaction' listing_type item.pk 'like' %}" class="engagement-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit"
+                        class="engagement-btn{% if interaction.liked_at %} engagement-btn--active-like{% endif %}"
+                        aria-pressed="{% if interaction.liked_at %}true{% else %}false{% endif %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="{% if interaction.liked_at %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    {% translate "Like" %}
+                    {% if like_count %}<span class="engagement-count">{{ like_count }}</span>{% endif %}
+                </button>
+            </form>
+
+            {# Избранное #}
+            <form method="post" action="{% url 'listing_interaction' listing_type item.pk 'favorite' %}" class="engagement-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit"
+                        class="engagement-btn{% if interaction.favorited_at %} engagement-btn--active-fav{% endif %}"
+                        aria-pressed="{% if interaction.favorited_at %}true{% else %}false{% endif %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="{% if interaction.favorited_at %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    {% if interaction.favorited_at %}{% translate "Saved" %}{% else %}{% translate "Save" %}{% endif %}
+                </button>
+            </form>
+        {% else %}
+            {# Гость — неактивные кнопки с подсказкой #}
+            <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" class="engagement-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                {% translate "Like" %}
+                {% if like_count %}<span class="engagement-count">{{ like_count }}</span>{% endif %}
+            </a>
+            <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" class="engagement-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                {% translate "Save" %}
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="engagement-right">
+        {% if request.user.is_authenticated %}
+            <span class="engagement-hint">{% translate "Click to save or mark" %}</span>
+        {% else %}
+            <span class="engagement-hint">{% translate "Like and save available after login" %}</span>
+        {% endif %}
+    </div>
+</section>

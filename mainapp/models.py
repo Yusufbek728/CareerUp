@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -50,6 +52,8 @@ class AccountProfile(models.Model):
 
 class Job(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='jobs', null=True, blank=True)
+    interactions = GenericRelation('ListingInteraction', related_query_name='job')
+    view_count = models.PositiveIntegerField(default=0)
     company_name = models.CharField(max_length=200)
     work_photo = models.ImageField(upload_to='work_photos/', blank=True, null=True)
     phone_number = models.CharField(max_length=20, default='', validators=[phone_number_validator])
@@ -75,6 +79,8 @@ class Job(models.Model):
 
 class Internship(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='internships', null=True, blank=True)
+    interactions = GenericRelation('ListingInteraction', related_query_name='internship')
+    view_count = models.PositiveIntegerField(default=0)
     company_name = models.CharField(max_length=200)
     work_photo = models.ImageField(upload_to='work_photos/', blank=True, null=True)
     phone_number = models.CharField(max_length=20, default='', validators=[phone_number_validator])
@@ -92,6 +98,8 @@ class Internship(models.Model):
     
 class Resume(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='resumes', null=True, blank=True)
+    interactions = GenericRelation('ListingInteraction', related_query_name='resume')
+    view_count = models.PositiveIntegerField(default=0)
     name = models.CharField(max_length=200)
     surname = models.CharField(max_length=200)
     photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True)
@@ -111,3 +119,41 @@ class Resume(models.Model):
         if not self.wanted_work_time:
             return Decimal('0.00')
         return (Decimal(self.wanted_salary) / Decimal(self.wanted_work_time)).quantize(Decimal('0.01'))
+
+
+class ListingInteraction(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='listing_interactions',
+        blank=True,
+        null=True,
+    )
+    session_key = models.CharField(max_length=40, blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    liked_at = models.DateTimeField(blank=True, null=True)
+    favorited_at = models.DateTimeField(blank=True, null=True)
+    viewed_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=('user', 'content_type', 'object_id'),
+                condition=models.Q(user__isnull=False),
+                name='unique_user_listing_interaction',
+            ),
+            models.UniqueConstraint(
+                fields=('session_key', 'content_type', 'object_id'),
+                condition=models.Q(session_key__isnull=False),
+                name='unique_session_listing_interaction',
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(user__isnull=False, session_key__isnull=True)
+                    | models.Q(user__isnull=True, session_key__isnull=False)
+                ),
+                name='listing_interaction_has_one_viewer',
+            ),
+        ]

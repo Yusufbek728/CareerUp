@@ -4,6 +4,48 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
+msgid "Liked listings"
+msgstr "Yoqtirilgan e'lonlar"
+
+msgid "Recently viewed"
+msgstr "Yaqinda ko'rilganlar"
+
+msgid "Favorites"
+msgstr "Saralanganlar"
+
+msgid "Listing activity"
+msgstr "E'lon faolligi"
+
+msgid "Views"
+msgstr "Ko'rishlar"
+
+msgid "Likes"
+msgstr "Yoqtirishlar"
+
+msgid "Like"
+msgstr "Yoqtirish"
+
+msgid "Unlike"
+msgstr "Yoqtirishni bekor qilish"
+
+msgid "Remove from favorites"
+msgstr "Saralanganlardan olib tashlash"
+
+msgid "Add to favorites"
+msgstr "Saralanganlarga qo'shish"
+
+msgid "Log in to like"
+msgstr "Yoqtirish uchun tizimga kiring"
+
+msgid "Log in to save"
+msgstr "Saqlash uchun tizimga kiring"
+
+msgid "Nothing here yet."
+msgstr "Hozircha bu yerda hech narsa yo'q."
+
+msgid "Open listing"
+msgstr "E'lonni ochish"
+
 msgid "CareerUp — Jobs, Internship & Talent"
 msgstr "CareerUp — ishlar, amaliyotlar va mutaxassislar"
 msgid "CareerUp is a modern platform for jobs, internships and resumes."
@@ -393,3 +435,88 @@ msgid "Minimum salary slider"
 msgstr "Minimal maosh slayderi"
 msgid "Maximum salary slider"
 msgstr "Maksimal maosh slayderi"
+
+msgid "Back to all listings"
+msgstr "Barcha e'lonlarga qaytish"
+
+msgid "About the vacancy"
+msgstr "Vakansiya haqida"
+
+msgid "About the internship"
+msgstr "Amaliyot haqida"
+
+msgid "Conditions and requirements"
+msgstr "Shartlar va talablar"
+
+msgid "month"
+msgstr "oy"
+
+msgid "hour"
+msgstr "soat"
+
+msgid "Schedule"
+msgstr "Jadval"
+
+msgid "Condition"
+msgstr "Shart"
+
+msgid "Field"
+msgstr "Yo'nalish"
+
+msgid "Phone 1"
+msgstr "Telefon 1"
+
+msgid "Phone 2"
+msgstr "Telefon 2"
+
+msgid "Published"
+msgstr "Nashr etilgan"
+
+msgid "Saved"
+msgstr "Saqlangan"
+
+msgid "Click to save or mark"
+msgstr "Saqlash yoki belgilash uchun bosing"
+
+msgid "Like and save available after login"
+msgstr "Yoqtirish va saqlash tizimga kirgach mavjud"
+
+msgid "views"
+msgstr "ko'rishlar"
+
+msgid "Duration"
+msgstr "Davomiyligi"
+
+msgid "Account menu"
+msgstr "Hisob menyusi"
+
+msgid "Back to top"
+msgstr "Yuqoriga"
+
+msgid "Internships pagination"
+msgstr "Amaliyotlar sahifalari"
+
+msgid "Jobs pagination"
+msgstr "Vakansiyalar sahifalari"
+
+msgid "Listing categories"
+msgstr "E'lon toifalari"
+
+msgid "Next"
+msgstr "Keyingi"
+
+msgid "Previous"
+msgstr "Oldingi"
+
+msgid "Resumes pagination"
+msgstr "Rezyumelar sahifalari"
+
+msgid "pagination"
+msgstr "Sahifalash"
+
+msgid "to contact the employer"
+msgstr "ish beruvchi bilan bog'lanish uchun"
+
+msgid "Wanted salary"
+msgstr "Kutilayotgan maosh"
+

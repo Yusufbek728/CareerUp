@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=site-header-global-1&switch=4">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=account-engagement-1">
     <script src="{% static 'mainapp/theme.js' %}?v=dark-pages-1&switch=3" defer></script>
 </head>
 <body class="standalone-detail-body">
@@ -21,6 +21,7 @@
             <h1>{{ item.name }} {{ item.surname }}</h1>
             <p class="company-name">{{ item.email }}</p>
             {% if item.photo %}<img class="listing-image detail-image profile-image" src="{{ item.photo.url }}" alt="{{ item.name }} {{ item.surname }}">{% endif %}
+            {% include "mainapp/partials/listing_engagement.html" %}
             <div class="detail-grid">
                 <div><strong>{% translate "Phone 1:" %}</strong> {{ item.phone_number }}</div>
                 <div><strong>{% translate "Phone 2:" %}</strong> {% if item.phone_number2 %}{{ item.phone_number2 }}{% else %}{% translate "Not provided" %}{% endif %}</div>

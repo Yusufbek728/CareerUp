@@ -1,0 +1,32 @@
+{% load i18n %}
+<div class="listing-card-engagement">
+    <span class="listing-card-metric" title="{% translate 'Views' %}" aria-label="{% translate 'Views' %}: {{ item.view_count }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6.2 9.5-6.2 9.5 6.2 9.5 6.2-3.4 6.2-9.5 6.2S2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.8"/></svg>
+        <span>{{ item.view_count }}</span>
+    </span>
+    {% if request.user.is_authenticated %}
+        <form method="post" action="{% url 'listing_interaction' listing_type item.pk 'like' %}" class="listing-card-action">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button type="submit" class="listing-card-action-button listing-card-like{% if item.user_liked_count %} is-active{% endif %}" aria-label="{% if item.user_liked_count %}{% translate 'Unlike' %}{% else %}{% translate 'Like' %}{% endif %}" title="{% if item.user_liked_count %}{% translate 'Unlike' %}{% else %}{% translate 'Like' %}{% endif %}" aria-pressed="{% if item.user_liked_count %}true{% else %}false{% endif %}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.7a5.5 5.5 0 0 0-7.8 0L12 5.8l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.4 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>
+                <span>{{ item.like_count }}</span>
+            </button>
+        </form>
+        <form method="post" action="{% url 'listing_interaction' listing_type item.pk 'favorite' %}" class="listing-card-action">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button type="submit" class="listing-card-action-button listing-card-favorite{% if item.user_favorited_count %} is-active{% endif %}" aria-label="{% if item.user_favorited_count %}{% translate 'Remove from favorites' %}{% else %}{% translate 'Add to favorites' %}{% endif %}" title="{% if item.user_favorited_count %}{% translate 'Remove from favorites' %}{% else %}{% translate 'Add to favorites' %}{% endif %}" aria-pressed="{% if item.user_favorited_count %}true{% else %}false{% endif %}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-4-6 4V4.8Z"/></svg>
+            </button>
+        </form>
+    {% else %}
+        <a class="listing-card-action-button listing-card-like" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" aria-label="{% translate 'Log in to like' %}" title="{% translate 'Log in to like' %}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.7a5.5 5.5 0 0 0-7.8 0L12 5.8l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.4 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>
+            <span>{{ item.like_count }}</span>
+        </a>
+        <a class="listing-card-action-button listing-card-favorite" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" aria-label="{% translate 'Log in to save' %}" title="{% translate 'Log in to save' %}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-4-6 4V4.8Z"/></svg>
+        </a>
+    {% endif %}
+</div>

@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=listing-compensation-3&switch=4">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=tag-contrast-fix-1">
     <script src="{% static 'mainapp/theme.js' %}?v=dark-pages-1&switch=3" defer></script>
     <script src="{% static 'mainapp/filters.js' %}" defer></script>
 </head>
@@ -94,8 +94,9 @@
         {% endif %}
             {% for item in items %}
                 {% if listing_type == 'job' %}
-                <a href="{% url 'job_detail' item.pk %}?return_to={{ detail_return_to }}" class="job-card-link">
+                <div class="job-card-link">
                     <article class="job-card listing-card">
+                        <a href="{% url 'job_detail' item.pk %}?return_to={{ detail_return_to }}" class="listing-card-open" aria-label="{% translate 'Open listing' %}: {{ item.job_title }}"></a>
                         <div class="listing-card-media">
                             {% if item.work_photo %}
                                 <img class="listing-image job-card-photo" src="{{ item.work_photo.url }}" alt="{{ item.job_title }}">
@@ -107,6 +108,7 @@
                             <div class="listing-card-heading">
                                 <h3>{{ item.job_title }}</h3>
                             </div>
+                            {% include "mainapp/partials/listing_card_engagement.html" with item=item listing_type='job' return_to=detail_return_to %}
                             <p class="listing-card-company">{{ item.company_name }}</p>
                             <ul class="listing-card-details">
                                 <li><strong>{% translate "Phone 1:" %}</strong> {% if item.phone_number %}{{ item.phone_number }}{% else %}{% translate "Not provided" %}{% endif %}</li>
@@ -119,10 +121,11 @@
                             </div>
                         </div>
                     </article>
-                </a>
+                </div>
                 {% elif listing_type == 'internship' %}
-                <a href="{% url 'internship_detail' item.pk %}?return_to={{ detail_return_to }}" class="job-card-link">
+                <div class="job-card-link">
                     <article class="job-card listing-card">
+                        <a href="{% url 'internship_detail' item.pk %}?return_to={{ detail_return_to }}" class="listing-card-open" aria-label="{% translate 'Open listing' %}: {{ item.job_title }}"></a>
                         <div class="listing-card-media">
                             {% if item.work_photo %}
                                 <img class="listing-image job-card-photo" src="{{ item.work_photo.url }}" alt="{{ item.job_title }}">
@@ -134,6 +137,7 @@
                             <div class="listing-card-heading">
                                 <h3>{{ item.job_title }}</h3>
                             </div>
+                            {% include "mainapp/partials/listing_card_engagement.html" with item=item listing_type='internship' return_to=detail_return_to %}
                             <p class="listing-card-company">{{ item.company_name }}</p>
                             <ul class="listing-card-details">
                                 <li>{{ item.get_working_condition_display }}</li>
@@ -146,10 +150,11 @@
                             </div>
                         </div>
                     </article>
-                </a>
+                </div>
                 {% else %}
-                <a href="{% url 'resume_detail' item.pk %}?return_to={{ detail_return_to }}" class="job-card-link">
+                <div class="job-card-link">
                     <article class="job-card resume-card listing-card">
+                        <a href="{% url 'resume_detail' item.pk %}?return_to={{ detail_return_to }}" class="listing-card-open" aria-label="{% translate 'Open listing' %}: {{ item.name }} {{ item.surname }}"></a>
                         <div class="listing-card-media resume-card-media">
                             {% if item.photo %}
                                 <img class="listing-image" src="{{ item.photo.url }}" alt="{{ item.name }} {{ item.surname }}">
@@ -162,6 +167,7 @@
                             <div class="listing-card-heading">
                                 <h3>{{ item.name }} {{ item.surname }}</h3>
                             </div>
+                            {% include "mainapp/partials/listing_card_engagement.html" with item=item listing_type='resume' return_to=detail_return_to %}
                             <p class="listing-card-company">{{ item.email }}</p>
                             <ul class="listing-card-details">
                                 <li>{{ item.experience }} {% translate "years experience" %}</li>
@@ -174,7 +180,7 @@
                             </div>
                         </div>
                     </article>
-                </a>
+                </div>
                 {% endif %}
             {% endfor %}
         {% if filters %}

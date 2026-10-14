@@ -9,30 +9,90 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=site-header-global-1&switch=4">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=tag-contrast-fix-1">
     <script src="{% static 'mainapp/theme.js' %}?v=dark-pages-1&switch=3" defer></script>
 </head>
 <body class="standalone-detail-body">
     {% include "mainapp/partials/site_header.html" %}
     <main class="container standalone-detail-page">
-        <article class="standalone-detail-card reveal">
+        <article class="standalone-detail-card">
             <a href="{{ return_url }}" class="back-link">← {% translate "Back to all listings" %}</a>
+
             <span class="tag">{% translate "INTERNSHIP" %}</span>
             <h1>{{ item.job_title }}</h1>
-            <p class="company-name">{{ item.company_name }}</p>
-            {% if item.work_photo %}<img class="listing-image detail-image work-detail-image" src="{{ item.work_photo.url }}" alt="{{ item.job_title }}">{% endif %}
+            <p class="company-name">{{ item.company_name }}{% if item.city %} · {{ item.city }}{% endif %}</p>
+
+            {% if item.work_photo %}
+            <img class="listing-image detail-image work-detail-image" src="{{ item.work_photo.url }}" alt="{{ item.job_title }}">
+            {% endif %}
+
+            {% include "mainapp/partials/listing_engagement.html" %}
+
+            {# ── О стажировке ── #}
+            {% if item.requirements_of_job %}
+            <div class="detail-section">
+                <h3>{% translate "About the internship" %}</h3>
+                <p>{{ item.requirements_of_job }}</p>
+            </div>
+            {% endif %}
+
+            {# ── Условия и требования ── #}
+            <p class="detail-section-heading">{% translate "Conditions and requirements" %}</p>
             <div class="detail-grid">
-                <div><strong>{% translate "Monthly" %}:</strong> {% translate "Unpaid" %}</div>
-                <div><strong>{% translate "Hourly" %}:</strong> {% translate "Unpaid" %}</div>
-                <div><strong>{% translate "Work duration:" %}</strong> {{ item.work_duration }} {% translate "weeks" %}</div>
-                <div><strong>{% translate "Phone 1:" %}</strong> {% if item.phone_number %}{{ item.phone_number }}{% else %}{% translate "Not provided" %}{% endif %}</div>
-                <div><strong>{% translate "Phone 2:" %}</strong> {% if item.phone_number2 %}{{ item.phone_number2 }}{% else %}{% translate "Not provided" %}{% endif %}</div>
-                <div><strong>{% translate "Work time:" %}</strong> {{ item.work_time }}</div>
-                <div><strong>{% translate "Condition:" %}</strong> {{ item.get_working_condition_display }}</div>
-                <div><strong>{% translate "Schedule:" %}</strong> {{ item.get_work_schedule_and_working_hours_display }}</div>
-                <div><strong>{% translate "Field:" %}</strong> {{ item.get_work_field_display }}</div>
-                <div><strong>{% translate "Status:" %}</strong> {{ item.get_status_display }}</div>
-                <div><strong>{% translate "Created:" %}</strong> {{ item.created_at|date:"M d, Y" }}</div>
+                <div class="detail-grid-item">
+                    <span class="detail-grid-label">{% translate "Salary" %}</span>
+                    <span class="detail-grid-value">{% translate "Unpaid" %}</span>
+                </div>
+                <div class="detail-grid-item">
+                    <span class="detail-grid-label">{% translate "Duration" %}</span>
+                    <span class="detail-grid-value">{{ item.work_duration }} {% translate "weeks" %}</span>
+                </div>
+                <div class="detail-grid-item">
+                    <span class="detail-grid-label">{% translate "Schedule" %}</span>
+                    <span class="detail-grid-value">{{ item.get_work_schedule_and_working_hours_display }}</span>
+                </div>
+                <div class="detail-grid-item">
+                    <span class="detail-grid-label">{% translate "Condition" %}</span>
+                    <span class="detail-grid-value">{{ item.get_working_condition_display }}</span>
+                </div>
+                <div class="detail-grid-item">
+                    <span class="detail-grid-label">{% translate "Work time" %}</span>
+                    <span class="detail-grid-value">{{ item.work_time }}</span>
+                </div>
+                <div class="detail-grid-item">
+                    <span class="detail-grid-label">{% translate "Field" %}</span>
+                    <span class="detail-grid-value">{{ item.get_work_field_display }}</span>
+                </div>
+                <div class="detail-grid-item">
+                    <span class="detail-grid-label">{% translate "Status" %}</span>
+                    <span class="detail-grid-value">{{ item.get_status_display }}</span>
+                </div>
+                {% if item.phone_number %}
+                <div class="detail-grid-item">
+                    <span class="detail-grid-label">{% translate "Phone 1" %}</span>
+                    <span class="detail-grid-value">{{ item.phone_number }}</span>
+                </div>
+                {% endif %}
+                {% if item.phone_number2 %}
+                <div class="detail-grid-item">
+                    <span class="detail-grid-label">{% translate "Phone 2" %}</span>
+                    <span class="detail-grid-value">{{ item.phone_number2 }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            {# ── Footer ── #}
+            <div class="detail-footer">
+                <span class="detail-published">{% translate "Published" %} {{ item.created_at|date:"d M Y" }}</span>
+                {% if request.user.is_authenticated %}
+                    {% if item.phone_number %}
+                    <a href="tel:{{ item.phone_number }}" class="detail-contact-btn">{% translate "Contact" %}</a>
+                    {% else %}
+                    <span class="detail-contact-btn" style="opacity:0.5;cursor:default;">{% translate "Contact" %}</span>
+                    {% endif %}
+                {% else %}
+                    <span class="detail-login-hint"><a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">{% translate "Log in" %}</a> {% translate "to contact the employer" %}</span>
+                {% endif %}
             </div>
         </article>
     </main>

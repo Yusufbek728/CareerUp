@@ -4,6 +4,48 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
+msgid "Liked listings"
+msgstr "Понравившиеся объявления"
+
+msgid "Recently viewed"
+msgstr "Недавно просмотренные"
+
+msgid "Favorites"
+msgstr "Избранное"
+
+msgid "Listing activity"
+msgstr "Активность объявления"
+
+msgid "Views"
+msgstr "Просмотры"
+
+msgid "Likes"
+msgstr "Лайки"
+
+msgid "Like"
+msgstr "Нравится"
+
+msgid "Unlike"
+msgstr "Убрать лайк"
+
+msgid "Remove from favorites"
+msgstr "Удалить из избранного"
+
+msgid "Add to favorites"
+msgstr "В избранное"
+
+msgid "Log in to like"
+msgstr "Войдите, чтобы поставить лайк"
+
+msgid "Log in to save"
+msgstr "Войдите, чтобы добавить в избранное"
+
+msgid "Nothing here yet."
+msgstr "Пока здесь ничего нет."
+
+msgid "Open listing"
+msgstr "Открыть объявление"
+
 msgid "CareerUp — Jobs, Internship & Talent"
 msgstr "CareerUp — вакансии, стажировки и специалисты"
 msgid "CareerUp is a modern platform for jobs, internships and resumes."
@@ -365,3 +407,129 @@ msgid "Light"
 msgstr "Светлая"
 msgid "Dark"
 msgstr "Тёмная"
+
+msgid "Back to all listings"
+msgstr "Назад ко всем объявлениям"
+
+msgid "About the vacancy"
+msgstr "О вакансии"
+
+msgid "About the internship"
+msgstr "О стажировке"
+
+msgid "Conditions and requirements"
+msgstr "Условия и требования"
+
+msgid "month"
+msgstr "мес."
+
+msgid "hour"
+msgstr "ч."
+
+msgid "From"
+msgstr "От"
+
+msgid "Schedule"
+msgstr "График"
+
+msgid "Condition"
+msgstr "Условие"
+
+msgid "Field"
+msgstr "Направление"
+
+msgid "Status"
+msgstr "Статус"
+
+msgid "Phone 1"
+msgstr "Телефон 1"
+
+msgid "Phone 2"
+msgstr "Телефон 2"
+
+msgid "Published"
+msgstr "Опубликовано"
+
+msgid "Saved"
+msgstr "Сохранено"
+
+msgid "Click to save or mark"
+msgstr "Нажмите, чтобы сохранить или отметить"
+
+msgid "Like and save available after login"
+msgstr "Лайк и сохранение доступны после входа"
+
+msgid "views"
+msgstr "просмотров"
+
+msgid "Duration"
+msgstr "Продолжительность"
+
+msgid "Account menu"
+msgstr "Меню аккаунта"
+
+msgid "Apply filters"
+msgstr "Применить фильтры"
+
+msgid "Back to top"
+msgstr "Наверх"
+
+msgid "Clear filters"
+msgstr "Сбросить фильтры"
+
+msgid "Filter listings"
+msgstr "Фильтр объявлений"
+
+msgid "Internships pagination"
+msgstr "Навигация по стажировкам"
+
+msgid "Jobs pagination"
+msgstr "Навигация по вакансиям"
+
+msgid "Listing categories"
+msgstr "Категории объявлений"
+
+msgid "Maximum salary slider"
+msgstr "Ползунок максимальной зарплаты"
+
+msgid "Minimum salary slider"
+msgstr "Ползунок минимальной зарплаты"
+
+msgid "Next"
+msgstr "Вперёд"
+
+msgid "Previous"
+msgstr "Назад"
+
+msgid "Resumes pagination"
+msgstr "Навигация по резюме"
+
+msgid "Salary, UZS"
+msgstr "Зарплата, сум"
+
+msgid "Wanted salary, UZS"
+msgstr "Желаемая зарплата, сум"
+
+msgid "pagination"
+msgstr "Пагинация"
+
+msgid "to contact the employer"
+msgstr "чтобы связаться с работодателем"
+
+msgid "Any"
+msgstr "Любой"
+
+msgid "Maximum salary must be greater than or equal to minimum salary."
+msgstr "Максимальная зарплата должна быть больше или равна минимальной."
+
+msgid "To"
+msgstr "До"
+
+msgid "Wanted salary"
+msgstr "Желаемая зарплата"
+
+msgid "Working conditions"
+msgstr "Условия работы"
+
+msgid "Working days"
+msgstr "Рабочие дни"
