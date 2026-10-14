@@ -185,6 +185,19 @@
             {% endfor %}
         {% if filters %}
         </div>
+        {% if items.has_other_pages %}
+        <nav class="listing-pagination" aria-label="{% translate 'Pagination' %}">
+            {% if items.has_previous %}
+            <a href="{% querystring page=items.previous_page_number %}">{% translate "Previous" %}</a>
+            {% endif %}
+            {% for page_number in page_numbers %}
+            <a href="{% querystring page=page_number %}" class="pagination-page{% if page_number == items.number %} active{% endif %}"{% if page_number == items.number %} aria-current="page"{% endif %}>{{ page_number }}</a>
+            {% endfor %}
+            {% if items.has_next %}
+            <a href="{% querystring page=items.next_page_number %}">{% translate "Next" %}</a>
+            {% endif %}
+        </nav>
+        {% endif %}
             </section>
         </form>
         {% endif %}

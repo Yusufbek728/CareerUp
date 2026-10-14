@@ -191,9 +191,10 @@ def build_homepage_context(request, listing_type=None):
     internships = annotate_listing_engagement(internships, request.user).order_by('-created_at')
     resumes = annotate_listing_engagement(resumes, request.user).order_by('-created_at')
 
-    jobs_page = Paginator(jobs, 9).get_page(request.GET.get('jobs_page'))
-    internships_page = Paginator(internships, 9).get_page(request.GET.get('internships_page'))
-    resumes_page = Paginator(resumes, 9).get_page(request.GET.get('resumes_page'))
+    page_size = 20 if listing_type else 9
+    jobs_page = Paginator(jobs, page_size).get_page(request.GET.get('page') or request.GET.get('jobs_page'))
+    internships_page = Paginator(internships, page_size).get_page(request.GET.get('page') or request.GET.get('internships_page'))
+    resumes_page = Paginator(resumes, page_size).get_page(request.GET.get('page') or request.GET.get('resumes_page'))
     max_pages = 9
 
     return {
@@ -233,7 +234,10 @@ def resumes_page(request):
 def category_page(request, listing_type):
     context = build_homepage_context(request, listing_type)
     listing_name = {'job': 'jobs', 'internship': 'internships', 'resume': 'resumes'}[listing_type]
-    context['items'] = context[listing_name].paginator.object_list
+    page_obj = context[listing_name]
+    context['items'] = page_obj
+    context['page_obj'] = page_obj
+    context['page_numbers'] = context[f'{listing_name}_page_numbers']
     context['detail_return_to'] = listing_type
     return render(request, 'mainapp/category_list.html', context)
 
