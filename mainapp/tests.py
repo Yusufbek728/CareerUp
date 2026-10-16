@@ -1041,3 +1041,27 @@ class SuperAdminTests(TestCase):
 		response = self.client.get(reverse('account_settings'))
 		self.assertEqual(response.status_code, 302)
 		self.assertIn('/login/', response['Location'])
+
+
+class PasswordResetFlowTests(TestCase):
+	def test_full_reset_flow(self):
+		import re
+		from django.core import mail
+		user = User.objects.create_user(username='reset-user', email='reset@example.com', password='OldPass12345')
+		self.assertContains(self.client.get(reverse('login')), reverse('password_reset'))
+		response = self.client.post(reverse('password_reset'), {'email': 'reset@example.com'})
+		self.assertRedirects(response, reverse('password_reset_done'))
+		self.assertEqual(len(mail.outbox), 1)
+		link = re.search(r'http://testserver(\S+)', mail.outbox[0].body).group(1)
+		response = self.client.get(link, follow=True)
+		post_url = response.redirect_chain[-1][0]
+		response = self.client.post(post_url, {'new_password1': 'BrandNew98765x', 'new_password2': 'BrandNew98765x'})
+		self.assertRedirects(response, reverse('password_reset_complete'))
+		user.refresh_from_db()
+		self.assertTrue(user.check_password('BrandNew98765x'))
+
+	def test_unknown_email_sends_nothing(self):
+		from django.core import mail
+		response = self.client.post(reverse('password_reset'), {'email': 'nobody@example.com'})
+		self.assertRedirects(response, reverse('password_reset_done'))
+		self.assertEqual(len(mail.outbox), 0)
