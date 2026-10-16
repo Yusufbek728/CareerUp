@@ -42,6 +42,7 @@
                 <p class="auth-switch">{% translate "Already have an account?" %} <a href="{% url 'login' %}">{% translate "Log in" %}</a></p>
             {% else %}
                 <p class="auth-switch">{% translate "No account yet?" %} <a href="{% url 'register' %}">{% translate "Register" %}</a></p>
+                <p class="auth-switch"><a href="{% url 'password_reset' %}">{% translate "Forgot your password? Reset it" %}</a></p>
             {% endif %}
         </section>
     </main>

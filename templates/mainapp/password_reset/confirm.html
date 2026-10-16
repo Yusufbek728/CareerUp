@@ -1,0 +1,26 @@
+{% extends "mainapp/password_reset/base.html" %}
+{% load i18n %}
+{% block page_title %}{% translate "Set a new password" %}{% endblock %}
+{% block heading %}{% translate "Set a new password" %}{% endblock %}
+{% block content %}
+{% if validlink %}
+<form method="post" class="listing-form" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+    {% for field in form %}
+        <div class="form-field">
+            <label for="{{ field.id_for_label }}">{{ field.label }} *</label>
+            <div class="password-field">
+                {{ field }}
+                <button class="password-toggle" type="button" data-password-toggle data-target="{{ field.id_for_label }}" aria-label="{% translate 'Show password' %}" title="{% translate 'Show password' %}">&#128065;</button>
+            </div>
+            {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+        </div>
+    {% endfor %}
+    <button type="submit" class="primary-btn form-submit">{% translate "Change password" %}</button>
+</form>
+{% else %}
+<p class="form-errors">{% translate "This password reset link is invalid or has already been used." %}</p>
+<p class="auth-switch"><a href="{% url 'password_reset' %}">{% translate "Request a new link" %}</a></p>
+{% endif %}
+{% endblock %}

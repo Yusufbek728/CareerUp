@@ -1,4 +1,5 @@
 from django.urls import path, include
+from django.contrib.auth import views as auth_views
 from rest_framework import routers
 
 from .views import (
@@ -47,6 +48,20 @@ urlpatterns = [
     path('register/', register_view, name='register'),
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
+    path('password-reset/', auth_views.PasswordResetView.as_view(
+        template_name='mainapp/password_reset/form.html',
+        email_template_name='mainapp/password_reset/email.txt',
+        subject_template_name='mainapp/password_reset/subject.txt',
+    ), name='password_reset'),
+    path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(
+        template_name='mainapp/password_reset/done.html',
+    ), name='password_reset_done'),
+    path('password-reset/complete/', auth_views.PasswordResetCompleteView.as_view(
+        template_name='mainapp/password_reset/complete.html',
+    ), name='password_reset_complete'),
+    path('password-reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name='mainapp/password_reset/confirm.html',
+    ), name='password_reset_confirm'),
     path('my-listings/', my_listings, name='my_listings'),
     path('account-settings/', account_settings, name='account_settings'),
     path('account/<str:activity>/', account_activity, name='account_activity'),

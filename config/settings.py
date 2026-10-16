@@ -74,6 +74,16 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'config.urls'
 LOGIN_URL = 'login'
 
+# Email (password reset). Locally the letter is printed to the console; in production set
+# EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend and the EMAIL_HOST* variables.
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = config('EMAIL_HOST', default='')
+EMAIL_PORT = config('EMAIL_PORT', cast=int, default=587)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool, default=True)
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='CareerUp <noreply@careerup.local>')
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

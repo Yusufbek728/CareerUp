@@ -1,0 +1,8 @@
+{% extends "mainapp/password_reset/base.html" %}
+{% load i18n %}
+{% block page_title %}{% translate "Check your email" %}{% endblock %}
+{% block heading %}{% translate "Check your email" %}{% endblock %}
+{% block content %}
+<p class="form-intro">{% translate "If an account with that email exists, we have sent instructions for setting a new password. They should arrive shortly; also check your spam folder." %}</p>
+<p class="auth-switch"><a href="{% url 'login' %}">{% translate "Log in" %}</a></p>
+{% endblock %}
