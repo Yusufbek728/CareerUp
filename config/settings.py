@@ -39,6 +39,8 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
+    # daphne must come first: it makes `runserver` ASGI-aware (WebSocket support).
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,6 +52,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     "rest_framework",
     'mainapp',
+    'chat',
+    'channels',
     'django_filters',
     'corsheaders',
 ]
@@ -81,12 +85,37 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.i18n',
+                'chat.context_processors.chat_unread',
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = 'config.asgi.application'
+
+# Channel layer for the chat. With REDIS_URL set, channels_redis is used (required when
+# more than one server process/instance runs); otherwise the in-process layer is used,
+# which only works inside a single process and is meant for local development.
+redis_url = os.getenv('REDIS_URL')
+if redis_url and not TESTING:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {'hosts': [redis_url]},
+        }
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {'BACKEND': 'channels.layers.InMemoryChannelLayer'},
+    }
+
+# Chat limits
+CHAT_MESSAGE_MAX_LENGTH = 2000
+CHAT_REPORT_REASON_MAX_LENGTH = 500
+CHAT_ATTACHMENT_MAX_BYTES = 5 * 1024 * 1024
+CHAT_RATE_LIMIT_COUNT = 20      # messages ...
+CHAT_RATE_LIMIT_WINDOW = 60     # ... per this many seconds, per user
 
 
 # Database

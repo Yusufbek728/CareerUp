@@ -3762,3 +3762,63 @@ body:not(.dark-theme) .listing-pagination a.pagination-page.active {
         align-items: flex-start;
     }
 }
+
+/* Chat entry points: header link with unread badge and the "Write a message" button */
+.chat-nav-link {
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.chat-unread-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: #e5484d;
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.chat-unread-badge[hidden] {
+    display: none;
+}
+
+.chat-start-form {
+    margin: 0 0 20px;
+}
+
+.chat-start-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border: 0;
+    border-radius: 12px;
+    background: #18201c;
+    color: #c6f36b;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.chat-start-btn:hover {
+    background: #2b382f;
+    transform: translateY(-2px);
+}
+
+body.dark-theme .chat-start-btn {
+    background: var(--primary);
+    color: #07111f;
+}
+
+body.dark-theme .chat-start-btn:hover {
+    background: var(--accent);
+}

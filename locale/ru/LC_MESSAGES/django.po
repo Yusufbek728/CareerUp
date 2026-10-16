@@ -533,3 +533,204 @@ msgstr "Условия работы"
 
 msgid "Working days"
 msgstr "Рабочие дни"
+
+# Chat
+msgid "About"
+msgstr "Об объявлении"
+
+msgid "All messages"
+msgstr "Все сообщения"
+
+msgid "Attach a file"
+msgstr "Прикрепить файл"
+
+#, python-format
+msgid "Attachments: %(types)s; up to %(mb)s MB."
+msgstr "Вложения: %(types)s; до %(mb)s МБ."
+
+msgid "Block"
+msgstr "Заблокировать"
+
+msgid "Block this user? You will no longer be able to exchange messages."
+msgstr "Заблокировать этого пользователя? Вы больше не сможете обмениваться сообщениями."
+
+msgid "Connected"
+msgstr "Подключено"
+
+msgid "Connecting..."
+msgstr "Подключение..."
+
+msgid "Connection lost. Reconnecting..."
+msgstr "Соединение потеряно. Переподключение..."
+
+msgid "Could not read the uploaded file."
+msgstr "Не удалось прочитать загруженный файл."
+
+msgid "Describe what is wrong with this message"
+msgstr "Опишите, что не так с этим сообщением"
+
+msgid "Listing no longer available"
+msgstr "Объявление больше недоступно"
+
+msgid "Listing not found."
+msgstr "Объявление не найдено."
+
+msgid "Log in to send messages."
+msgstr "Войдите, чтобы отправлять сообщения."
+
+msgid "MESSAGES"
+msgstr "СООБЩЕНИЯ"
+
+msgid "Mark selected reports as resolved"
+msgstr "Отметить выбранные жалобы как рассмотренные"
+
+msgid "Mark selected reports as unresolved"
+msgstr "Отметить выбранные жалобы как нерассмотренные"
+
+msgid "Message"
+msgstr "Сообщение"
+
+msgid "Message not found."
+msgstr "Сообщение не найдено."
+
+msgid "Message saved but could not be delivered live."
+msgstr "Сообщение сохранено, но не доставлено в реальном времени."
+
+msgid "Messages"
+msgstr "Сообщения"
+
+msgid "No messages yet"
+msgstr "Сообщений пока нет"
+
+msgid "No messages yet. Say hello!"
+msgstr "Сообщений пока нет. Поздоровайтесь!"
+
+msgid "Please describe the reason."
+msgstr "Пожалуйста, опишите причину."
+
+msgid "Read"
+msgstr "Прочитано"
+
+msgid "Reason"
+msgstr "Причина"
+
+msgid "Report"
+msgstr "Пожаловаться"
+
+msgid "Report message"
+msgstr "Пожаловаться на сообщение"
+
+msgid "Reported user"
+msgstr "Пользователь, на которого пожаловались"
+
+msgid "Send"
+msgstr "Отправить"
+
+msgid "Send report"
+msgstr "Отправить жалобу"
+
+msgid "Sending messages in this conversation is not possible."
+msgstr "Отправка сообщений в этом диалоге невозможна."
+
+msgid "Show earlier messages"
+msgstr "Показать более ранние сообщения"
+
+msgid "Text"
+msgstr "Текст"
+
+msgid "Thank you. Your report has been sent to the moderators."
+msgstr "Спасибо. Ваша жалоба отправлена модераторам."
+
+msgid "The attachment was rejected."
+msgstr "Вложение отклонено."
+
+msgid "The file content does not match its type."
+msgstr "Содержимое файла не соответствует его типу."
+
+msgid "The file is empty."
+msgstr "Файл пуст."
+
+msgid "The file is not a valid image."
+msgstr "Файл не является корректным изображением."
+
+#, python-format
+msgid "The file is too large (maximum %(mb)s MB)."
+msgstr "Файл слишком большой (максимум %(mb)s МБ)."
+
+msgid "The file is too large."
+msgstr "Файл слишком большой."
+
+msgid "The message could not be sent."
+msgstr "Не удалось отправить сообщение."
+
+msgid "The message is empty."
+msgstr "Сообщение пустое."
+
+#, python-format
+msgid "The message is too long (maximum %(n)s characters)."
+msgstr "Сообщение слишком длинное (максимум %(n)s символов)."
+
+msgid "The message is too long."
+msgstr "Сообщение слишком длинное."
+
+msgid "The message must be text."
+msgstr "Сообщение должно быть текстом."
+
+#, python-format
+msgid "The reason is too long (maximum %(n)s characters)."
+msgstr "Причина слишком длинная (максимум %(n)s символов)."
+
+msgid "This file type is not allowed."
+msgstr "Этот тип файла не разрешён."
+
+#, python-format
+msgid "This file type is not allowed. Allowed: %(types)s."
+msgstr "Этот тип файла не разрешён. Разрешены: %(types)s."
+
+msgid "This listing has no owner to write to."
+msgstr "У этого объявления нет владельца, которому можно написать."
+
+msgid "Unblock"
+msgstr "Разблокировать"
+
+msgid "Unknown listing type."
+msgstr "Неизвестный тип объявления."
+
+msgid "User blocked. You will not exchange messages with them."
+msgstr "Пользователь заблокирован. Вы не будете обмениваться с ним сообщениями."
+
+msgid "User unblocked."
+msgstr "Пользователь разблокирован."
+
+msgid "Write a message"
+msgstr "Написать сообщение"
+
+msgid "Write a message..."
+msgstr "Напишите сообщение..."
+
+msgid "You"
+msgstr "Вы"
+
+msgid "You are not a participant of this conversation."
+msgstr "Вы не участник этого диалога."
+
+msgid "You are sending messages too fast. Please wait a moment."
+msgstr "Вы отправляете сообщения слишком часто. Подождите немного."
+
+msgid "You blocked this user. Unblock them to continue the conversation."
+msgstr "Вы заблокировали этого пользователя. Разблокируйте его, чтобы продолжить диалог."
+
+msgid "You cannot block yourself."
+msgstr "Нельзя заблокировать самого себя."
+
+msgid "You cannot report your own message."
+msgstr "Нельзя пожаловаться на своё сообщение."
+
+msgid "You cannot write to yourself."
+msgstr "Нельзя написать самому себе."
+
+msgid "You have already reported this message."
+msgstr "Вы уже пожаловались на это сообщение."
+
+msgid "You have no conversations yet. Open a listing and use the Write a message button to start one."
+msgstr "У вас пока нет диалогов. Откройте объявление и нажмите «Написать сообщение», чтобы начать."

@@ -1,0 +1,123 @@
+{% load i18n static %}
+{% get_current_language as current_language %}
+<!DOCTYPE html>
+<html lang="{{ current_language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ other_name }} - {% translate "Messages" %} - CareerUp</title>
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=account-engagement-1">
+    <link rel="stylesheet" href="{% static 'chat/chat.css' %}?v=chat-1">
+    <script src="{% static 'mainapp/theme.js' %}?v=dark-pages-1&switch=3" defer></script>
+</head>
+<body>
+    {% include "mainapp/partials/site_header.html" %}
+    <main class="container chat-page">
+        <a href="{% url 'chat:inbox' %}" class="back-link">&larr; {% translate "All messages" %}</a>
+        <section class="chat-panel">
+            <header class="chat-head">
+                <div>
+                    <h1>{{ other_name }}</h1>
+                    <p class="chat-head-sub">
+                        {% if conversation.listing_title %}
+                            {% translate "About" %}: <a href="{{ conversation.listing_url }}">{{ conversation.listing_title }}</a>
+                        {% else %}
+                            {% translate "Listing no longer available" %}
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="chat-head-actions">
+                    <span class="chat-status" id="chat-status" data-state="offline">{% translate "Connecting..." %}</span>
+                    {% if blocked_by_me %}
+                    <form method="post" action="{% url 'chat:unblock' conversation.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="chat-btn">{% translate "Unblock" %}</button>
+                    </form>
+                    {% else %}
+                    <form method="post" action="{% url 'chat:block' conversation.pk %}" data-confirm="{% translate 'Block this user? You will no longer be able to exchange messages.' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="chat-btn chat-btn--danger">{% translate "Block" %}</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </header>
+
+            {% if messages %}
+            <ul class="chat-notices">
+                {% for message in messages %}
+                <li class="chat-notice chat-notice--{{ message.level_tag }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-label="{% translate 'Messages' %}">
+                {% if has_more %}
+                <a class="chat-more" href="?limit={{ next_limit }}">{% translate "Show earlier messages" %}</a>
+                {% endif %}
+                {% for message in chat_messages %}
+                <div class="chat-message{% if message.is_mine %} chat-message--mine{% endif %}" data-message-id="{{ message.pk }}" data-sender-id="{{ message.sender_id }}"{% if not message.is_mine and not message.read_at %} data-unread="1"{% endif %}>
+                    <div class="chat-bubble">
+                        {% if message.text %}<div class="chat-text">{{ message.text }}</div>{% endif %}
+                        {% if message.attachment %}
+                            {% if message.attachment_is_image %}
+                            <a href="{% url 'chat:attachment' message.pk %}" target="_blank" rel="noopener"><img class="chat-image" src="{% url 'chat:attachment' message.pk %}" alt="{{ message.attachment_name }}" loading="lazy"></a>
+                            {% endif %}
+                            <a class="chat-attachment" href="{% url 'chat:attachment' message.pk %}" target="_blank" rel="noopener">{{ message.attachment_name }} ({{ message.attachment_size|filesizeformat }})</a>
+                        {% endif %}
+                    </div>
+                    <div class="chat-meta">
+                        <time datetime="{{ message.created_at|date:'c' }}">{{ message.created_at|date:"d M H:i" }}</time>
+                        {% if message.is_mine %}
+                            <span class="chat-read-mark" data-read="{% if message.read_at %}1{% else %}0{% endif %}">{% if message.read_at %}&#10003;&#10003; {% translate "Read" %}{% else %}&#10003;{% endif %}</span>
+                        {% else %}
+                            <button type="button" class="chat-report-btn" data-report-id="{{ message.pk }}">{% translate "Report" %}</button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="chat-empty" data-chat-empty>{% translate "No messages yet. Say hello!" %}</p>
+                {% endfor %}
+            </div>
+
+            {% if can_send %}
+            <p class="chat-error" id="chat-error" role="alert" hidden></p>
+            <form class="chat-composer" id="chat-form" method="post" action="{% url 'chat:send' conversation.pk %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <textarea name="text" id="chat-text" rows="1" maxlength="{{ max_length }}" placeholder="{% translate 'Write a message...' %}" aria-label="{% translate 'Message' %}"></textarea>
+                <label class="chat-btn chat-attach" title="{% translate 'Attach a file' %}">
+                    <span aria-hidden="true">&#128206;</span>
+                    <span class="sr-only">{% translate "Attach a file" %}</span>
+                    <input type="file" name="attachment" id="chat-file" accept="{{ accept_attr }}" hidden>
+                </label>
+                <button type="submit" class="chat-btn chat-btn--primary">{% translate "Send" %}</button>
+            </form>
+            <p class="chat-hint"><span id="chat-file-name"></span> {% blocktranslate with types=allowed_extensions mb=max_mb %}Attachments: {{ types }}; up to {{ mb }} MB.{% endblocktranslate %}</p>
+            {% else %}
+            <div class="chat-blocked">
+                {% if blocked_by_me %}
+                <span>{% translate "You blocked this user. Unblock them to continue the conversation." %}</span>
+                {% else %}
+                <span>{% translate "Sending messages in this conversation is not possible." %}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <dialog class="chat-dialog" id="chat-report-dialog">
+        <form method="post" action="" id="chat-report-form">
+            {% csrf_token %}
+            <h2>{% translate "Report message" %}</h2>
+            <label class="sr-only" for="chat-report-reason">{% translate "Reason" %}</label>
+            <textarea name="reason" id="chat-report-reason" maxlength="{{ report_reason_max }}" required placeholder="{% translate 'Describe what is wrong with this message' %}"></textarea>
+            <div class="chat-dialog-actions">
+                <button type="button" class="chat-btn" data-close-dialog>{% translate "Cancel" %}</button>
+                <button type="submit" class="chat-btn chat-btn--primary">{% translate "Send report" %}</button>
+            </div>
+        </form>
+    </dialog>
+
+    {{ chat_config|json_script:"chat-config" }}
+    <script src="{% static 'chat/chat.js' %}?v=chat-1" defer></script>
+</body>
+</html>

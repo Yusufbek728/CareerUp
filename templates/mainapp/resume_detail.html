@@ -22,6 +22,7 @@
             <p class="company-name">{{ item.email }}</p>
             {% if item.photo %}<img class="listing-image detail-image profile-image" src="{{ item.photo.url }}" alt="{{ item.name }} {{ item.surname }}">{% endif %}
             {% include "mainapp/partials/listing_engagement.html" %}
+            {% include "chat/partials/start_chat_button.html" %}
             <div class="detail-grid">
                 <div><strong>{% translate "Phone 1:" %}</strong> {{ item.phone_number }}</div>
                 <div><strong>{% translate "Phone 2:" %}</strong> {% if item.phone_number2 %}{{ item.phone_number2 }}{% else %}{% translate "Not provided" %}{% endif %}</div>
