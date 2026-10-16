@@ -33,6 +33,13 @@
                     </div>
                 </details>
             </form>
+            {% if request.user.is_authenticated %}
+            <a href="{% url 'chat:inbox' %}" class="nav-link chat-nav-link{% if request.resolver_match.namespace == 'chat' %} active{% endif %}">
+                {% translate "Messages" %}
+                <span class="chat-unread-badge" data-chat-unread-badge{% if not chat_unread_count %} hidden{% endif %}>{{ chat_unread_count|default:0 }}</span>
+            </a>
+            <script src="{% static 'chat/notifications.js' %}?v=chat-1" defer></script>
+            {% endif %}
             <details class="create-menu">
                 <summary class="nav-btn">{% translate "Create" %}</summary>
                 <div class="create-options">

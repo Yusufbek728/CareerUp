@@ -1,0 +1,23 @@
+{% load i18n %}
+{% comment %}"Write" button on a listing page. Needs `item` and `listing_type` (job / internship / resume).
+Hidden when the listing has no owner and for the owner themself.{% endcomment %}
+{% if item.owner_id %}
+    {% if request.user.is_authenticated %}
+        {% if item.owner_id != request.user.id %}
+        <form method="post" action="{% url 'chat:start' listing_type item.pk %}" class="chat-start-form">
+            {% csrf_token %}
+            <button type="submit" class="chat-start-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                {% translate "Write a message" %}
+            </button>
+        </form>
+        {% endif %}
+    {% else %}
+        <div class="chat-start-form">
+            <a class="chat-start-btn" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                {% translate "Write a message" %}
+            </a>
+        </div>
+    {% endif %}
+{% endif %}

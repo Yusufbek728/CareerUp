@@ -520,3 +520,204 @@ msgstr "ish beruvchi bilan bog'lanish uchun"
 msgid "Wanted salary"
 msgstr "Kutilayotgan maosh"
 
+
+# Chat
+msgid "About"
+msgstr "E'lon haqida"
+
+msgid "All messages"
+msgstr "Barcha xabarlar"
+
+msgid "Attach a file"
+msgstr "Fayl biriktirish"
+
+#, python-format
+msgid "Attachments: %(types)s; up to %(mb)s MB."
+msgstr "Biriktirmalar: %(types)s; %(mb)s MB gacha."
+
+msgid "Block"
+msgstr "Bloklash"
+
+msgid "Block this user? You will no longer be able to exchange messages."
+msgstr "Bu foydalanuvchini bloklaysizmi? Endi xabar almasha olmaysiz."
+
+msgid "Connected"
+msgstr "Ulangan"
+
+msgid "Connecting..."
+msgstr "Ulanmoqda..."
+
+msgid "Connection lost. Reconnecting..."
+msgstr "Aloqa uzildi. Qayta ulanmoqda..."
+
+msgid "Could not read the uploaded file."
+msgstr "Yuklangan faylni o'qib bo'lmadi."
+
+msgid "Describe what is wrong with this message"
+msgstr "Bu xabarda nima noto'g'ri ekanini yozing"
+
+msgid "Listing no longer available"
+msgstr "E'lon endi mavjud emas"
+
+msgid "Listing not found."
+msgstr "E'lon topilmadi."
+
+msgid "Log in to send messages."
+msgstr "Xabar yuborish uchun tizimga kiring."
+
+msgid "MESSAGES"
+msgstr "XABARLAR"
+
+msgid "Mark selected reports as resolved"
+msgstr "Tanlangan shikoyatlarni ko'rib chiqilgan deb belgilash"
+
+msgid "Mark selected reports as unresolved"
+msgstr "Tanlangan shikoyatlarni ko'rib chiqilmagan deb belgilash"
+
+msgid "Message"
+msgstr "Xabar"
+
+msgid "Message not found."
+msgstr "Xabar topilmadi."
+
+msgid "Message saved but could not be delivered live."
+msgstr "Xabar saqlandi, ammo real vaqtda yetkazib bo'lmadi."
+
+msgid "Messages"
+msgstr "Xabarlar"
+
+msgid "No messages yet"
+msgstr "Hozircha xabarlar yo'q"
+
+msgid "No messages yet. Say hello!"
+msgstr "Hozircha xabarlar yo'q. Salom yozing!"
+
+msgid "Please describe the reason."
+msgstr "Iltimos, sababni yozing."
+
+msgid "Read"
+msgstr "O'qildi"
+
+msgid "Reason"
+msgstr "Sabab"
+
+msgid "Report"
+msgstr "Shikoyat qilish"
+
+msgid "Report message"
+msgstr "Xabardan shikoyat qilish"
+
+msgid "Reported user"
+msgstr "Shikoyat qilingan foydalanuvchi"
+
+msgid "Send"
+msgstr "Yuborish"
+
+msgid "Send report"
+msgstr "Shikoyatni yuborish"
+
+msgid "Sending messages in this conversation is not possible."
+msgstr "Bu suhbatda xabar yuborib bo'lmaydi."
+
+msgid "Show earlier messages"
+msgstr "Oldingi xabarlarni ko'rsatish"
+
+msgid "Text"
+msgstr "Matn"
+
+msgid "Thank you. Your report has been sent to the moderators."
+msgstr "Rahmat. Shikoyatingiz moderatorlarga yuborildi."
+
+msgid "The attachment was rejected."
+msgstr "Biriktirma rad etildi."
+
+msgid "The file content does not match its type."
+msgstr "Fayl mazmuni uning turiga mos kelmaydi."
+
+msgid "The file is empty."
+msgstr "Fayl bo'sh."
+
+msgid "The file is not a valid image."
+msgstr "Fayl yaroqli rasm emas."
+
+#, python-format
+msgid "The file is too large (maximum %(mb)s MB)."
+msgstr "Fayl juda katta (maksimum %(mb)s MB)."
+
+msgid "The file is too large."
+msgstr "Fayl juda katta."
+
+msgid "The message could not be sent."
+msgstr "Xabarni yuborib bo'lmadi."
+
+msgid "The message is empty."
+msgstr "Xabar bo'sh."
+
+#, python-format
+msgid "The message is too long (maximum %(n)s characters)."
+msgstr "Xabar juda uzun (maksimum %(n)s belgi)."
+
+msgid "The message is too long."
+msgstr "Xabar juda uzun."
+
+msgid "The message must be text."
+msgstr "Xabar matn bo'lishi kerak."
+
+#, python-format
+msgid "The reason is too long (maximum %(n)s characters)."
+msgstr "Sabab juda uzun (maksimum %(n)s belgi)."
+
+msgid "This file type is not allowed."
+msgstr "Bu fayl turi ruxsat etilmagan."
+
+#, python-format
+msgid "This file type is not allowed. Allowed: %(types)s."
+msgstr "Bu fayl turi ruxsat etilmagan. Ruxsat etilgan: %(types)s."
+
+msgid "This listing has no owner to write to."
+msgstr "Bu e'lonning yozish mumkin bo'lgan egasi yo'q."
+
+msgid "Unblock"
+msgstr "Blokdan chiqarish"
+
+msgid "Unknown listing type."
+msgstr "Noma'lum e'lon turi."
+
+msgid "User blocked. You will not exchange messages with them."
+msgstr "Foydalanuvchi bloklandi. U bilan xabar almashmaysiz."
+
+msgid "User unblocked."
+msgstr "Foydalanuvchi blokdan chiqarildi."
+
+msgid "Write a message"
+msgstr "Xabar yozish"
+
+msgid "Write a message..."
+msgstr "Xabar yozing..."
+
+msgid "You"
+msgstr "Siz"
+
+msgid "You are not a participant of this conversation."
+msgstr "Siz bu suhbat ishtirokchisi emassiz."
+
+msgid "You are sending messages too fast. Please wait a moment."
+msgstr "Siz juda tez xabar yuboryapsiz. Biroz kuting."
+
+msgid "You blocked this user. Unblock them to continue the conversation."
+msgstr "Siz bu foydalanuvchini blokladingiz. Suhbatni davom ettirish uchun blokdan chiqaring."
+
+msgid "You cannot block yourself."
+msgstr "O'zingizni bloklab bo'lmaydi."
+
+msgid "You cannot report your own message."
+msgstr "O'z xabaringizdan shikoyat qilib bo'lmaydi."
+
+msgid "You cannot write to yourself."
+msgstr "O'zingizga xabar yozib bo'lmaydi."
+
+msgid "You have already reported this message."
+msgstr "Siz bu xabardan allaqachon shikoyat qilgansiz."
+
+msgid "You have no conversations yet. Open a listing and use the Write a message button to start one."
+msgstr "Sizda hozircha suhbatlar yo'q. E'lonni oching va boshlash uchun «Xabar yozish» tugmasini bosing."

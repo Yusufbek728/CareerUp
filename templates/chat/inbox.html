@@ -1,0 +1,54 @@
+{% load i18n static %}
+{% get_current_language as current_language %}
+<!DOCTYPE html>
+<html lang="{{ current_language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% translate "Messages" %} - CareerUp</title>
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=account-engagement-1">
+    <link rel="stylesheet" href="{% static 'chat/chat.css' %}?v=chat-1">
+    <script src="{% static 'mainapp/theme.js' %}?v=dark-pages-1&switch=3" defer></script>
+</head>
+<body>
+    {% include "mainapp/partials/site_header.html" %}
+    <main class="container chat-page">
+        <a href="{% url 'home' %}" class="back-link">&larr; {% translate "Back to CareerUp" %}</a>
+        <section class="chat-panel" data-chat-inbox>
+            <div class="chat-panel-pad">
+                <span class="tag">{% translate "MESSAGES" %}</span>
+                <h1>{% translate "Messages" %}</h1>
+            </div>
+            {% if rows %}
+            <ul class="chat-inbox-list">
+                {% for row in rows %}
+                <li>
+                    <a class="chat-inbox-item{% if row.unread %} chat-inbox-item--unread{% endif %}" href="{% url 'chat:conversation' row.conversation.pk %}" data-conversation-id="{{ row.conversation.pk }}">
+                        <span class="chat-avatar" aria-hidden="true">{{ row.other_name|slice:":2"|upper }}</span>
+                        <span class="chat-inbox-body">
+                            <span class="chat-inbox-top">
+                                <span class="chat-inbox-name">{{ row.other_name }}</span>
+                                {% if row.last %}<time class="chat-inbox-time" datetime="{{ row.last.created_at|date:'c' }}">{{ row.last.created_at|date:"d M H:i" }}</time>{% endif %}
+                            </span>
+                            <span class="chat-inbox-listing">{% if row.conversation.listing_title %}{{ row.conversation.listing_title }}{% else %}{% translate "Listing no longer available" %}{% endif %}</span>
+                            <span class="chat-inbox-preview" data-chat-preview>{% if row.last %}{% if row.last_is_mine %}{% translate "You" %}: {% endif %}{{ row.last_preview }}{% else %}{% translate "No messages yet" %}{% endif %}</span>
+                        </span>
+                        <span class="chat-unread-badge chat-inbox-unread" data-chat-conversation-unread{% if not row.unread %} hidden{% endif %}>{{ row.unread }}</span>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% if page_obj.has_other_pages %}
+            <nav class="chat-pager" aria-label="{% translate 'pagination' %}">
+                {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">&larr; {% translate "Previous" %}</a>{% else %}<span></span>{% endif %}
+                {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">{% translate "Next" %} &rarr;</a>{% endif %}
+            </nav>
+            {% endif %}
+            {% else %}
+            <p class="chat-empty">{% translate "You have no conversations yet. Open a listing and use the Write a message button to start one." %}</p>
+            {% endif %}
+        </section>
+    </main>
+    <script src="{% static 'chat/inbox.js' %}?v=chat-1" defer></script>
+</body>
+</html>
