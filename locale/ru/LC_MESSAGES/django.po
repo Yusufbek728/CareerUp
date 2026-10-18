@@ -826,3 +826,51 @@ msgstr "Чем больше значение, тем выше в списке."
 
 msgid "Filters"
 msgstr "Фильтры"
+
+msgid "About you"
+msgstr "О вас"
+
+msgid "About the job"
+msgstr "О работе"
+
+msgid "Experience and wishes"
+msgstr "Опыт и пожелания"
+
+msgid "Location"
+msgstr "Локация"
+
+msgid "Contacts"
+msgstr "Контакты"
+
+msgid "Who is hiring"
+msgstr "Кто нанимает"
+
+msgid "Name, contact email and photo"
+msgstr "Имя, email для связи и фото"
+
+msgid "Position, pay and schedule"
+msgstr "Должность, оплата и график"
+
+msgid "What you can do and what you are looking for"
+msgstr "Что вы умеете и что ищете"
+
+msgid "Country and city"
+msgstr "Страна и город"
+
+msgid "What you expect from candidates"
+msgstr "Что вы ждёте от кандидатов"
+
+msgid "How people will reach you"
+msgstr "Как с вами свяжутся"
+
+msgid "Form completeness"
+msgstr "Заполненность"
+
+msgid "fields filled"
+msgstr "полей заполнено"
+
+msgid "Choose a photo"
+msgstr "Выберите фото"
+
+msgid "Sections"
+msgstr "Разделы"

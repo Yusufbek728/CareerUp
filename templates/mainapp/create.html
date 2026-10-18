@@ -9,46 +9,149 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=site-header-global-1&switch=5">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=create-form-1&switch=5">
     <script src="{% static 'mainapp/theme.js' %}?v=language-labels-1&switch=3" defer></script>
     <script src="{% static 'mainapp/country-city.js' %}?v=3" defer></script>
+    <script src="{% static 'mainapp/create-form.js' %}?v=1" defer></script>
 </head>
 <body>
     {% include "mainapp/partials/site_header.html" %}
-    <main class="create-page container">
+
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+        <defs>
+            <symbol id="cf-i-building" viewBox="0 0 24 24"><path d="M4 21V5.5A1.5 1.5 0 0 1 5.5 4h7A1.5 1.5 0 0 1 14 5.5V21"/><path d="M14 10h4.5A1.5 1.5 0 0 1 20 11.5V21"/><path d="M3 21h18"/><path d="M8 8h2M8 12h2M8 16h2"/></symbol>
+            <symbol id="cf-i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></symbol>
+            <symbol id="cf-i-briefcase" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7"/><path d="M3 13h18"/></symbol>
+            <symbol id="cf-i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+            <symbol id="cf-i-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></symbol>
+            <symbol id="cf-i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
+            <symbol id="cf-i-upload" viewBox="0 0 24 24"><path d="M12 16V5"/><path d="M7.5 9.5L12 5l4.5 4.5"/><path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16"/></symbol>
+            <symbol id="cf-i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+        </defs>
+    </svg>
+
+    <main class="create-page cf-page container">
         <div class="create-toolbar">
             <a href="{% url 'home' %}" class="back-link">&larr; {% translate "Back to CareerUp" %}</a>
         </div>
-        <section class="create-panel">
+
+        <div class="cf-hero">
             <span class="tag">{% translate "NEW LISTING" %}</span>
             <h1>{% translate "Create" %} {% translate listing_title %}</h1>
             <p class="form-intro">{% translate "Add your information so people can contact you through CareerUp." %}</p>
+        </div>
 
-            <form method="post" enctype="multipart/form-data" class="listing-form" novalidate>
+        <div class="cf-layout">
+            <nav class="cf-toc" aria-label="{% translate 'Sections' %}">
+                <a href="#cf-main" class="is-active"><span class="cf-section-icon"><svg class="cf-ico" aria-hidden="true"><use href="#cf-i-{% if listing_type == 'resume' %}user{% else %}building{% endif %}"></use></svg></span><span class="cf-toc-label">{% if listing_type == 'resume' %}{% translate "About you" %}{% else %}{% translate "Company" %}{% endif %}</span></a>
+                <a href="#cf-work"><span class="cf-section-icon"><svg class="cf-ico" aria-hidden="true"><use href="#cf-i-briefcase"></use></svg></span><span class="cf-toc-label">{% if listing_type == 'resume' %}{% translate "Experience and wishes" %}{% else %}{% translate "About the job" %}{% endif %}</span></a>
+                <a href="#cf-location"><span class="cf-section-icon"><svg class="cf-ico" aria-hidden="true"><use href="#cf-i-pin"></use></svg></span><span class="cf-toc-label">{% translate "Location" %}</span></a>
+                {% if listing_type == 'job' %}
+                    <a href="#cf-requirements"><span class="cf-section-icon"><svg class="cf-ico" aria-hidden="true"><use href="#cf-i-doc"></use></svg></span><span class="cf-toc-label">{% translate "Requirements" %}</span></a>
+                {% endif %}
+                <a href="#cf-contacts"><span class="cf-section-icon"><svg class="cf-ico" aria-hidden="true"><use href="#cf-i-phone"></use></svg></span><span class="cf-toc-label">{% translate "Contacts" %}</span></a>
+            </nav>
+
+            <form method="post" enctype="multipart/form-data" class="cf" novalidate
+                  data-fields-word="{% translate 'fields filled' %}">
                 {% csrf_token %}
                 {% if form.non_field_errors %}
-                    <div class="form-errors">{{ form.non_field_errors }}</div>
+                    <div class="form-errors cf-form-errors">{{ form.non_field_errors }}</div>
                 {% endif %}
-                {% for field in form %}
-                    <div class="form-field">
-                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
-                        {{ field }}
-                        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
-                        {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+
+                <section class="cf-section" id="cf-main">
+                    {% if listing_type == 'resume' %}
+                        {% include "mainapp/partials/create_section_head.html" with icon="user" title=_("About you") hint=_("Name, contact email and photo") %}
+                        <div class="cf-grid">
+                            {% include "mainapp/partials/create_field.html" with field=form.name %}
+                            {% include "mainapp/partials/create_field.html" with field=form.surname %}
+                            {% include "mainapp/partials/create_field.html" with field=form.email %}
+                            {% include "mainapp/partials/create_field.html" with field=form.status %}
+                            {% include "mainapp/partials/create_field.html" with field=form.photo wide=True %}
+                        </div>
+                    {% else %}
+                        {% include "mainapp/partials/create_section_head.html" with icon="building" title=_("Company") hint=_("Who is hiring") %}
+                        <div class="cf-grid">
+                            {% include "mainapp/partials/create_field.html" with field=form.company_name %}
+                            {% include "mainapp/partials/create_field.html" with field=form.status %}
+                            {% include "mainapp/partials/create_field.html" with field=form.work_photo wide=True %}
+                        </div>
+                    {% endif %}
+                </section>
+
+                <section class="cf-section" id="cf-work">
+                    {% if listing_type == 'resume' %}
+                        {% include "mainapp/partials/create_section_head.html" with icon="briefcase" title=_("Experience and wishes") hint=_("What you can do and what you are looking for") %}
+                        <div class="cf-grid">
+                            {% include "mainapp/partials/create_field.html" with field=form.experience wide=True %}
+                            {% include "mainapp/partials/create_field.html" with field=form.wanted_salary %}
+                            {% include "mainapp/partials/create_field.html" with field=form.wanted_work_time %}
+                            {% include "mainapp/partials/create_field.html" with field=form.wanted_working_condition wide=True %}
+                            {% include "mainapp/partials/create_field.html" with field=form.wanted_work_schedule_and_working_hours wide=True %}
+                        </div>
+                    {% else %}
+                        {% include "mainapp/partials/create_section_head.html" with icon="briefcase" title=_("About the job") hint=_("Position, pay and schedule") %}
+                        <div class="cf-grid">
+                            {% include "mainapp/partials/create_field.html" with field=form.job_title %}
+                            {% include "mainapp/partials/create_field.html" with field=form.work_field %}
+                            {% if listing_type == 'job' %}
+                                {% include "mainapp/partials/create_field.html" with field=form.salary %}
+                                {% include "mainapp/partials/create_field.html" with field=form.required_experience %}
+                            {% else %}
+                                {% include "mainapp/partials/create_field.html" with field=form.work_duration %}
+                            {% endif %}
+                            {% include "mainapp/partials/create_field.html" with field=form.work_time %}
+                            {% include "mainapp/partials/create_field.html" with field=form.working_condition %}
+                            {% include "mainapp/partials/create_field.html" with field=form.work_schedule_and_working_hours wide=True %}
+                        </div>
+                    {% endif %}
+                </section>
+
+                <section class="cf-section" id="cf-location">
+                    {% include "mainapp/partials/create_section_head.html" with icon="pin" title=_("Location") hint=_("Country and city") %}
+                    <div class="cf-grid">
+                        {% include "mainapp/partials/create_field.html" with field=form.country %}
+                        {% include "mainapp/partials/create_field.html" with field=form.city %}
                     </div>
-                {% endfor %}
-                <div class="form-actions">
-                    <button type="submit" class="primary-btn form-submit">{% translate "Save" %}</button>
+                </section>
+
+                {% if listing_type == 'job' %}
+                    <section class="cf-section" id="cf-requirements">
+                        {% include "mainapp/partials/create_section_head.html" with icon="doc" title=_("Requirements") hint=_("What you expect from candidates") %}
+                        <div class="cf-grid">
+                            {% include "mainapp/partials/create_field.html" with field=form.requirements_of_job wide=True %}
+                        </div>
+                    </section>
+                {% endif %}
+
+                <section class="cf-section" id="cf-contacts">
+                    {% include "mainapp/partials/create_section_head.html" with icon="phone" title=_("Contacts") hint=_("How people will reach you") %}
+                    <div class="cf-grid">
+                        {% include "mainapp/partials/create_field.html" with field=form.phone_number %}
+                        {% include "mainapp/partials/create_field.html" with field=form.phone_number2 %}
+                    </div>
+                </section>
+
+                <div class="cf-bar" role="region" aria-label="{% translate 'Form completeness' %}">
+                    <div class="cf-ring" data-cf-ring style="--cf-progress: 0"><span data-cf-percent>0%</span></div>
+                    <div class="cf-bar-text">
+                        <strong>{% translate "Form completeness" %}</strong>
+                        <span data-cf-summary></span>
+                    </div>
+                    <button type="submit" class="primary-btn cf-submit">
+                        <svg class="cf-ico" aria-hidden="true"><use href="#cf-i-check"></use></svg>{% translate "Save" %}
+                    </button>
                 </div>
             </form>
-            {% if item %}
-                <form method="post" class="delete-listing-form" onsubmit="return confirm('{% translate "Are you sure you want to delete this listing?" %}');">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="delete_listing">
-                    <button type="submit" class="secondary-btn danger-btn">{% translate "Delete" %}</button>
-                </form>
-            {% endif %}
-        </section>
+        </div>
+
+        {% if item %}
+            <form method="post" class="delete-listing-form cf-delete" onsubmit="return confirm('{% translate "Are you sure you want to delete this listing?" %}');">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_listing">
+                <button type="submit" class="secondary-btn danger-btn">{% translate "Delete" %}</button>
+            </form>
+        {% endif %}
     </main>
 </body>
 </html>

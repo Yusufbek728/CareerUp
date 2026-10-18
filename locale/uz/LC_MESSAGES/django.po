@@ -823,3 +823,51 @@ msgstr "Qiymat qancha katta bo'lsa, ro'yxatda shuncha yuqori turadi."
 
 msgid "Filters"
 msgstr "Filtrlar"
+
+msgid "About you"
+msgstr "Siz haqingizda"
+
+msgid "About the job"
+msgstr "Ish haqida"
+
+msgid "Experience and wishes"
+msgstr "Tajriba va istaklar"
+
+msgid "Location"
+msgstr "Joylashuv"
+
+msgid "Contacts"
+msgstr "Kontaktlar"
+
+msgid "Who is hiring"
+msgstr "Kim ishga oladi"
+
+msgid "Name, contact email and photo"
+msgstr "Ism, aloqa uchun email va rasm"
+
+msgid "Position, pay and schedule"
+msgstr "Lavozim, maosh va jadval"
+
+msgid "What you can do and what you are looking for"
+msgstr "Nimalarni qila olasiz va nima izlayapsiz"
+
+msgid "Country and city"
+msgstr "Davlat va shahar"
+
+msgid "What you expect from candidates"
+msgstr "Nomzodlardan nimalarni kutasiz"
+
+msgid "How people will reach you"
+msgstr "Siz bilan qanday bog'lanishadi"
+
+msgid "Form completeness"
+msgstr "To'ldirilganlik"
+
+msgid "fields filled"
+msgstr "maydon to'ldirildi"
+
+msgid "Choose a photo"
+msgstr "Rasm tanlang"
+
+msgid "Sections"
+msgstr "Bo'limlar"

@@ -454,6 +454,7 @@ def create_listing(request, listing_type):
     return render(request, 'mainapp/create.html', {
         'form': form,
         'listing_title': listing_title,
+        'listing_type': listing_type,
     })
 
 
@@ -666,6 +667,7 @@ def super_admin_edit_listing(request, listing_type, pk):
     return render(request, 'mainapp/create.html', {
         'form': form,
         'listing_title': _('Edit %(listing_type)s') % {'listing_type': title},
+        'listing_type': listing_type,
     })
 
 

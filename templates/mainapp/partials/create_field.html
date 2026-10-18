@@ -1,0 +1,15 @@
+{% load i18n %}
+<div class="cf-field{% if wide %} cf-field--wide{% endif %}{% if field.errors %} has-error{% endif %}">
+    <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="cf-req" aria-hidden="true">*</span>{% endif %}</label>
+    {% if field.field.widget.input_type == 'file' %}
+        <div class="cf-drop">
+            <span class="cf-drop-icon"><svg class="cf-ico" aria-hidden="true"><use href="#cf-i-upload"></use></svg></span>
+            <span class="cf-drop-text">{% translate "Choose a photo" %} <small>PNG, JPG</small></span>
+            {{ field }}
+        </div>
+    {% else %}
+        {{ field }}
+    {% endif %}
+    {% if field.help_text %}<small class="cf-help">{{ field.help_text }}</small>{% endif %}
+    {% for error in field.errors %}<span class="field-error cf-error">{{ error }}</span>{% endfor %}
+</div>
