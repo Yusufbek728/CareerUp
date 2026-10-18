@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from .models import AccountProfile, Job, Resume, Internship
+from django.core.exceptions import ValidationError as DjangoValidationError
+from .models import AccountProfile, Job, Resume, Internship, check_city_belongs_to_country
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -29,19 +30,34 @@ class RegistrationSerializer(serializers.ModelSerializer):
         AccountProfile.objects.create(user=user, role=role, display_name=display_name)
         return user
 
-class JobSerializer(serializers.ModelSerializer):
+class CountryCitySerializerMixin:
+    """The city must belong to the country (also on PATCH, falling back to the stored values)."""
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        instance = getattr(self, 'instance', None)
+        country = attrs['country'] if 'country' in attrs else getattr(instance, 'country', None)
+        city = attrs['city'] if 'city' in attrs else getattr(instance, 'city', None)
+        try:
+            check_city_belongs_to_country(country, city)
+        except DjangoValidationError as error:
+            raise serializers.ValidationError({'city': error.messages})
+        return attrs
+
+
+class JobSerializer(CountryCitySerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = "__all__"
         read_only_fields = ('owner', 'view_count')
 
-class ResumeSerializer(serializers.ModelSerializer):
+class ResumeSerializer(CountryCitySerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Resume
         fields = "__all__"
         read_only_fields = ('owner', 'view_count')
 
-class InternshipSerializer(serializers.ModelSerializer):
+class InternshipSerializer(CountryCitySerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Internship
         fields = "__all__"

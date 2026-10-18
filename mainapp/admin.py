@@ -1,5 +1,20 @@
 from django.contrib import admin
-from .models import AccountProfile, Job, Internship, Resume
+from .models import AccountProfile, City, Country, Job, Internship, Resume
+
+
+@admin.register(Country)
+class CountryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'name_ru', 'name_uz', 'priority')
+    list_editable = ('priority',)
+    search_fields = ('name', 'code', 'name_en', 'name_ru', 'name_uz')
+
+
+@admin.register(City)
+class CityAdmin(admin.ModelAdmin):
+    list_display = ('name', 'name_ru', 'name_uz', 'country', 'population')
+    list_select_related = ('country',)
+    search_fields = ('name', 'name_en', 'name_ru', 'name_uz', 'country__name', 'country__code')
+    autocomplete_fields = ('country',)
 
 @admin.register(AccountProfile)
 class AccountProfileAdmin(admin.ModelAdmin):
@@ -9,7 +24,7 @@ class AccountProfileAdmin(admin.ModelAdmin):
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
     list_display = ('company_name', 'phone_number', 'phone_number2', 'job_title', 'salary', 'hourly_income', 'required_experience', 'work_time', 'status', 'created_at', 'working_condition', 'work_schedule_and_working_hours', 'work_field', 'requirements_of_job',)
-    list_filter = ('status', 'created_at')
+    list_filter = ('status', 'created_at', 'country')
     search_fields = ('company_name', 'job_title', 'phone_number')
  
 @admin.register(Internship)

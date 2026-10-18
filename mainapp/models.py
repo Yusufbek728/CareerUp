@@ -1,11 +1,16 @@
 from decimal import Decimal
 
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.utils.translation import gettext_lazy as _
+from django.db.models import F, Value
+from django.db.models.functions import Coalesce, NullIf
+from django.utils.translation import get_language, gettext_lazy as _
+
+from .geo_utils import build_search_text, flag_emoji, language_key
 
 phone_number_validator = RegexValidator(
     regex=r'^\+?(?=(?:\D*\d){8,15}\D*$)[0-9][0-9\s().-]*[0-9]$',
@@ -50,6 +55,113 @@ class AccountProfile(models.Model):
         return self.display_name or self.user.username
 
 
+class LocalizedNameMixin:
+    """``name`` is the canonical (English) name; name_en/name_ru/name_uz are display names per language."""
+
+    def get_localized_name(self, language=None):
+        key = language_key(language or get_language())
+        return getattr(self, f'name_{key}', '') or self.name
+
+    @property
+    def localized_name(self):
+        return self.get_localized_name()
+
+    def __str__(self):
+        return self.localized_name
+
+
+class CountryQuerySet(models.QuerySet):
+    def localized(self, language=None):
+        """Featured countries first, then alphabetically by the name in the active language."""
+        key = language_key(language or get_language())
+        return self.annotate(
+            sort_name=Coalesce(NullIf(F(f'name_{key}'), Value('')), F('name')),
+        ).order_by('-priority', 'sort_name', 'pk')
+
+
+class Country(LocalizedNameMixin, models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=2, unique=True, null=True, blank=True, help_text=_('ISO 3166-1 alpha-2'))
+    name_en = models.CharField(max_length=100, blank=True, default='')
+    name_ru = models.CharField(max_length=100, blank=True, default='')
+    name_uz = models.CharField(max_length=100, blank=True, default='')
+    priority = models.SmallIntegerField(default=0, help_text=_('Higher values are listed first.'))
+
+    objects = CountryQuerySet.as_manager()
+
+    class Meta:
+        ordering = ['-priority', 'name']
+        verbose_name = _('country')
+        verbose_name_plural = _('countries')
+
+    @property
+    def flag(self):
+        return flag_emoji(self.code)
+
+    @property
+    def display_name(self):
+        """'🇺🇿 Oʻzbekiston' - used in selects and on cards."""
+        return f'{self.flag} {self.localized_name}'.strip()
+
+
+class City(LocalizedNameMixin, models.Model):
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name='cities')
+    name = models.CharField(max_length=150)
+    name_en = models.CharField(max_length=150, blank=True, default='')
+    name_ru = models.CharField(max_length=150, blank=True, default='')
+    name_uz = models.CharField(max_length=150, blank=True, default='')
+    population = models.PositiveBigIntegerField(default=0, db_index=True)
+    geoname_id = models.PositiveIntegerField(null=True, blank=True, unique=True, editable=False)
+    # Normalized names of all languages joined with '|': case/accent-insensitive search on any database
+    # (SQLite's LIKE ignores case for ASCII only). Filled in save() and by the geo seeding code.
+    search_text = models.TextField(blank=True, default='', editable=False)
+
+    class Meta:
+        ordering = ['-population', 'name']
+        verbose_name = _('city')
+        verbose_name_plural = _('cities')
+        constraints = [
+            models.UniqueConstraint(fields=['country', 'name'], name='unique_city_name_per_country'),
+        ]
+
+    def save(self, *args, **kwargs):
+        self.search_text = build_search_text(self.name, self.name_en, self.name_ru, self.name_uz)
+        update_fields = kwargs.get('update_fields')
+        if update_fields is not None:
+            kwargs['update_fields'] = {*update_fields, 'search_text'}
+        super().save(*args, **kwargs)
+
+
+def check_city_belongs_to_country(country, city):
+    """Shared by forms and DRF serializers: a city requires a country and must belong to it."""
+    if city is None:
+        return
+    if country is None:
+        raise ValidationError(_('Select a country first.'), code='country_required')
+    if city.country_id != country.pk:
+        raise ValidationError(_('The selected city does not belong to the selected country.'), code='city_country_mismatch')
+
+
+def format_location(city, country):
+    """'Toshkent, Oʻzbekiston' (names in the active language) / only the country / empty string."""
+    return ', '.join(str(part) for part in (city, country) if part)
+
+
+def format_location_with_flag(city, country):
+    """Same as format_location, prefixed with the country flag emoji."""
+    location = format_location(city, country)
+    flag = country.flag if country else ''
+    return f'{flag} {location}'.strip() if location else ''
+
+
+def country_fk(related_name):
+    return models.ForeignKey(Country, on_delete=models.SET_NULL, null=True, blank=True, related_name=related_name)
+
+
+def city_fk(related_name):
+    return models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True, related_name=related_name)
+
+
 class Job(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='jobs', null=True, blank=True)
     interactions = GenericRelation('ListingInteraction', related_query_name='job')
@@ -69,6 +181,16 @@ class Job(models.Model):
     work_field = models.CharField(max_length=20, choices=WORK_FIELDS, default='full_time')
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='qidirilyapti')
+    country = country_fk('jobs')
+    city = city_fk('jobs')
+
+    @property
+    def location(self):
+        return format_location(self.city, self.country)
+
+    @property
+    def location_with_flag(self):
+        return format_location_with_flag(self.city, self.country)
 
     def save(self, *args, **kwargs):
         self.hourly_income = Decimal(self.salary) / Decimal(self.work_time) if self.work_time else 0
@@ -93,9 +215,20 @@ class Internship(models.Model):
     work_field = models.CharField(max_length=20, choices=WORK_FIELDS, default='full_time')
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='qidirilyapti')
+    country = country_fk('internships')
+    city = city_fk('internships')
+
+    @property
+    def location(self):
+        return format_location(self.city, self.country)
+
+    @property
+    def location_with_flag(self):
+        return format_location_with_flag(self.city, self.country)
+
     def __str__(self):
         return self.job_title
-    
+
 class Resume(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='resumes', null=True, blank=True)
     interactions = GenericRelation('ListingInteraction', related_query_name='resume')
@@ -113,6 +246,16 @@ class Resume(models.Model):
     wanted_work_schedule_and_working_hours = models.CharField(max_length=20, choices=WORKING_DAYS, default='6/1')
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='qidirilyapti')
+    country = country_fk('resumes')
+    city = city_fk('resumes')
+
+    @property
+    def location(self):
+        return format_location(self.city, self.country)
+
+    @property
+    def location_with_flag(self):
+        return format_location_with_flag(self.city, self.country)
 
     @property
     def wanted_hourly_income(self):
@@ -157,3 +300,23 @@ class ListingInteraction(models.Model):
                 name='listing_interaction_has_one_viewer',
             ),
         ]
+
+class RateLimitCounter(models.Model):
+    """Fixed-window counter shared by all workers/instances (stored in the main DB).
+
+    One row per (scope, key). `key` is a sha256 hex digest, so raw emails are not stored.
+    Used to throttle password-reset emails (see mainapp/ratelimit.py).
+    """
+
+    scope = models.CharField(max_length=32)
+    key = models.CharField(max_length=64)
+    window_start = models.DateTimeField(db_index=True)
+    count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['scope', 'key'], name='unique_ratelimit_scope_key'),
+        ]
+
+    def __str__(self):
+        return f'{self.scope}:{self.key[:8]} ({self.count})'

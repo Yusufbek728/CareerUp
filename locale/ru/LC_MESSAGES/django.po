@@ -771,3 +771,58 @@ msgid "If you did not request this, just ignore this email; your password will n
 msgstr "Если вы не запрашивали сброс, просто проигнорируйте это письмо — пароль не изменится."
 msgid "CareerUp password reset"
 msgstr "CareerUp: сброс пароля"
+msgid "Too many reset requests. Please try again in %(minutes)d min."
+msgstr "Слишком много запросов на сброс пароля. Повторите попытку через %(minutes)d мин."
+msgid "A reset email has already been sent. You can request another in %(minutes)d min."
+msgstr "Письмо уже отправлено. Повторить запрос можно через %(minutes)d мин."
+
+# Country / city
+msgid "Country"
+msgstr "Страна"
+msgid "City"
+msgstr "Город"
+msgid "Select country"
+msgstr "Выберите страну"
+msgid "Select city"
+msgstr "Выберите город"
+msgid "Location:"
+msgstr "Местоположение:"
+msgid "Select a country first."
+msgstr "Сначала выберите страну."
+msgid "The selected city does not belong to the selected country."
+msgstr "Выбранный город не относится к выбранной стране."
+msgid "country"
+msgstr "страна"
+msgid "countries"
+msgstr "страны"
+msgid "city"
+msgstr "город"
+msgid "cities"
+msgstr "города"
+
+msgid "Any country"
+msgstr "Любая страна"
+
+msgid "Any city"
+msgstr "Любой город"
+
+msgid "Nothing found"
+msgstr "Ничего не найдено"
+
+msgid "Clear"
+msgstr "Очистить"
+
+msgid "Select country first"
+msgstr "Сначала выберите страну"
+
+msgid "Loading..."
+msgstr "Загрузка..."
+
+msgid "ISO 3166-1 alpha-2"
+msgstr "ISO 3166-1 alpha-2"
+
+msgid "Higher values are listed first."
+msgstr "Чем больше значение, тем выше в списке."
+
+msgid "Filters"
+msgstr "Фильтры"

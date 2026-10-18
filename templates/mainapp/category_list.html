@@ -9,9 +9,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=tag-contrast-fix-1">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=location-chip-3">
     <script src="{% static 'mainapp/theme.js' %}?v=dark-pages-1&switch=3" defer></script>
     <script src="{% static 'mainapp/filters.js' %}" defer></script>
+    <script src="{% static 'mainapp/country-city.js' %}?v=3" defer></script>
+    <noscript><style>.filters-toggle { display: none !important; } .listing-filters { display: grid !important; }</style></noscript>
 </head>
 <body class="category-listing-body">
     {% include "mainapp/partials/site_header.html" %}
@@ -19,7 +21,8 @@
         <a href="{% url 'home' %}" class="back-link category-back-link">&#8592; {% translate "Back home" %}</a>
         {% if filters %}
         <form method="get" class="listing-layout">
-            <aside class="listing-filters">
+            <button type="button" class="filters-toggle" data-filters-toggle aria-expanded="{% if filters.errors %}true{% else %}false{% endif %}" aria-controls="listing-filters-panel">{% translate "Filters" %}</button>
+            <aside class="listing-filters{% if filters.errors %} is-open{% endif %}" id="listing-filters-panel">
             <div class="listing-filters-heading">
                 <h1>{% translate "Filter listings" %}</h1>
                 <a href="{{ request.path }}" class="clear-filters">{% translate "Clear filters" %}</a>
@@ -49,6 +52,16 @@
             </fieldset>
             {% endif %}
             <div class="listing-filter-options">
+                <div class="listing-filter-combo">
+                    <label for="{{ filters.country.id_for_label }}">{{ filters.country.label }}</label>
+                    {{ filters.country }}
+                    {% for error in filters.country.errors %}<small class="filter-errors">{{ error }}</small>{% endfor %}
+                </div>
+                <div class="listing-filter-combo">
+                    <label for="{{ filters.city.id_for_label }}">{{ filters.city.label }}</label>
+                    {{ filters.city }}
+                    {% for error in filters.city.errors %}<small class="filter-errors">{{ error }}</small>{% endfor %}
+                </div>
                 <label>
                     <span>{{ filters.status.label }}</span>
                     {{ filters.status }}
@@ -110,6 +123,7 @@
                             </div>
                             {% include "mainapp/partials/listing_card_engagement.html" with item=item listing_type='job' return_to=detail_return_to %}
                             <p class="listing-card-company">{{ item.company_name }}</p>
+                            {% if item.location %}<p class="listing-card-location" title="{{ item.location }}"><span class="location-pin" aria-hidden="true">📍</span><span class="location-text">{{ item.location_with_flag }}</span></p>{% endif %}
                             <ul class="listing-card-details">
                                 <li><strong>{% translate "Phone 1:" %}</strong> {% if item.phone_number %}{{ item.phone_number }}{% else %}{% translate "Not provided" %}{% endif %}</li>
                                 <li><strong>{% translate "Work time:" %}</strong> {{ item.work_time }}</li>
@@ -139,6 +153,7 @@
                             </div>
                             {% include "mainapp/partials/listing_card_engagement.html" with item=item listing_type='internship' return_to=detail_return_to %}
                             <p class="listing-card-company">{{ item.company_name }}</p>
+                            {% if item.location %}<p class="listing-card-location" title="{{ item.location }}"><span class="location-pin" aria-hidden="true">📍</span><span class="location-text">{{ item.location_with_flag }}</span></p>{% endif %}
                             <ul class="listing-card-details">
                                 <li>{{ item.get_working_condition_display }}</li>
                                 <li>{{ item.work_duration }} {% translate "weeks" %}</li>
@@ -169,6 +184,7 @@
                             </div>
                             {% include "mainapp/partials/listing_card_engagement.html" with item=item listing_type='resume' return_to=detail_return_to %}
                             <p class="listing-card-company">{{ item.email }}</p>
+                            {% if item.location %}<p class="listing-card-location" title="{{ item.location }}"><span class="location-pin" aria-hidden="true">📍</span><span class="location-text">{{ item.location_with_flag }}</span></p>{% endif %}
                             <ul class="listing-card-details">
                                 <li>{{ item.experience }} {% translate "years experience" %}</li>
                                 <li><strong>{% translate "Work time:" %}</strong> {{ item.wanted_work_time }}</li>

@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=tag-contrast-fix-1">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=location-chip-3">
     <script src="{% static 'mainapp/theme.js' %}?v=language-labels-1&switch=3" defer></script>
 </head>
 <body>
@@ -122,6 +122,7 @@
                                 {% if job.company_name %}
                                     <p class="listing-card-company">{{ job.company_name }}</p>
                                 {% endif %}
+                                {% if job.location %}<p class="listing-card-location" title="{{ job.location }}"><span class="location-pin" aria-hidden="true">📍</span><span class="location-text">{{ job.location_with_flag }}</span></p>{% endif %}
                                 <ul class="listing-card-details">
                                     <li><strong>{% translate "Phone 1:" %}</strong> {% if job.phone_number %}{{ job.phone_number }}{% else %}{% translate "Not provided" %}{% endif %}</li>
                                     <li><strong>{% translate "Work time:" %}</strong> {{ job.work_time }}</li>
@@ -188,6 +189,7 @@
                                 </div>
                                 {% include "mainapp/partials/listing_card_engagement.html" with item=internship listing_type='internship' return_to='home' %}
                                 <p class="listing-card-company">{{ internship.company_name }}</p>
+                                {% if internship.location %}<p class="listing-card-location" title="{{ internship.location }}"><span class="location-pin" aria-hidden="true">📍</span><span class="location-text">{{ internship.location_with_flag }}</span></p>{% endif %}
                                 <ul class="listing-card-details">
                                     <li>{{ internship.get_working_condition_display }}</li>
                                     <li>{{ internship.work_duration }} {% translate "weeks" %}</li>
@@ -249,6 +251,7 @@
                                 </div>
                                 {% include "mainapp/partials/listing_card_engagement.html" with item=resume listing_type='resume' return_to='home' %}
                                 <p class="listing-card-company">{{ resume.email }}</p>
+                                {% if resume.location %}<p class="listing-card-location" title="{{ resume.location }}"><span class="location-pin" aria-hidden="true">📍</span><span class="location-text">{{ resume.location_with_flag }}</span></p>{% endif %}
                                 <ul class="listing-card-details">
                                     <li>{{ resume.experience }} {% translate "years experience" %}</li>
                                     <li><strong>{% translate "Work time:" %}</strong> {{ resume.wanted_work_time }}</li>

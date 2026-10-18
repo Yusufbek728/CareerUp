@@ -33,3 +33,14 @@ document.querySelectorAll('.salary-range-sliders').forEach((container) => {
     maxInput.addEventListener('input', syncFromInputs);
     syncFromInputs();
 });
+
+document.querySelectorAll('[data-filters-toggle]').forEach((toggle) => {
+    const panel = document.getElementById(toggle.getAttribute('aria-controls'));
+    if (!panel) {
+        return;
+    }
+    toggle.addEventListener('click', () => {
+        const isOpen = panel.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+});

@@ -2,22 +2,28 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.db.models import Count, F, Max, Q
 from django.core.paginator import Paginator
+from django.conf import settings
 from django.contrib.auth import login, logout, update_session_auth_hash
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import HttpResponseForbidden, HttpResponseNotAllowed
+from django.http import HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import get_language, gettext, gettext_lazy as _
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.filters import SearchFilter
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from mainapp.pagination import InternshipPagination, JobPagination, ResumePagination
-from mainapp.throttling import InternshipThrottle, JobThrottle, ResumeThrottle
-from .models import AccountProfile, Internship, Job, ListingInteraction, Resume
+from mainapp.throttling import CityThrottle, InternshipThrottle, JobThrottle, ResumeThrottle
+from mainapp import ratelimit
+from .geo_utils import normalize_search
+from .models import AccountProfile, City, Internship, Job, ListingInteraction, Resume
 from .forms import (
     AccountSettingsForm,
     AdminUserForm,
@@ -63,6 +69,14 @@ def filter_listings_by_query(queryset, query, fields):
     return queryset.filter(conditions)
 
 
+def filter_by_location(queryset, country, city):
+    if country:
+        queryset = queryset.filter(country=country)
+    if city:
+        queryset = queryset.filter(city=city)
+    return queryset
+
+
 def get_page_numbers(page_obj, max_pages=9):
     first_page = max(1, page_obj.number - max_pages // 2)
     last_page = min(page_obj.paginator.num_pages, first_page + max_pages - 1)
@@ -93,9 +107,9 @@ def annotate_listing_engagement(queryset, user):
 
 def build_homepage_context(request, listing_type=None):
     search_query = request.GET.get('q', '').strip()
-    jobs = Job.objects.all()
-    internships = Internship.objects.all()
-    resumes = Resume.objects.all()
+    jobs = Job.objects.select_related('country', 'city')
+    internships = Internship.objects.select_related('country', 'city')
+    resumes = Resume.objects.select_related('country', 'city')
     filters = ListingFilterForm(request.GET) if listing_type in {'job', 'internship', 'resume'} else None
     salary_slider_max = 0
 
@@ -158,7 +172,10 @@ def build_homepage_context(request, listing_type=None):
             ('work_field', 'work_field'),
             ('work_schedule_and_working_hours', 'work_schedule_and_working_hours'),
         )
+        country = filters.cleaned_data.get('country')
+        city = filters.cleaned_data.get('city')
         if listing_type == 'job':
+            jobs = filter_by_location(jobs, country, city)
             for form_field, model_field in filter_fields:
                 value = filters.cleaned_data[form_field]
                 if value:
@@ -168,11 +185,13 @@ def build_homepage_context(request, listing_type=None):
             if filters.cleaned_data['salary_max'] is not None:
                 jobs = jobs.filter(salary__lte=filters.cleaned_data['salary_max'])
         elif listing_type == 'internship':
+            internships = filter_by_location(internships, country, city)
             for form_field, model_field in filter_fields:
                 value = filters.cleaned_data[form_field]
                 if value:
                     internships = internships.filter(**{model_field: value})
         elif listing_type == 'resume':
+            resumes = filter_by_location(resumes, country, city)
             resume_filter_fields = (
                 ('status', 'status'),
                 ('working_condition', 'wanted_working_condition'),
@@ -327,7 +346,7 @@ def build_activity_entries(user, activity):
 
 
 def job_detail(request, pk):
-    job = get_object_or_404(Job, pk=pk)
+    job = get_object_or_404(Job.objects.select_related('country', 'city'), pk=pk)
     engagement = record_listing_view(request, job)
     return render(request, 'mainapp/job_detail.html', {
         'item': job,
@@ -337,7 +356,7 @@ def job_detail(request, pk):
 
 
 def internship_detail(request, pk):
-    item = get_object_or_404(Internship, pk=pk)
+    item = get_object_or_404(Internship.objects.select_related('country', 'city'), pk=pk)
     engagement = record_listing_view(request, item)
     return render(request, 'mainapp/internship_detail.html', {
         'item': item,
@@ -347,7 +366,7 @@ def internship_detail(request, pk):
 
 
 def resume_detail(request, pk):
-    item = get_object_or_404(Resume, pk=pk)
+    item = get_object_or_404(Resume.objects.select_related('country', 'city'), pk=pk)
     engagement = record_listing_view(request, item)
     return render(request, 'mainapp/resume_detail.html', {
         'item': item,
@@ -698,7 +717,7 @@ class JobViewSet(OwnerModelViewSet):
     throttle_classes = [JobThrottle]
     filter_backends = [SearchFilter, DjangoFilterBackend]
     search_fields = ['company_name', 'job_title', 'working_condition', 'work_schedule_and_working_hours', 'work_field', 'status', 'owner__username', 'owner__account_profile__display_name']
-    filterset_fields = ['company_name', 'salary', 'required_experience', 'work_time', 'job_title', 'working_condition', 'work_schedule_and_working_hours', 'work_field', 'status']
+    filterset_fields = ['country', 'city', 'company_name', 'salary', 'required_experience', 'work_time', 'job_title', 'working_condition', 'work_schedule_and_working_hours', 'work_field', 'status']
 
 
 class ResumeViewSet(OwnerModelViewSet):
@@ -708,7 +727,7 @@ class ResumeViewSet(OwnerModelViewSet):
     throttle_classes = [ResumeThrottle]
     filter_backends = [SearchFilter, DjangoFilterBackend]
     search_fields = ['name', 'surname', 'email', 'phone_number', 'experience', 'wanted_salary', 'wanted_working_condition', 'wanted_work_schedule_and_working_hours', 'owner__username', 'owner__account_profile__display_name']
-    filterset_fields = ['name', 'surname', 'email', 'phone_number', 'phone_number2', 'experience', 'wanted_salary', 'wanted_work_time', 'wanted_working_condition', 'wanted_work_schedule_and_working_hours']
+    filterset_fields = ['country', 'city', 'name', 'surname', 'email', 'phone_number', 'phone_number2', 'experience', 'wanted_salary', 'wanted_work_time', 'wanted_working_condition', 'wanted_work_schedule_and_working_hours']
 
 
 class InternshipViewSet(OwnerModelViewSet):
@@ -718,4 +737,103 @@ class InternshipViewSet(OwnerModelViewSet):
     throttle_classes = [InternshipThrottle]
     filter_backends = [SearchFilter, DjangoFilterBackend]
     search_fields = ['company_name', 'job_title', 'working_condition', 'work_schedule_and_working_hours', 'work_field', 'status', 'owner__username', 'owner__account_profile__display_name']
-    filterset_fields = ['company_name', 'work_time', 'work_duration', 'job_title', 'working_condition', 'work_schedule_and_working_hours', 'work_field']
+    filterset_fields = ['country', 'city', 'company_name', 'work_time', 'work_duration', 'job_title', 'working_condition', 'work_schedule_and_working_hours', 'work_field']
+
+
+class CityListAPIView(APIView):
+    """GET /api/cities/?country=<id>[&q=<text>][&limit=50] -> [{"id": 1, "name": "..."}].
+
+    * ``name`` is in the active language (Accept-Language / language cookie), falling back to the English name.
+    * ``q`` is a case-, accent- and apostrophe-insensitive search in the names of all languages
+      (Koeln = Köln, Qo'qon = Qoqon, ташкент = Ташкент); names starting with ``q`` come first.
+    * Ordering: by population (biggest first), then by name. ``limit`` defaults to 50, at most 100.
+
+    Public reference data (no personal data), so no authentication; protected by its own throttle.
+    A missing country gives an empty list (the dependent field simply stays empty).
+    """
+
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [CityThrottle]
+    default_limit = 50
+    max_limit = 100
+
+    def get(self, request):
+        raw_country = request.query_params.get('country', '').strip()
+        if not raw_country:
+            return Response([])
+        try:
+            country_id = int(raw_country)
+        except ValueError:
+            return Response({'detail': 'country must be an integer id.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            limit = int(request.query_params.get('limit', self.default_limit))
+        except ValueError:
+            return Response({'detail': 'limit must be an integer.'}, status=status.HTTP_400_BAD_REQUEST)
+        limit = max(1, min(limit, self.max_limit))
+
+        cities = City.objects.filter(country_id=country_id).order_by('-population', 'name')
+        query = normalize_search(request.query_params.get('q', ''))
+        if query:
+            cities = cities.filter(search_text__contains=query)
+            # Take a wider slice so that prefix matches can be moved to the top before cutting to `limit`.
+            rows = list(cities[: max(limit * 4, 200)])
+            rows.sort(key=lambda city: not any(part.startswith(query) for part in city.search_text.split('|')))
+        else:
+            rows = list(cities[:limit])
+        language = get_language()
+        return Response([{'id': city.pk, 'name': city.get_localized_name(language)} for city in rows[:limit]])
+
+
+PASSWORD_RESET_THROTTLE_SESSION_KEY = 'password_reset_throttle_notice'
+
+
+class ThrottledPasswordResetView(auth_views.PasswordResetView):
+    """PasswordResetView limited to one email per address / N requests per IP per window.
+
+    The check does not depend on whether the account exists, and the redirect target is the same
+    password_reset_done page, so the response never reveals whether an email is registered.
+    """
+
+    def form_valid(self, form):
+        email = form.cleaned_data['email'].strip().lower()
+        client_ip = ratelimit.get_client_ip(self.request)
+        retry_after = 0
+        notice = None
+
+        # IP limit first, so a blocked IP does not consume the per-email slot. It is skipped when no
+        # real client address is available (e.g. REMOTE_ADDR is the platform proxy and
+        # TRUSTED_PROXY_COUNT is not configured) to avoid locking everybody out through a shared bucket.
+        if ratelimit.is_public_ip(client_ip):
+            allowed, retry_after = ratelimit.hit(
+                'pwreset-ip', client_ip, settings.PASSWORD_RESET_IP_LIMIT, settings.PASSWORD_RESET_IP_WINDOW,
+            )
+            if not allowed:
+                notice = 'ip'
+        if notice is None:
+            allowed, retry_after = ratelimit.hit(
+                'pwreset-email', email, 1, settings.PASSWORD_RESET_EMAIL_COOLDOWN,
+            )
+            if not allowed:
+                notice = 'email'
+
+        if notice:
+            self.request.session[PASSWORD_RESET_THROTTLE_SESSION_KEY] = {
+                'kind': notice,
+                'minutes': max(1, -(-retry_after // 60)),
+            }
+            return HttpResponseRedirect(self.get_success_url())
+        ratelimit.purge_stale()
+        return super().form_valid(form)
+
+
+class ThrottledPasswordResetDoneView(auth_views.PasswordResetDoneView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        info = self.request.session.pop(PASSWORD_RESET_THROTTLE_SESSION_KEY, None)
+        if info:
+            if info['kind'] == 'ip':
+                template = gettext('Too many reset requests. Please try again in %(minutes)d min.')
+            else:
+                template = gettext('A reset email has already been sent. You can request another in %(minutes)d min.')
+            context['throttle_notice'] = template % {'minutes': info['minutes']}
+        return context

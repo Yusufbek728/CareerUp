@@ -4,14 +4,19 @@ from pathlib import Path
 
 from unittest.mock import patch
 
+from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import translation
 
-from .forms import JobForm
-from .models import AccountProfile, Internship, Job, ListingInteraction, Resume
+from .forms import JobForm, ListingFilterForm
+from .geo_seed import seed_geo_data
+from .geo_utils import flag_emoji, normalize_search
+from .serialiers import JobSerializer
+from .models import AccountProfile, City, Country, Internship, Job, ListingInteraction, Resume, check_city_belongs_to_country
 
 
 class ListingEngagementTests(TestCase):
@@ -1065,3 +1070,563 @@ class PasswordResetFlowTests(TestCase):
 		response = self.client.post(reverse('password_reset'), {'email': 'nobody@example.com'})
 		self.assertRedirects(response, reverse('password_reset_done'))
 		self.assertEqual(len(mail.outbox), 0)
+
+	def _post_reset(self, email, ip='8.8.8.8', **extra):
+		return self.client.post(reverse('password_reset'), {'email': email}, REMOTE_ADDR=ip, **extra)
+
+	def test_second_request_for_same_email_does_not_send(self):
+		from django.core import mail
+		User.objects.create_user(username='dup', email='dup@example.com', password='OldPass12345')
+		self.assertRedirects(self._post_reset('dup@example.com'), reverse('password_reset_done'))
+		self.assertEqual(len(mail.outbox), 1)
+		# Same address with different case/whitespace is the same key.
+		response = self._post_reset('  Dup@Example.com ', ip='8.8.4.4')
+		self.assertRedirects(response, reverse('password_reset_done'), fetch_redirect_response=False)
+		self.assertEqual(len(mail.outbox), 1)
+		done = self.client.get(reverse('password_reset_done'))
+		self.assertContains(done, '10 min')
+
+	def test_throttle_notice_is_same_for_known_and_unknown_email(self):
+		import re
+		User.objects.create_user(username='known', email='known@example.com', password='OldPass12345')
+		pages = []
+		for email in ('known@example.com', 'ghost@example.com'):
+			self._post_reset(email)
+			self._post_reset(email)
+			pages.append(re.sub(rb'csrfmiddlewaretoken" value="[^"]+', b'', self.client.get(reverse('password_reset_done')).content))
+		self.assertEqual(pages[0], pages[1])
+
+	def test_notice_is_shown_once(self):
+		self._post_reset('once@example.com')
+		self._post_reset('once@example.com')
+		self.assertContains(self.client.get(reverse('password_reset_done')), '10 min')
+		self.assertNotContains(self.client.get(reverse('password_reset_done')), '10 min')
+
+	def test_email_can_be_requested_again_after_cooldown(self):
+		from datetime import timedelta
+		from django.core import mail
+		from django.utils import timezone
+		User.objects.create_user(username='later', email='later@example.com', password='OldPass12345')
+		self._post_reset('later@example.com')
+		self._post_reset('later@example.com')
+		self.assertEqual(len(mail.outbox), 1)
+		with patch('mainapp.ratelimit.timezone.now', return_value=timezone.now() + timedelta(minutes=10, seconds=1)):
+			self._post_reset('later@example.com')
+		self.assertEqual(len(mail.outbox), 2)
+
+	def test_ip_limit_blocks_after_five_requests(self):
+		from django.core import mail
+		from datetime import timedelta
+		from django.utils import timezone
+		for n in range(7):
+			User.objects.create_user(username=f'ip{n}', email=f'ip{n}@example.com', password='OldPass12345')
+		for n in range(5):
+			self._post_reset(f'ip{n}@example.com', ip='8.8.8.8')
+		self.assertEqual(len(mail.outbox), 5)
+		response = self._post_reset('ip5@example.com', ip='8.8.8.8')
+		self.assertRedirects(response, reverse('password_reset_done'), fetch_redirect_response=False)
+		self.assertEqual(len(mail.outbox), 5)
+		self.assertContains(self.client.get(reverse('password_reset_done')), 'Too many reset requests')
+		# The blocked request must not have consumed the address' own slot, and other IPs are unaffected.
+		self._post_reset('ip5@example.com', ip='8.8.4.4')
+		self.assertEqual(len(mail.outbox), 6)
+		# Window expiry frees the IP.
+		with patch('mainapp.ratelimit.timezone.now', return_value=timezone.now() + timedelta(minutes=10, seconds=1)):
+			self._post_reset('ip6@example.com', ip='8.8.8.8')
+		self.assertEqual(len(mail.outbox), 7)
+
+	def test_spoofed_forwarded_for_is_ignored_by_default(self):
+		from django.core import mail
+		for n in range(6):
+			User.objects.create_user(username=f'sp{n}', email=f'sp{n}@example.com', password='OldPass12345')
+		for n in range(6):
+			self._post_reset(f'sp{n}@example.com', ip='1.1.1.1', HTTP_X_FORWARDED_FOR=f'10.0.0.{n}, 192.0.2.{n}')
+		self.assertEqual(len(mail.outbox), 5)
+
+	def test_trusted_proxy_count_uses_nth_entry_from_right(self):
+		from django.core import mail
+		from django.test import override_settings
+		for n in range(6):
+			User.objects.create_user(username=f'tp{n}', email=f'tp{n}@example.com', password='OldPass12345')
+		with override_settings(TRUSTED_PROXY_COUNT=1):
+			for n in range(6):
+				# Client-supplied left part changes every time; the proxy-appended right part is constant.
+				self._post_reset(f'tp{n}@example.com', ip='10.1.1.1', HTTP_X_FORWARDED_FOR=f'192.0.2.{n}, 9.9.9.9')
+		self.assertEqual(len(mail.outbox), 5)
+
+	def test_ip_limit_skipped_when_only_proxy_address_is_known(self):
+		from django.core import mail
+		for n in range(7):
+			User.objects.create_user(username=f'px{n}', email=f'px{n}@example.com', password='OldPass12345')
+		for n in range(7):
+			self._post_reset(f'px{n}@example.com', ip='10.2.3.4')
+		self.assertEqual(len(mail.outbox), 7)
+
+
+class CountryCityTests(TestCase):
+	@classmethod
+	def setUpTestData(cls):
+		# Names are unique and absent from the seed data (data migration), so tests do not clash with it.
+		cls.country_a = Country.objects.create(name='Testland A', code='TA')
+		cls.country_b = Country.objects.create(name='Testland B', code='TB')
+		cls.city_a2 = City.objects.create(country=cls.country_a, name='Zeta')
+		cls.city_a1 = City.objects.create(country=cls.country_a, name='Alpha')
+		cls.city_b = City.objects.create(country=cls.country_b, name='Beta')
+
+	def job_data(self, **extra):
+		data = {
+			'company_name': 'Example Company',
+			'phone_number': '+998901234567',
+			'salary': 1000,
+			'required_experience': 1,
+			'work_time': 8,
+			'job_title': 'Developer',
+			'requirements_of_job': 'Python',
+			'working_condition': 'full_time',
+			'work_schedule_and_working_hours': '5/2',
+			'work_field': 'permament',
+			'status': 'qidirilyapti',
+		}
+		data.update(extra)
+		return data
+
+	def test_seed_data_is_loaded_and_idempotent(self):
+		uzbekistan = Country.objects.get(code='UZ')
+		self.assertTrue(uzbekistan.cities.filter(name='Tashkent', name_ru='Ташкент').exists())
+		countries, cities = Country.objects.count(), City.objects.count()
+
+		call_command('seed_geo', verbosity=0)
+
+		self.assertEqual(Country.objects.count(), countries)
+		self.assertEqual(City.objects.count(), cities)
+
+	def test_cities_api_returns_cities_of_country_sorted_by_name(self):
+		response = self.client.get(reverse('cities_api'), {'country': self.country_a.pk})
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.json(), [
+			{'id': self.city_a1.pk, 'name': 'Alpha'},
+			{'id': self.city_a2.pk, 'name': 'Zeta'},
+		])
+
+	def test_cities_api_without_country_or_unknown_country_returns_empty_list(self):
+		self.assertEqual(self.client.get(reverse('cities_api')).json(), [])
+		self.assertEqual(self.client.get(reverse('cities_api'), {'country': 999999}).json(), [])
+
+	def test_cities_api_rejects_non_integer_country(self):
+		response = self.client.get(reverse('cities_api'), {'country': 'abc'})
+
+		self.assertEqual(response.status_code, 400)
+
+	def test_cities_api_url_path(self):
+		self.assertEqual(reverse('cities_api'), '/api/cities/')
+
+	def test_form_city_queryset_is_empty_without_country(self):
+		form = JobForm()
+
+		self.assertEqual(form.fields['city'].queryset.count(), 0)
+
+	def test_form_city_queryset_is_filtered_by_submitted_country(self):
+		form = JobForm(self.job_data(country=self.country_a.pk))
+
+		self.assertEqual(set(form.fields['city'].queryset), {self.city_a1, self.city_a2})
+
+	def test_form_city_queryset_uses_instance_country_when_editing(self):
+		job = Job.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			salary=1000,
+			required_experience=1,
+			work_time=8,
+			job_title='Developer',
+			requirements_of_job='Python',
+			country=self.country_b,
+			city=self.city_b,
+		)
+
+		form = JobForm(instance=job)
+
+		self.assertEqual(set(form.fields['city'].queryset), {self.city_b})
+		self.assertEqual(form.initial['city'], self.city_b.pk)
+
+	def test_form_accepts_city_of_selected_country(self):
+		form = JobForm(self.job_data(country=self.country_a.pk, city=self.city_a1.pk))
+
+		self.assertTrue(form.is_valid(), form.errors)
+		job = form.save()
+		self.assertEqual(job.location, 'Alpha, Testland A')
+
+	def test_form_rejects_city_of_other_country(self):
+		form = JobForm(self.job_data(country=self.country_a.pk, city=self.city_b.pk))
+
+		self.assertFalse(form.is_valid())
+		self.assertIn('city', form.errors)
+
+	def test_form_rejects_city_without_country(self):
+		form = JobForm(self.job_data(city=self.city_a1.pk))
+
+		self.assertFalse(form.is_valid())
+		self.assertIn('city', form.errors)
+
+	def test_form_allows_empty_country_and_city(self):
+		form = JobForm(self.job_data())
+
+		self.assertTrue(form.is_valid(), form.errors)
+
+	def test_helper_rejects_mismatch_and_missing_country(self):
+		with self.assertRaises(ValidationError):
+			check_city_belongs_to_country(self.country_b, self.city_a1)
+		with self.assertRaises(ValidationError):
+			check_city_belongs_to_country(None, self.city_a1)
+		check_city_belongs_to_country(self.country_a, self.city_a1)
+		check_city_belongs_to_country(None, None)
+
+	def test_serializer_rejects_city_of_other_country(self):
+		serializer = JobSerializer(data=self.job_data(country=self.country_a.pk, city=self.city_b.pk))
+
+		self.assertFalse(serializer.is_valid())
+		self.assertIn('city', serializer.errors)
+
+	def test_serializer_accepts_matching_city_and_validates_partial_update(self):
+		job = Job.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			salary=1000,
+			required_experience=1,
+			work_time=8,
+			job_title='Developer',
+			requirements_of_job='Python',
+			country=self.country_a,
+			city=self.city_a1,
+		)
+
+		ok = JobSerializer(job, data={'city': self.city_a2.pk}, partial=True)
+		bad = JobSerializer(job, data={'country': self.country_b.pk}, partial=True)
+
+		self.assertTrue(ok.is_valid(), ok.errors)
+		self.assertFalse(bad.is_valid())
+		self.assertIn('city', bad.errors)
+
+	def test_create_view_saves_country_and_city_and_detail_shows_location(self):
+		company = User.objects.create_user(username='geo-company', password='company-password')
+		AccountProfile.objects.create(user=company, role='company', display_name='Company')
+		self.client.force_login(company)
+
+		response = self.client.post(
+			reverse('create_listing', args=['job']),
+			self.job_data(country=self.country_a.pk, city=self.city_a1.pk),
+		)
+
+		job = Job.objects.get(owner=company)
+		self.assertRedirects(response, reverse('job_detail', args=[job.pk]))
+		self.assertEqual((job.country, job.city), (self.country_a, self.city_a1))
+		detail = self.client.get(reverse('job_detail', args=[job.pk]))
+		self.assertContains(detail, 'Alpha, Testland A')
+
+	def test_create_page_renders_country_and_city_selects(self):
+		company = User.objects.create_user(username='geo-company2', password='company-password')
+		AccountProfile.objects.create(user=company, role='company', display_name='Company')
+		self.client.force_login(company)
+
+		response = self.client.get(reverse('create_listing', args=['job']))
+
+		self.assertContains(response, 'name="country"')
+		self.assertContains(response, 'name="city"')
+		self.assertContains(response, 'data-cities-url="/api/cities/"')
+		self.assertContains(response, 'country-city.js')
+
+	def test_deleting_country_keeps_listing(self):
+		job = Job.objects.create(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			salary=1000,
+			required_experience=1,
+			work_time=8,
+			job_title='Developer',
+			requirements_of_job='Python',
+			country=self.country_b,
+			city=self.city_b,
+		)
+
+		self.country_b.delete()
+
+		job.refresh_from_db()
+		self.assertIsNone(job.country)
+		self.assertIsNone(job.city)
+
+
+class GeoReferenceDataTests(TestCase):
+	"""Full country/city reference (migration 0021 / seed_geo): data, localization, search API, list filters."""
+
+	@classmethod
+	def setUpTestData(cls):
+		cls.uz = Country.objects.get(code='UZ')
+		cls.us = Country.objects.get(code='US')
+		cls.tashkent = City.objects.get(country=cls.uz, name='Tashkent')
+
+	def make_job(self, **extra):
+		data = dict(
+			company_name='Example Company',
+			phone_number='+998901234567',
+			salary=1000,
+			required_experience=1,
+			work_time=8,
+			job_title='Developer',
+			requirements_of_job='Python',
+		)
+		data.update(extra)
+		return Job.objects.create(**data)
+
+	def cities(self, lang='en', **params):
+		response = self.client.get(reverse('cities_api'), params, headers={'accept-language': lang})
+		self.assertEqual(response.status_code, 200)
+		return response.json()
+
+	# --- data ---------------------------------------------------------------------------------------------
+
+	def test_all_countries_are_seeded_with_iso_codes_and_names_in_three_languages(self):
+		self.assertGreaterEqual(Country.objects.count(), 240)
+		self.assertEqual(Country.objects.filter(code__isnull=True).count(), 0)
+		self.assertEqual(
+			Country.objects.exclude(name_ru='').exclude(name_uz='').exclude(name_en='').count(),
+			Country.objects.count(),
+		)
+		self.assertEqual((self.uz.name_en, self.uz.name_ru, self.uz.name_uz), ('Uzbekistan', 'Узбекистан', 'Oʻzbekiston'))
+		self.assertGreater(City.objects.count(), 5000)
+		self.assertGreater(self.uz.cities.count(), 100)
+
+	def test_seed_is_idempotent_and_changes_nothing_on_second_run(self):
+		countries, cities = Country.objects.count(), City.objects.count()
+
+		result = seed_geo_data(Country, City)
+
+		self.assertEqual(result, (0, 0, 0, 0))
+		self.assertEqual((Country.objects.count(), City.objects.count()), (countries, cities))
+
+	def test_seed_adopts_legacy_rows_without_changing_their_ids(self):
+		kyrgyzstan = Country.objects.get(code='KG')
+		bishkek = City.objects.get(country=kyrgyzstan, name='Bishkek')
+		pks = (kyrgyzstan.pk, bishkek.pk)
+		# Put the rows back into the state the first (13-country) seed left them in.
+		Country.objects.filter(pk=kyrgyzstan.pk).update(name='Кыргызстан', name_en='', name_ru='', name_uz='', priority=0)
+		City.objects.filter(pk=bishkek.pk).update(name='Бишкек', name_en='', name_ru='', name_uz='', geoname_id=None, population=0)
+		job = self.make_job(country=kyrgyzstan, city=bishkek)
+
+		seed_geo_data(Country, City)
+
+		job.refresh_from_db()
+		self.assertEqual((job.country_id, job.city_id), pks)
+		self.assertEqual(Country.objects.get(pk=pks[0]).name, 'Kyrgyzstan')
+		bishkek.refresh_from_db()
+		self.assertEqual((bishkek.name, bishkek.name_ru), ('Bishkek', 'Бишкек'))
+		self.assertGreater(bishkek.population, 0)
+		self.assertEqual(City.objects.filter(country=kyrgyzstan, name_ru='Бишкек').count(), 1)
+
+	def test_helpers(self):
+		self.assertEqual(flag_emoji('uz'), '\U0001F1FA\U0001F1FF')
+		self.assertEqual(flag_emoji(None), '')
+		self.assertEqual(flag_emoji('U1'), '')
+		self.assertEqual(normalize_search("  Qo'qon Köln Ёлка "), 'qoqon koln елка')
+		self.assertEqual(normalize_search('Qoʻqon'), 'qoqon')
+
+	# --- localization -------------------------------------------------------------------------------------
+
+	def test_names_follow_the_active_language_with_english_fallback(self):
+		with translation.override('ru'):
+			self.assertEqual(str(self.uz), 'Узбекистан')
+			self.assertEqual(self.tashkent.localized_name, 'Ташкент')
+			self.assertEqual(str(Country(name='Nowhere', code='NW')), 'Nowhere')  # no Russian name -> canonical name
+		with translation.override('uz'):
+			self.assertEqual(str(self.uz), 'Oʻzbekiston')
+			self.assertEqual(self.tashkent.localized_name, 'Toshkent')
+		with translation.override('en'):
+			self.assertEqual(str(self.uz), 'Uzbekistan')
+			self.assertEqual(self.uz.display_name, '\U0001F1FA\U0001F1FF Uzbekistan')
+
+	def test_localized_country_queryset_puts_featured_first_then_sorts_by_language(self):
+		with translation.override('ru'):
+			names = list(Country.objects.localized().values_list('name_ru', flat=True))
+		self.assertEqual(names[:3], ['Узбекистан', 'Россия', 'Казахстан'])
+		rest = names[13:]
+		self.assertEqual(rest, sorted(rest))
+
+	# --- cities API ---------------------------------------------------------------------------------------
+
+	def test_cities_api_orders_by_population_and_limits(self):
+		cities = self.cities(country=self.uz.pk, limit=5)
+
+		self.assertEqual(len(cities), 5)
+		self.assertEqual(cities[0], {'id': self.tashkent.pk, 'name': 'Tashkent'})
+		ordered = list(
+			City.objects.filter(pk__in=[c['id'] for c in cities]).order_by('-population').values_list('pk', flat=True)
+		)
+		self.assertEqual([c['id'] for c in cities], ordered)
+
+	def test_cities_api_limit_is_validated_and_capped(self):
+		self.assertEqual(len(self.cities(country=self.us.pk)), 50)  # default
+		self.assertEqual(len(self.cities(country=self.us.pk, limit=1000)), 100)  # capped
+		self.assertEqual(len(self.cities(country=self.us.pk, limit=0)), 1)
+		response = self.client.get(reverse('cities_api'), {'country': self.us.pk, 'limit': 'many'})
+		self.assertEqual(response.status_code, 400)
+
+	def test_cities_api_search_is_case_accent_and_apostrophe_insensitive(self):
+		self.assertEqual(self.cities(country=self.uz.pk, q='TASHK')[0]['id'], self.tashkent.pk)
+		self.assertEqual(self.cities(country=self.uz.pk, q='toshkent')[0]['id'], self.tashkent.pk)
+		self.assertEqual(self.cities(country=self.uz.pk, q='ташкент')[0]['id'], self.tashkent.pk)
+		self.assertEqual(self.cities(country=self.uz.pk, q='ТАШКЕНТ')[0]['id'], self.tashkent.pk)
+		germany = Country.objects.get(code='DE')
+		koln = City.objects.get(country=germany, name='Köln')
+		self.assertIn(koln.pk, [c['id'] for c in self.cities(country=germany.pk, q='koln')])
+		self.assertIn(koln.pk, [c['id'] for c in self.cities(country=germany.pk, q='KÖLN')])
+		qoqon = City.objects.get(country=self.uz, name_ru='Коканд')
+		self.assertEqual(self.cities(country=self.uz.pk, q="qo'qon")[0]['id'], qoqon.pk)
+
+	def test_cities_api_search_only_returns_cities_of_the_requested_country(self):
+		self.assertEqual(self.cities(country=self.us.pk, q='tashkent'), [])
+		self.assertEqual(self.cities(country=self.uz.pk, q='zzzzzz-nothing'), [])
+
+	def test_cities_api_prefix_matches_come_before_other_matches(self):
+		names = [c['name'] for c in self.cities(country=self.us.pk, q='san', limit=100)]
+
+		self.assertTrue(names)
+		first_other = next((i for i, n in enumerate(names) if not normalize_search(n).startswith('san')), len(names))
+		self.assertTrue(all(normalize_search(n).startswith('san') for n in names[:first_other]))
+		self.assertTrue(all(not normalize_search(n).startswith('san') for n in names[first_other:]))
+
+	def test_cities_api_returns_names_in_the_request_language(self):
+		self.assertEqual(self.cities(lang='ru', country=self.uz.pk, q='tashkent')[0]['name'], 'Ташкент')
+		self.assertEqual(self.cities(lang='uz', country=self.uz.pk, q='tashkent')[0]['name'], 'Toshkent')
+		self.assertEqual(self.cities(lang='en', country=self.uz.pk, q='tashkent')[0]['name'], 'Tashkent')
+
+	# --- forms --------------------------------------------------------------------------------------------
+
+	def test_city_select_renders_only_the_selected_city_but_validates_any_city_of_the_country(self):
+		new_york = City.objects.get(country=self.us, name='New York City')
+		other = City.objects.filter(country=self.us).exclude(pk=new_york.pk).first()
+		job = self.make_job(country=self.us, city=new_york)
+
+		html = str(JobForm(instance=job)['city'])
+		self.assertEqual(html.count('<option'), 2)  # empty choice + the selected city
+		self.assertIn('data-combobox="remote"', html)
+		self.assertIn('data-remote-url="/api/cities/"', html)
+
+		data = {
+			'company_name': 'X', 'phone_number': '+998901234567', 'salary': 1, 'required_experience': 1, 'work_time': 8,
+			'job_title': 'Dev', 'requirements_of_job': 'x', 'working_condition': 'full_time',
+			'work_schedule_and_working_hours': '5/2', 'work_field': 'permament', 'status': 'qidirilyapti',
+			'country': self.us.pk, 'city': other.pk,
+		}
+		valid = JobForm(data)
+		self.assertTrue(valid.is_valid(), valid.errors)
+		data['country'] = self.uz.pk
+		invalid = JobForm(data)
+		self.assertFalse(invalid.is_valid())
+		self.assertIn('city', invalid.errors)
+
+	def test_country_select_lists_all_countries_with_flags_and_featured_first(self):
+		with translation.override('ru'):
+			html = str(JobForm()['country'])
+		self.assertEqual(html.count('<option'), Country.objects.count() + 1)
+		self.assertIn('\U0001F1FA\U0001F1FF Узбекистан', html)
+		self.assertLess(html.index('Узбекистан'), html.index('Россия'))
+		self.assertLess(html.index('Россия'), html.index('Австралия'))
+		self.assertIn('data-combobox="local"', html)
+		self.assertIn('data-search="Uzbekistan Узбекистан Oʻzbekiston UZ"', html)  # found in any language / by ISO code
+		self.assertRegex(html, r'data-search="[^"]*Соединенные Штаты[^"]* USA America США')  # common aliases
+
+	# --- list pages ---------------------------------------------------------------------------------------
+
+	def test_jobs_page_filters_by_country_and_city_and_shows_location_with_flag(self):
+		samarkand = City.objects.get(country=self.uz, name='Samarkand')
+		self.make_job(job_title='Tashkent job', country=self.uz, city=self.tashkent)
+		self.make_job(job_title='Samarkand job', country=self.uz, city=samarkand)
+		self.make_job(job_title='Texas job', country=self.us)
+		self.make_job(job_title='Nowhere job')
+
+		by_country = self.client.get(reverse('jobs_page'), {'country': self.uz.pk})
+		self.assertContains(by_country, 'Tashkent job')
+		self.assertContains(by_country, 'Samarkand job')
+		self.assertNotContains(by_country, 'Texas job')
+		self.assertNotContains(by_country, 'Nowhere job')
+
+		by_city = self.client.get(reverse('jobs_page'), {'country': self.uz.pk, 'city': samarkand.pk})
+		self.assertContains(by_city, 'Samarkand job')
+		self.assertNotContains(by_city, 'Tashkent job')
+		self.assertContains(by_city, 'class="listing-card-location"')
+		self.assertContains(by_city, '\U0001F1FA\U0001F1FF Samarkand, Uzbekistan')
+		self.assertContains(by_city, 'name="country"')
+		self.assertContains(by_city, 'country-city.js')
+
+		self.assertContains(self.client.get(reverse('jobs_page')), 'Texas job')
+
+	def test_internship_and_resume_pages_filter_by_country(self):
+		common = dict(company_name='C', phone_number='+998901234567', work_time=8, work_duration=4)
+		Internship.objects.create(job_title='UZ intern', country=self.uz, **common)
+		Internship.objects.create(job_title='US intern', country=self.us, **common)
+		person = dict(surname='Person', phone_number='+998901234567', experience=1, wanted_salary=1, wanted_work_time=8)
+		Resume.objects.create(name='Uzbek', email='a@example.com', country=self.uz, **person)
+		Resume.objects.create(name='American', email='b@example.com', country=self.us, **person)
+
+		internships = self.client.get(reverse('internships_page'), {'country': self.us.pk})
+		self.assertContains(internships, 'US intern')
+		self.assertNotContains(internships, 'UZ intern')
+		resumes = self.client.get(reverse('resumes_page'), {'country': self.uz.pk})
+		self.assertContains(resumes, 'Uzbek Person')
+		self.assertNotContains(resumes, 'American Person')
+
+	def test_location_filter_is_kept_in_pagination_links_with_other_filters(self):
+		for index in range(25):
+			self.make_job(job_title=f'Paged {index}', country=self.uz, city=self.tashkent)
+		params = {'country': self.uz.pk, 'city': self.tashkent.pk, 'status': 'qidirilyapti'}
+
+		response = self.client.get(reverse('jobs_page'), params)
+
+		html = response.content.decode()
+		link = next(part for part in html.split('<a ') if 'page=2' in part.split('>')[0])
+		for expected in (f'country={self.uz.pk}', f'city={self.tashkent.pk}', 'status=qidirilyapti'):
+			self.assertIn(expected, link)
+		self.assertContains(self.client.get(reverse('jobs_page'), {**params, 'page': 2}), 'Paged')
+
+	def test_filter_form_rejects_city_of_another_country(self):
+		form = ListingFilterForm({'country': self.us.pk, 'city': self.tashkent.pk})
+
+		self.assertFalse(form.is_valid())
+		self.assertIn('city', form.errors)
+		self.assertTrue(ListingFilterForm({'country': self.uz.pk, 'city': self.tashkent.pk}).is_valid())
+		self.assertTrue(ListingFilterForm({}).is_valid())
+
+	def test_home_page_cards_show_location(self):
+		self.make_job(job_title='Home job', country=self.uz, city=self.tashkent)
+
+		response = self.client.get(reverse('home'))
+
+		self.assertContains(response, 'Home job')
+		self.assertContains(response, '\U0001F1FA\U0001F1FF Tashkent, Uzbekistan')
+
+	def test_list_page_query_count_does_not_grow_with_the_number_of_cards(self):
+		self.make_job(job_title='N+1 first', country=self.uz, city=self.tashkent)
+		before = self.count_queries(reverse('jobs_page'))
+		for index in range(6):
+			self.make_job(job_title=f'N+1 {index}', country=self.us)
+
+		self.assertEqual(self.count_queries(reverse('jobs_page')), before)
+
+	def count_queries(self, url):
+		from django.db import connection
+		from django.test.utils import CaptureQueriesContext
+
+		with CaptureQueriesContext(connection) as context:
+			self.client.get(url)
+		return len(context)
+
+	# --- REST API -----------------------------------------------------------------------------------------
+
+	def test_rest_api_filters_by_country_and_city(self):
+		self.make_job(job_title='API uz', country=self.uz, city=self.tashkent)
+		self.make_job(job_title='API us', country=self.us)
+
+		by_country = self.client.get('/api/jobs/', {'country': self.us.pk}).json()
+		by_city = self.client.get('/api/jobs/', {'city': self.tashkent.pk}).json()
+
+		self.assertEqual([job['job_title'] for job in by_country['results']], ['API us'])
+		self.assertEqual([job['job_title'] for job in by_city['results']], ['API uz'])

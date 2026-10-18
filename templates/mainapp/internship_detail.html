@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=tag-contrast-fix-1">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=location-chip-3">
     <script src="{% static 'mainapp/theme.js' %}?v=dark-pages-1&switch=3" defer></script>
 </head>
 <body class="standalone-detail-body">
@@ -20,7 +20,8 @@
 
             <span class="tag">{% translate "INTERNSHIP" %}</span>
             <h1>{{ item.job_title }}</h1>
-            <p class="company-name">{{ item.company_name }}{% if item.city %} · {{ item.city }}{% endif %}</p>
+            <p class="company-name">{{ item.company_name }}</p>
+            {% if item.location %}<p class="detail-location"><span class="location-pin" aria-hidden="true">📍</span><span class="location-text">{{ item.location_with_flag }}</span></p>{% endif %}
 
             {% if item.work_photo %}
             <img class="listing-image detail-image work-detail-image" src="{{ item.work_photo.url }}" alt="{{ item.job_title }}">

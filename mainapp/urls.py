@@ -26,6 +26,9 @@ from .views import (
     RegistrationAPIView,
     super_admin,
     super_admin_edit_listing,
+    CityListAPIView,
+    ThrottledPasswordResetView,
+    ThrottledPasswordResetDoneView,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -48,12 +51,12 @@ urlpatterns = [
     path('register/', register_view, name='register'),
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
-    path('password-reset/', auth_views.PasswordResetView.as_view(
+    path('password-reset/', ThrottledPasswordResetView.as_view(
         template_name='mainapp/password_reset/form.html',
         email_template_name='mainapp/password_reset/email.txt',
         subject_template_name='mainapp/password_reset/subject.txt',
     ), name='password_reset'),
-    path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(
+    path('password-reset/done/', ThrottledPasswordResetDoneView.as_view(
         template_name='mainapp/password_reset/done.html',
     ), name='password_reset_done'),
     path('password-reset/complete/', auth_views.PasswordResetCompleteView.as_view(
@@ -69,6 +72,7 @@ urlpatterns = [
     path('super_admin', super_admin, name='super_admin'),
     path('super_admin/', super_admin),
     path('super_admin/<str:listing_type>/<int:pk>/edit/', super_admin_edit_listing, name='super_admin_edit_listing'),
+    path('api/cities/', CityListAPIView.as_view(), name='cities_api'),
     path('api/', include(router.urls)),
     path('api/register/', RegistrationAPIView.as_view(), name='api_register'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

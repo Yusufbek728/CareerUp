@@ -2,10 +2,15 @@ from django import forms
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from .geo_utils import COUNTRY_SEARCH_ALIASES
 from .models import (
     AccountProfile,
+    City,
+    Country,
     Internship,
     Job,
     Resume,
@@ -13,10 +18,121 @@ from .models import (
     WORKING_CONDITIONS,
     WORKING_DAYS,
     WORK_FIELDS,
+    check_city_belongs_to_country,
 )
 
 
-class ListingFilterForm(forms.Form):
+class CityChoiceIterator(forms.models.ModelChoiceIterator):
+    """Renders only the empty choice and the currently selected city.
+
+    The queryset stays the full list of the country's cities (it validates the submitted value), but a
+    country such as the USA has hundreds of cities, so the <select> must not contain them all: the
+    searchable combobox (static/mainapp/country-city.js) loads matches from /api/cities/ on demand.
+    """
+
+    def __iter__(self):
+        if self.field.empty_label is not None:
+            yield ('', self.field.empty_label)
+        selected_pk = getattr(self.field, 'selected_pk', None)
+        if selected_pk:
+            for city in self.queryset.filter(pk=selected_pk)[:1]:
+                yield self.choice(city)
+
+
+class CountrySelect(forms.Select):
+    """Adds all names (en/ru/uz) and the ISO code to every option, so the combobox finds 'Uzbekistan' in a
+    Russian interface and 'UZ' in any language."""
+
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex=subindex, attrs=attrs)
+        country = getattr(value, 'instance', None)
+        if country is not None:
+            names = (
+                country.name_en, country.name_ru, country.name_uz, country.name, country.code,
+                COUNTRY_SEARCH_ALIASES.get(country.code),
+            )
+            option['attrs']['data-search'] = ' '.join(dict.fromkeys(filter(None, names)))
+        return option
+
+
+def _to_int(raw):
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        return None
+
+
+class CountryCityFormMixin:
+    """Dependent country -> city fields (listing forms and the listing filter).
+
+    The city queryset is empty until a country is known: the submitted country on a bound form, otherwise the
+    instance's country (edit page). The JS in static/mainapp/country-city.js turns both selects into searchable
+    comboboxes; the city options come from the cities API when the country changes.
+    """
+
+    country_empty_label = _('Select country')
+    city_empty_label = _('Select city')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        country_field = self.fields['country']
+        city_field = self.fields['city']
+        instance = getattr(self, 'instance', None)
+
+        if self.is_bound:
+            country_id = _to_int(self.data.get(self.add_prefix('country')))
+            selected_city = _to_int(self.data.get(self.add_prefix('city')))
+        else:
+            country_id = _to_int(getattr(instance, 'country_id', None) or self.initial.get('country'))
+            selected_city = _to_int(getattr(instance, 'city_id', None) or self.initial.get('city'))
+
+        country_field.empty_label = self.country_empty_label
+        country_field.label_from_instance = lambda country: country.display_name
+        country_field.widget = CountrySelect()  # before the queryset: assigning it rebuilds widget.choices
+        country_field.queryset = Country.objects.localized()
+
+        city_field.empty_label = self.city_empty_label
+        city_field.iterator = CityChoiceIterator
+        city_field.selected_pk = selected_city
+        city_field.queryset = City.objects.filter(country_id=country_id) if country_id else City.objects.none()
+
+        common = {
+            'data-empty-text': _('Nothing found'),
+            'data-clear-label': _('Clear'),
+        }
+        country_field.widget.attrs.update({
+            **common,
+            'data-combobox': 'local',
+            'data-placeholder': self.country_empty_label,
+            'data-cities-url': reverse('cities_api'),
+            'data-city-target': self['city'].id_for_label,
+        })
+        city_field.widget.attrs.update({
+            **common,
+            'data-combobox': 'remote',
+            'data-remote-url': reverse('cities_api'),
+            'data-depends-on': self['country'].id_for_label,
+            'data-limit': 50,
+            'data-placeholder': self.city_empty_label,
+            'data-disabled-placeholder': _('Select country first'),
+            'data-loading-text': _('Loading...'),
+        })
+
+    def clean(self):
+        cleaned_data = super().clean()
+        try:
+            check_city_belongs_to_country(cleaned_data.get('country'), cleaned_data.get('city'))
+        except ValidationError as error:
+            self.add_error('city', error)
+        return cleaned_data
+
+
+class ListingFilterForm(CountryCityFormMixin, forms.Form):
+    country_empty_label = _('Any country')
+    city_empty_label = _('Any city')
+
+    country = forms.ModelChoiceField(queryset=Country.objects.all(), required=False, label=_('Country'))
+    city = forms.ModelChoiceField(queryset=City.objects.none(), required=False, label=_('City'))
     salary_min = forms.IntegerField(
         required=False,
         min_value=0,
@@ -228,7 +344,7 @@ class AccountSettingsForm(forms.Form):
         return self.user
 
 
-class JobForm(forms.ModelForm):
+class JobForm(CountryCityFormMixin, forms.ModelForm):
     class Meta:
         model = Job
         fields = (
@@ -236,6 +352,8 @@ class JobForm(forms.ModelForm):
             'work_photo',
             'phone_number',
             'phone_number2',
+            'country',
+            'city',
             'salary',
             'required_experience',
             'work_time',
@@ -255,6 +373,8 @@ class JobForm(forms.ModelForm):
             'work_photo': _('Work photo'),
             'phone_number': _('Phone number'),
             'phone_number2': _('Additional phone number'),
+            'country': _('Country'),
+            'city': _('City'),
             'salary': _('Salary'),
             'required_experience': _('Required experience'),
             'work_time': _('Work time'),
@@ -267,7 +387,7 @@ class JobForm(forms.ModelForm):
         }
 
 
-class InternshipForm(forms.ModelForm):
+class InternshipForm(CountryCityFormMixin, forms.ModelForm):
     class Meta:
         model = Internship
         fields = (
@@ -275,6 +395,8 @@ class InternshipForm(forms.ModelForm):
             'work_photo',
             'phone_number',
             'phone_number2',
+            'country',
+            'city',
             'work_time',
             'work_duration',
             'job_title',
@@ -291,6 +413,8 @@ class InternshipForm(forms.ModelForm):
             'work_photo': _('Work photo'),
             'phone_number': _('Phone number'),
             'phone_number2': _('Additional phone number'),
+            'country': _('Country'),
+            'city': _('City'),
             'work_time': _('Work time'),
             'work_duration': _('Work duration'),
             'job_title': _('Job title'),
@@ -301,7 +425,7 @@ class InternshipForm(forms.ModelForm):
         }
 
 
-class ResumeForm(forms.ModelForm):
+class ResumeForm(CountryCityFormMixin, forms.ModelForm):
     class Meta:
         model = Resume
         fields = (
@@ -311,6 +435,8 @@ class ResumeForm(forms.ModelForm):
             'email',
             'phone_number',
             'phone_number2',
+            'country',
+            'city',
             'experience',
             'wanted_salary',
             'wanted_work_time',
@@ -328,6 +454,8 @@ class ResumeForm(forms.ModelForm):
             'email': _('Email'),
             'phone_number': _('Phone number'),
             'phone_number2': _('Additional phone number'),
+            'country': _('Country'),
+            'city': _('City'),
             'experience': _('Experience'),
             'wanted_salary': _('Wanted salary'),
             'wanted_work_time': _('Preferred work time'),

@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'channels',
     'django_filters',
     'corsheaders',
+    'anymail',
 ]
 
 MIDDLEWARE = [
@@ -82,7 +83,22 @@ EMAIL_PORT = config('EMAIL_PORT', cast=int, default=587)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool, default=True)
+# Socket timeout (seconds) so a blocked/unreachable SMTP port doesn't hang the request.
+EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', cast=int, default=10)
+# HTTPS email API (django-anymail). Render's free plan blocks outgoing SMTP, so there set
+# EMAIL_BACKEND=anymail.backends.brevo.EmailBackend and BREVO_API_KEY (port 443).
+ANYMAIL = {
+    'BREVO_API_KEY': config('BREVO_API_KEY', default=''),
+}
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='CareerUp <noreply@careerup.local>')
+
+# Password-reset throttling (see mainapp/ratelimit.py). Counters live in the DB, shared by all workers.
+PASSWORD_RESET_EMAIL_COOLDOWN = 10 * 60   # seconds between reset emails to the same address
+PASSWORD_RESET_IP_LIMIT = 5               # reset requests ...
+PASSWORD_RESET_IP_WINDOW = 10 * 60        # ... per this many seconds, per client IP
+# Number of reverse proxies in front of the app that append to X-Forwarded-For. 0 = ignore the
+# header and use REMOTE_ADDR (never spoofable). Set it on Render once the hop count is verified.
+TRUSTED_PROXY_COUNT = config('TRUSTED_PROXY_COUNT', cast=int, default=0)
 
 TEMPLATES = [
     {
