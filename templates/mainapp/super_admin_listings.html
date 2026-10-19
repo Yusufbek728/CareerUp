@@ -1,29 +1,31 @@
-<section class="admin-section" id="{{ listing_type }}-listings">
 {% load i18n %}
-    <div class="admin-section-head"><h2>{{ title }} ({{ listings.paginator.count }})</h2></div>
-    <div class="admin-table">
+<section class="sa-panel" id="{{ listing_type }}-listings">
+    <div class="sa-panel-head"><h2>{{ title }} ({{ listings.paginator.count }})</h2></div>
+    <div class="sa-table">
         {% for listing in listings %}
-            <div class="admin-row">
-                <div>
-                    <strong>{% if listing_type == 'resume' %}{{ listing.name }} {{ listing.surname }}{% else %}{{ listing.job_title }}{% endif %}</strong>
-                    <div class="admin-meta">{% if listing_type == 'resume' %}{{ listing.email }}{% else %}{{ listing.company_name }}{% endif %} · {% translate "owner:" %} {{ listing.owner.username|default:_('not provided') }}</div>
+            <div class="sa-row">
+                <div class="sa-cell-main">
+                    <div>
+                        <strong>{% if listing_type == 'resume' %}{{ listing.name }} {{ listing.surname }}{% else %}{{ listing.job_title }}{% endif %}</strong>
+                        <div class="sa-meta">{% if listing_type == 'resume' %}{{ listing.email }}{% else %}{{ listing.company_name }}{% endif %} · {% translate "owner:" %} {{ listing.owner.username|default:_('not provided') }}</div>
+                    </div>
                 </div>
-                <div class="admin-actions">
-                    <a href="{% if listing_type == 'job' %}{% url 'job_detail' listing.pk %}{% elif listing_type == 'internship' %}{% url 'internship_detail' listing.pk %}{% else %}{% url 'resume_detail' listing.pk %}{% endif %}">{% translate "Open" %}</a>
-                    <a href="{% url 'super_admin_edit_listing' listing_type listing.pk %}">{% translate "Edit" %}</a>
-                    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="delete_listing"><input type="hidden" name="listing_type" value="{{ listing_type }}"><input type="hidden" name="listing_id" value="{{ listing.pk }}"><button class="danger" type="submit">{% translate "Delete" %}</button></form>
+                <div class="sa-actions">
+                    <a class="sa-btn" href="{% if listing_type == 'job' %}{% url 'job_detail' listing.pk %}{% elif listing_type == 'internship' %}{% url 'internship_detail' listing.pk %}{% else %}{% url 'resume_detail' listing.pk %}{% endif %}">{% translate "Open" %}</a>
+                    <a class="sa-btn" href="{% url 'super_admin_edit_listing' listing_type listing.pk %}">{% translate "Edit" %}</a>
+                    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="delete_listing"><input type="hidden" name="listing_type" value="{{ listing_type }}"><input type="hidden" name="listing_id" value="{{ listing.pk }}"><button class="sa-btn sa-btn-danger" type="submit">{% translate "Delete" %}</button></form>
                 </div>
             </div>
-        {% empty %}<p class="admin-meta">{% translate "No listings yet." %}</p>{% endfor %}
+        {% empty %}<p class="sa-meta sa-empty">{% translate "No listings yet." %}</p>{% endfor %}
     </div>
     {% if listings.has_other_pages %}
-    <nav class="listing-pagination" aria-label="{{ title }} {% translate 'pagination' %}">
+    <nav class="sa-pagination" aria-label="{{ title }} {% translate 'pagination' %}">
         {% if listings.has_previous %}
-        <a href="{{ page_links.previous }}#{{ listing_type }}-listings">{% translate "Previous" %}</a>
+        <a class="sa-btn" href="{{ page_links.previous }}#{{ listing_type }}-listings">{% translate "Previous" %}</a>
         {% endif %}
         <span>{{ listings.number }} / {{ listings.paginator.num_pages }}</span>
         {% if listings.has_next %}
-        <a href="{{ page_links.next }}#{{ listing_type }}-listings">{% translate "Next" %}</a>
+        <a class="sa-btn" href="{{ page_links.next }}#{{ listing_type }}-listings">{% translate "Next" %}</a>
         {% endif %}
     </nav>
     {% endif %}

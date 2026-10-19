@@ -1,0 +1,16 @@
+{% load i18n %}
+<div class="settings-field{% if field.name == 'company_photo' %} settings-field--wide{% endif %}{% if field.errors %} has-error{% endif %}">
+    <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+    {% if field.field.widget.input_type == 'password' %}
+        <div class="password-field">
+            {{ field }}
+            {% if field.name != 'current_password' %}
+                <button class="password-toggle" type="button" data-password-toggle data-target="{{ field.id_for_label }}" data-show-label="{% translate 'Show password' %}" data-hide-label="{% translate 'Hide password' %}" aria-label="{% translate 'Show password' %}" title="{% translate 'Show password' %}">&#128065;</button>
+            {% endif %}
+        </div>
+    {% else %}
+        {{ field }}
+    {% endif %}
+    {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+    {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+</div>

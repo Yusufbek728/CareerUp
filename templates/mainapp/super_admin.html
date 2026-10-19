@@ -5,70 +5,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% translate "Super Admin" %} | CareerUp</title>
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=site-header-global-1&switch=4">
-    <script src="{% static 'mainapp/theme.js' %}?v=language-labels-1&switch=3" defer></script>
+    <link rel="stylesheet" href="{% static 'mainapp/super_admin.css' %}?v=1">
 </head>
-<body>
-    {% include "mainapp/partials/site_header.html" %}
+<body class="sa-body">
 {% translate "email not provided" as email_not_provided %}
-<main class="admin-page container">
-    <div class="admin-toolbar">
-        <div>
-            <p class="eyebrow">{% translate "CareerUp control" %}</p>
-            <h1>{% translate "Administrator panel" %}</h1>
+<div class="sa-shell">
+    <aside class="sa-sidebar">
+        <a class="sa-brand" href="{% url 'super_admin' %}">
+            <img src="{% static 'mainapp/logo.png' %}" alt="">
+            <span>CareerUp <small>{% translate "Super Admin" %}</small></span>
+        </a>
+        <nav class="sa-nav" aria-label="{% translate 'Administrator panel' %}">
+            <a href="#accounts"><span class="sa-nav-label">{% translate "Accounts" %}</span><b>{{ users|length }}</b></a>
+            <a href="#job-listings"><span class="sa-nav-label">{% translate "Jobs" %}</span><b>{{ jobs.paginator.count }}</b></a>
+            <a href="#internship-listings"><span class="sa-nav-label">{% translate "Internships" %}</span><b>{{ internships.paginator.count }}</b></a>
+            <a href="#resume-listings"><span class="sa-nav-label">{% translate "Resumes" %}</span><b>{{ resumes.paginator.count }}</b></a>
+        </nav>
+        <div class="sa-sidebar-foot">
+            <span class="sa-user">@{{ request.user.username }}</span>
+            <a href="{% url 'home' %}">&larr; {% translate "Back to CareerUp" %}</a>
+            <form action="{% url 'logout' %}" method="post">{% csrf_token %}<button type="submit">{% translate "Log out" %}</button></form>
         </div>
-        <form method="get">
-            <input type="search" name="q" value="{{ search_query }}" placeholder="{% translate 'Search accounts' %}">
-            <button class="primary-btn" type="submit">{% translate "Search" %}</button>
-        </form>
-    </div>
+    </aside>
 
-    <section class="admin-section">
-        <div class="admin-section-head"><h2>{% translate "Accounts" %} ({{ users|length }})</h2></div>
-        {% if selected_user %}
-            <form class="admin-form" method="post">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="save_user">
-                <input type="hidden" name="user_id" value="{{ selected_user.pk }}">
-                {{ user_form.non_field_errors }}
-                {% for field in user_form %}
-                    <p class="{% if field.name == 'new_password' %}full {% endif %}{% if field.field.widget.input_type == 'checkbox' %}checkbox-field{% endif %}">
-                        {{ field.label_tag }}
-                        {% if field.field.widget.input_type == 'password' %}
-                            <span class="password-field">
-                                {{ field }}
-                                <button class="password-toggle" type="button" data-password-toggle data-target="{{ field.id_for_label }}" data-show-label="{% translate 'Show password' %}" data-hide-label="{% translate 'Hide password' %}" aria-label="{% translate 'Show password' %}" title="{% translate 'Show password' %}">&#128065;</button>
-                            </span>
-                        {% else %}
-                            {{ field }}
-                        {% endif %}
-                        {{ field.help_text }}
-                        {% for error in field.errors %}<span class="admin-error">{{ error }}</span>{% endfor %}
-                    </p>
-                {% endfor %}
-                <p class="full"><button class="primary-btn" type="submit">{% translate "Save account" %}</button> <a class="secondary-btn" href="{% url 'super_admin' %}">{% translate "Cancel" %}</a></p>
+    <main class="sa-main">
+        <header class="sa-topbar">
+            <div>
+                <p class="sa-eyebrow">{% translate "CareerUp control" %}</p>
+                <h1>{% translate "Administrator panel" %}</h1>
+            </div>
+            <form method="get" class="sa-search">
+                <input type="search" name="q" value="{{ search_query }}" placeholder="{% translate 'Search accounts' %}">
+                <button type="submit">{% translate "Search" %}</button>
             </form>
-        {% endif %}
-        <div class="admin-table">
-            {% for account in users %}
-                <div class="admin-row">
-                    <div><strong>{{ account.account_profile.display_name|default:account.username }}</strong><div class="admin-meta">@{{ account.username }} · {{ account.email|default:email_not_provided }} · {% if account.is_active %}{% translate "Active" %}{% else %}{% translate "Blocked" %}{% endif %}</div></div>
-                    <div class="admin-actions">
-                        <a href="?edit_user={{ account.pk }}">{% translate "Edit" %}</a>
-                        {% if account != request.user %}<form method="post">{% csrf_token %}<input type="hidden" name="action" value="delete_user"><input type="hidden" name="user_id" value="{{ account.pk }}"><button class="danger" type="submit">{% translate "Delete" %}</button></form>{% endif %}
-                    </div>
-                </div>
-            {% empty %}<p class="admin-meta">{% translate "No accounts found." %}</p>{% endfor %}
-        </div>
-    </section>
+        </header>
 
-    {% translate "Jobs" as jobs_title %}
-    {% translate "Internships" as internships_title %}
-    {% translate "Resumes" as resumes_title %}
-    {% include 'mainapp/super_admin_listings.html' with title=jobs_title listing_type='job' listings=jobs page_links=job_page_links %}
-    {% include 'mainapp/super_admin_listings.html' with title=internships_title listing_type='internship' listings=internships page_links=internship_page_links %}
-    {% include 'mainapp/super_admin_listings.html' with title=resumes_title listing_type='resume' listings=resumes page_links=resume_page_links %}
-</main>
+        <section class="sa-stats">
+            <div class="sa-stat"><span>{% translate "Accounts" %}</span><strong>{{ users|length }}</strong></div>
+            <div class="sa-stat"><span>{% translate "Jobs" %}</span><strong>{{ jobs.paginator.count }}</strong></div>
+            <div class="sa-stat"><span>{% translate "Internships" %}</span><strong>{{ internships.paginator.count }}</strong></div>
+            <div class="sa-stat"><span>{% translate "Resumes" %}</span><strong>{{ resumes.paginator.count }}</strong></div>
+        </section>
+
+        <section class="sa-panel" id="accounts">
+            <div class="sa-panel-head"><h2>{% translate "Accounts" %} ({{ users|length }})</h2></div>
+            {% if selected_user %}
+                <form class="sa-form" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="save_user">
+                    <input type="hidden" name="user_id" value="{{ selected_user.pk }}">
+                    {{ user_form.non_field_errors }}
+                    {% for field in user_form %}
+                        <p class="{% if field.name == 'new_password' %}full {% endif %}{% if field.field.widget.input_type == 'checkbox' %}checkbox-field{% endif %}">
+                            {{ field.label_tag }}
+                            {% if field.field.widget.input_type == 'password' %}
+                                <span class="password-field">
+                                    {{ field }}
+                                    <button class="password-toggle" type="button" data-password-toggle data-target="{{ field.id_for_label }}" data-show-label="{% translate 'Show password' %}" data-hide-label="{% translate 'Hide password' %}" aria-label="{% translate 'Show password' %}" title="{% translate 'Show password' %}">&#128065;</button>
+                                </span>
+                            {% else %}
+                                {{ field }}
+                            {% endif %}
+                            {{ field.help_text }}
+                            {% for error in field.errors %}<span class="sa-error">{{ error }}</span>{% endfor %}
+                        </p>
+                    {% endfor %}
+                    <p class="full sa-form-actions"><button class="sa-btn sa-btn-primary" type="submit">{% translate "Save account" %}</button> <a class="sa-btn" href="{% url 'super_admin' %}">{% translate "Cancel" %}</a></p>
+                </form>
+            {% endif %}
+            <div class="sa-table">
+                {% for account in users %}
+                    <div class="sa-row">
+                        <div class="sa-cell-main">
+                            <span class="sa-avatar" aria-hidden="true">{{ account.username|slice:":1"|upper }}</span>
+                            <div>
+                                <strong>{{ account.account_profile.display_name|default:account.username }}</strong>
+                                <div class="sa-meta">@{{ account.username }} · {{ account.email|default:email_not_provided }}</div>
+                            </div>
+                        </div>
+                        <span class="sa-badge {% if account.is_active %}ok{% else %}off{% endif %}">{% if account.is_active %}{% translate "Active" %}{% else %}{% translate "Blocked" %}{% endif %}</span>
+                        <div class="sa-actions">
+                            <a class="sa-btn" href="?edit_user={{ account.pk }}">{% translate "Edit" %}</a>
+                            {% if account != request.user %}<form method="post">{% csrf_token %}<input type="hidden" name="action" value="delete_user"><input type="hidden" name="user_id" value="{{ account.pk }}"><button class="sa-btn sa-btn-danger" type="submit">{% translate "Delete" %}</button></form>{% endif %}
+                        </div>
+                    </div>
+                {% empty %}<p class="sa-meta sa-empty">{% translate "No accounts found." %}</p>{% endfor %}
+            </div>
+        </section>
+
+        {% translate "Jobs" as jobs_title %}
+        {% translate "Internships" as internships_title %}
+        {% translate "Resumes" as resumes_title %}
+        {% include 'mainapp/super_admin_listings.html' with title=jobs_title listing_type='job' listings=jobs page_links=job_page_links %}
+        {% include 'mainapp/super_admin_listings.html' with title=internships_title listing_type='internship' listings=internships page_links=internship_page_links %}
+        {% include 'mainapp/super_admin_listings.html' with title=resumes_title listing_type='resume' listings=resumes page_links=resume_page_links %}
+    </main>
+</div>
 <script src="{% static 'mainapp/forms.js' %}"></script>
 </body>
 </html>

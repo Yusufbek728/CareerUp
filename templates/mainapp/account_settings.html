@@ -5,42 +5,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% translate "Account settings" %} - CareerUp</title>
-    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=site-header-global-1&switch=4">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=ui-fix-1">
     <script src="{% static 'mainapp/theme.js' %}?v=language-labels-1&switch=3" defer></script>
 </head>
 <body>
     {% include "mainapp/partials/site_header.html" %}
-    <main class="create-page container">
-        <div class="create-toolbar">
-            <a href="{% url 'home' %}" class="back-link">&larr; {% translate "Back to CareerUp" %}</a>
-        </div>
-        <section class="create-panel auth-panel">
-            <span class="tag">{% translate "ACCOUNT" %}</span>
-            <h1>{% translate "Account settings" %}</h1>
-            <p class="form-intro">{% translate "Update your profile and login details." %}</p>
-            <form method="post" enctype="multipart/form-data" class="listing-form">
-                {% csrf_token %}
-                {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
-                {% for field in form %}
-                    <div class="form-field">
-                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
-                        {% if field.field.widget.input_type == 'password' %}
-                            <div class="password-field">
-                                {{ field }}
-                                {% if field.name != 'current_password' %}
-                                    <button class="password-toggle" type="button" data-password-toggle data-target="{{ field.id_for_label }}" data-show-label="{% translate 'Show password' %}" data-hide-label="{% translate 'Hide password' %}" aria-label="{% translate 'Show password' %}" title="{% translate 'Show password' %}">&#128065;</button>
-                                {% endif %}
-                            </div>
-                        {% else %}
-                            {{ field }}
-                        {% endif %}
-                        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
-                        {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+    <main class="settings-page container">
+        <a href="{% url 'home' %}" class="back-link">&larr; {% translate "Back to CareerUp" %}</a>
+        <div class="settings-layout">
+            <aside class="settings-aside">
+                <div class="settings-avatar" aria-hidden="true">{{ request.user.account_profile.display_name|default:request.user.username|slice:":1"|upper }}</div>
+                <h2>{{ request.user.account_profile.display_name|default:request.user.username }}</h2>
+                <p class="settings-role">{% if request.user.account_profile %}{{ request.user.account_profile.get_role_display }}{% else %}@{{ request.user.username }}{% endif %}</p>
+                <nav class="settings-menu">
+                    <a href="{% url 'my_listings' %}">{% translate "My cards" %}</a>
+                    <a href="{% url 'account_activity' 'likes' %}">{% translate "Liked listings" %}</a>
+                    <a href="{% url 'account_activity' 'views' %}">{% translate "Recently viewed" %}</a>
+                    <a href="{% url 'account_activity' 'favorites' %}">{% translate "Favorites" %}</a>
+                    <a href="{% url 'account_settings' %}" class="active">{% translate "Account settings" %}</a>
+                </nav>
+            </aside>
+            <section class="settings-card">
+                <span class="tag">{% translate "ACCOUNT" %}</span>
+                <h1>{% translate "Account settings" %}</h1>
+                <p class="form-intro">{% translate "Update your profile and login details." %}</p>
+                <form method="post" enctype="multipart/form-data" class="settings-form">
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+                    <div class="settings-grid">
+                        {% for field in form %}
+                            {% if field.name == 'current_password' %}
+                                </div>
+                                <hr class="settings-divider">
+                                <div class="settings-grid">
+                            {% endif %}
+                            {% include "mainapp/partials/settings_field.html" %}
+                        {% endfor %}
                     </div>
-                {% endfor %}
-                <button type="submit" class="primary-btn form-submit">{% translate "Save changes" %}</button>
-            </form>
-        </section>
+                    <div class="settings-actions">
+                        <button type="submit" class="primary-btn form-submit">{% translate "Save changes" %}</button>
+                    </div>
+                </form>
+            </section>
+        </div>
     </main>
     <script src="{% static 'mainapp/forms.js' %}"></script>
 </body>
