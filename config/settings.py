@@ -96,6 +96,11 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='CareerUp <noreply@car
 PASSWORD_RESET_EMAIL_COOLDOWN = 10 * 60   # seconds between reset emails to the same address
 PASSWORD_RESET_IP_LIMIT = 5               # reset requests ...
 PASSWORD_RESET_IP_WINDOW = 10 * 60        # ... per this many seconds, per client IP
+PASSWORD_RESET_GLOBAL_LIMIT = 60          # reset emails per hour across ALL clients (works behind a proxy too)
+PASSWORD_RESET_GLOBAL_WINDOW = 60 * 60
+# Web login brute-force protection: failed attempts per window, counted per client IP and per username.
+LOGIN_FAIL_LIMIT = 10
+LOGIN_FAIL_WINDOW = 10 * 60
 # Number of reverse proxies in front of the app that append to X-Forwarded-For. 0 = ignore the
 # header and use REMOTE_ADDR (never spoofable). Set it on Render once the hop count is verified.
 TRUSTED_PROXY_COUNT = config('TRUSTED_PROXY_COUNT', cast=int, default=0)

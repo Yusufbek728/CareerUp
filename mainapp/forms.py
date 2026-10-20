@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
@@ -6,7 +7,9 @@ from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from . import ratelimit
 from .geo_utils import COUNTRY_SEARCH_ALIASES
+from .validators import validate_image_size
 from .models import (
     AccountProfile,
     City,
@@ -251,10 +254,31 @@ class LoginForm(forms.Form):
     username = forms.CharField(label=_('Username'))
     password = forms.CharField(widget=forms.PasswordInput, label=_('Password'))
 
+    def __init__(self, *args, request=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.request = request
+
+    def _limits(self, username):
+        """(scope, key) buckets for failed logins: per client IP (only when a real one is known) and per username."""
+        buckets = [('login-user', username.strip().lower())]
+        client_ip = ratelimit.get_client_ip(self.request) if self.request is not None else ''
+        # Same rule as password reset: a non-public address is the platform proxy, a shared bucket would lock everybody out.
+        if ratelimit.is_public_ip(client_ip):
+            buckets.append(('login-ip', client_ip))
+        return buckets
+
     def clean(self):
         cleaned_data = super().clean()
+        username = cleaned_data.get('username') or ''
+        buckets = self._limits(username)
+        limit, window = settings.LOGIN_FAIL_LIMIT, settings.LOGIN_FAIL_WINDOW
+        # The message is identical for existing and unknown usernames, so it reveals nothing about accounts.
+        if any(ratelimit.is_blocked(scope, key, limit, window) for scope, key in buckets):
+            raise forms.ValidationError(_('Too many failed login attempts. Please try again later.'))
         user = authenticate(username=cleaned_data.get('username'), password=cleaned_data.get('password'))
         if user is None:
+            for scope, key in buckets:
+                ratelimit.hit(scope, key, limit, window)
             raise forms.ValidationError(_('Invalid username or password.'))
         cleaned_data['user'] = user
         return cleaned_data
@@ -271,7 +295,7 @@ class AccountSettingsForm(forms.Form):
     username = forms.CharField(max_length=150, label=_('Username'))
     email = forms.EmailField(label=_('Email'))
     display_name = forms.CharField(max_length=200, label=_('Display name'))
-    company_photo = forms.ImageField(required=False, label=_('Company photo'))
+    company_photo = forms.ImageField(required=False, label=_('Company photo'), validators=[validate_image_size])
     role = forms.ChoiceField(
         choices=(('company', _('Company')), ('worker', _('Worker'))),
         label=_('Account type'),

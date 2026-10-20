@@ -11,6 +11,7 @@ from django.db.models.functions import Coalesce, NullIf
 from django.utils.translation import get_language, gettext_lazy as _
 
 from .geo_utils import build_search_text, flag_emoji, language_key
+from .validators import validate_image_size
 
 phone_number_validator = RegexValidator(
     regex=r'^\+?(?=(?:\D*\d){8,15}\D*$)[0-9][0-9\s().-]*[0-9]$',
@@ -49,7 +50,7 @@ class AccountProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='account_profile')
     role = models.CharField(max_length=20, choices=ACCOUNT_ROLES)
     display_name = models.CharField(max_length=200, blank=True)
-    company_photo = models.ImageField(upload_to='company_photos/', blank=True, null=True)
+    company_photo = models.ImageField(upload_to='company_photos/', blank=True, null=True, validators=[validate_image_size])
 
     def __str__(self):
         return self.display_name or self.user.username
@@ -167,7 +168,7 @@ class Job(models.Model):
     interactions = GenericRelation('ListingInteraction', related_query_name='job')
     view_count = models.PositiveIntegerField(default=0)
     company_name = models.CharField(max_length=200)
-    work_photo = models.ImageField(upload_to='work_photos/', blank=True, null=True)
+    work_photo = models.ImageField(upload_to='work_photos/', blank=True, null=True, validators=[validate_image_size])
     phone_number = models.CharField(max_length=20, default='', validators=[phone_number_validator])
     phone_number2 = models.CharField(max_length=20, blank=True, null=True, default='', validators=[phone_number_validator])
     salary = models.IntegerField()
@@ -204,7 +205,7 @@ class Internship(models.Model):
     interactions = GenericRelation('ListingInteraction', related_query_name='internship')
     view_count = models.PositiveIntegerField(default=0)
     company_name = models.CharField(max_length=200)
-    work_photo = models.ImageField(upload_to='work_photos/', blank=True, null=True)
+    work_photo = models.ImageField(upload_to='work_photos/', blank=True, null=True, validators=[validate_image_size])
     phone_number = models.CharField(max_length=20, default='', validators=[phone_number_validator])
     phone_number2 = models.CharField(max_length=20, blank=True, null=True, default='', validators=[phone_number_validator])
     work_time = models.IntegerField()
@@ -235,7 +236,7 @@ class Resume(models.Model):
     view_count = models.PositiveIntegerField(default=0)
     name = models.CharField(max_length=200)
     surname = models.CharField(max_length=200)
-    photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True)
+    photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True, validators=[validate_image_size])
     email = models.EmailField()
     phone_number = models.CharField(max_length=20, default='', validators=[phone_number_validator])
     phone_number2 = models.CharField(max_length=20, blank=True, null=True, default='', validators=[phone_number_validator])

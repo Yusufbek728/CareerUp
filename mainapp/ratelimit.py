@@ -36,6 +36,15 @@ def hit(scope, raw_key, limit, window_seconds):
     return False, max(1, int(window_seconds - elapsed))
 
 
+def is_blocked(scope, raw_key, limit, window_seconds):
+    """Read-only check: True if `limit` attempts were already registered in the current window."""
+    key = hashlib.sha256(str(raw_key).encode('utf-8')).hexdigest()
+    cutoff = timezone.now() - timedelta(seconds=window_seconds)
+    return RateLimitCounter.objects.filter(
+        scope=scope, key=key, window_start__gt=cutoff, count__gte=limit,
+    ).exists()
+
+
 def purge_stale(max_age_seconds=86400):
     RateLimitCounter.objects.filter(window_start__lt=timezone.now() - timedelta(seconds=max_age_seconds)).delete()
 

@@ -495,7 +495,7 @@ def register_view(request):
 def login_view(request):
     if request.user.is_authenticated:
         return redirect('home')
-    form = LoginForm(request.POST or None)
+    form = LoginForm(request.POST or None, request=request)
     if request.method == 'POST' and form.is_valid():
         login(request, form.cleaned_data['user'])
         next_url = request.GET.get('next', '')
@@ -687,16 +687,28 @@ class RegistrationAPIView(generics.CreateAPIView):
 
 class OwnerModelViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    listing_type = None  # 'job' / 'internship' / 'resume', checked with can_create_listing
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         record_listing_view(request, instance)
         return super().retrieve(request, *args, **kwargs)
 
-    def perform_create(self, serializer):
+    def check_can_create(self):
         if not self.request.user.is_authenticated:
             from rest_framework.exceptions import NotAuthenticated
             raise NotAuthenticated('Registration and login are required to create a listing.')
+        if not can_create_listing(self.request.user, self.listing_type):
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('Your account role cannot create this type of listing.')
+
+    def create(self, request, *args, **kwargs):
+        # Role check before payload validation, so a wrong role gets 403 rather than 400.
+        self.check_can_create()
+        return super().create(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        self.check_can_create()
         serializer.save(owner=self.request.user)
 
     def perform_update(self, serializer):
@@ -713,6 +725,7 @@ class OwnerModelViewSet(viewsets.ModelViewSet):
 
 
 class JobViewSet(OwnerModelViewSet):
+    listing_type = 'job'
     queryset = Job.objects.all().order_by('-created_at', '-pk')
     serializer_class = JobSerializer
     pagination_class = JobPagination
@@ -723,6 +736,7 @@ class JobViewSet(OwnerModelViewSet):
 
 
 class ResumeViewSet(OwnerModelViewSet):
+    listing_type = 'resume'
     queryset = Resume.objects.all().order_by('-created_at', '-pk')
     serializer_class = ResumeSerializer
     pagination_class = ResumePagination
@@ -733,6 +747,7 @@ class ResumeViewSet(OwnerModelViewSet):
 
 
 class InternshipViewSet(OwnerModelViewSet):
+    listing_type = 'internship'
     queryset = Internship.objects.all().order_by('-created_at', '-pk')
     serializer_class = InternshipSerializer
     pagination_class = InternshipPagination
@@ -808,6 +823,13 @@ class ThrottledPasswordResetView(auth_views.PasswordResetView):
         if ratelimit.is_public_ip(client_ip):
             allowed, retry_after = ratelimit.hit(
                 'pwreset-ip', client_ip, settings.PASSWORD_RESET_IP_LIMIT, settings.PASSWORD_RESET_IP_WINDOW,
+            )
+            if not allowed:
+                notice = 'ip'
+        # Global cap on the whole scope: still effective when the IP limit is skipped above (proxy case).
+        if notice is None:
+            allowed, retry_after = ratelimit.hit(
+                'pwreset-global', 'all', settings.PASSWORD_RESET_GLOBAL_LIMIT, settings.PASSWORD_RESET_GLOBAL_WINDOW,
             )
             if not allowed:
                 notice = 'ip'

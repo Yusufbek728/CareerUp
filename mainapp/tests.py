@@ -1163,6 +1163,76 @@ class PasswordResetFlowTests(TestCase):
 		self.assertEqual(len(mail.outbox), 7)
 
 
+class SecurityHardeningTests(TestCase):
+	def test_login_is_blocked_after_repeated_failures(self):
+		User.objects.create_user(username='victim', password='Correct-Pass-123')
+		for _ in range(10):
+			response = self.client.post(reverse('login'), {'username': 'Victim', 'password': 'wrong'})
+			self.assertContains(response, 'Invalid username or password.')
+		# Even the correct password is refused now; unknown users get the very same message.
+		response = self.client.post(reverse('login'), {'username': 'victim', 'password': 'Correct-Pass-123'})
+		self.assertContains(response, 'Too many failed login attempts')
+		self.assertFalse(response.wsgi_request.user.is_authenticated)
+		for _ in range(11):
+			response = self.client.post(reverse('login'), {'username': 'ghost', 'password': 'wrong'})
+		self.assertContains(response, 'Too many failed login attempts')
+
+	def test_login_ip_limit_applies_across_usernames(self):
+		for n in range(10):
+			self.client.post(reverse('login'), {'username': f'u{n}', 'password': 'wrong'}, REMOTE_ADDR='8.8.8.8')
+		User.objects.create_user(username='other', password='Correct-Pass-123')
+		response = self.client.post(reverse('login'), {'username': 'other', 'password': 'Correct-Pass-123'}, REMOTE_ADDR='8.8.8.8')
+		self.assertContains(response, 'Too many failed login attempts')
+
+	def test_password_reset_global_limit_works_without_public_ip(self):
+		from django.core import mail
+		from django.test import override_settings
+		for n in range(4):
+			User.objects.create_user(username=f'gl{n}', email=f'gl{n}@example.com', password='OldPass12345')
+		with override_settings(PASSWORD_RESET_GLOBAL_LIMIT=3):
+			for n in range(4):
+				self.client.post(reverse('password_reset'), {'email': f'gl{n}@example.com'}, REMOTE_ADDR='10.2.3.4')
+		self.assertEqual(len(mail.outbox), 3)
+
+	def test_api_create_requires_matching_role(self):
+		worker = User.objects.create_user(username='api-worker', password='worker-password')
+		AccountProfile.objects.create(user=worker, role='worker', display_name='Worker')
+		self.client.force_login(worker)
+		for endpoint in ('jobs', 'internships'):
+			response = self.client.post(f'/api/{endpoint}/', {'company_name': 'X'}, content_type='application/json')
+			self.assertEqual(response.status_code, 403)
+		company = User.objects.create_user(username='api-company', password='company-password')
+		AccountProfile.objects.create(user=company, role='company', display_name='Company')
+		self.client.force_login(company)
+		response = self.client.post('/api/resumes/', {'name': 'X'}, content_type='application/json')
+		self.assertEqual(response.status_code, 403)
+
+	def test_oversized_image_is_rejected(self):
+		from django.core.files.uploadedfile import SimpleUploadedFile
+		from .validators import MAX_IMAGE_SIZE, validate_image_size
+		validate_image_size(SimpleUploadedFile('ok.png', b'x' * 10))
+		with self.assertRaises(ValidationError):
+			validate_image_size(SimpleUploadedFile('big.png', b'x' * (MAX_IMAGE_SIZE + 1)))
+		company = User.objects.create_user(username='big-company', password='company-password')
+		AccountProfile.objects.create(user=company, role='company', display_name='Company')
+		self.client.force_login(company)
+		with patch('mainapp.validators.MAX_IMAGE_SIZE', 10):
+			response = self.client.post(reverse('account_settings'), {
+				'username': 'big-company',
+				'email': 'company@example.com',
+				'display_name': 'Company',
+				'role': 'company',
+				'company_photo': SimpleUploadedFile(
+					'company.png',
+					base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='),
+					content_type='image/png',
+				),
+			})
+		self.assertContains(response, 'Image is too large')
+		company.account_profile.refresh_from_db()
+		self.assertFalse(company.account_profile.company_photo)
+
+
 class CountryCityTests(TestCase):
 	@classmethod
 	def setUpTestData(cls):
