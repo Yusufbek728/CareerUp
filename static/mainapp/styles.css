@@ -4857,6 +4857,17 @@ body:not(.dark-theme) .back-link {
     background: rgba(198, 243, 107, 0.25);
 }
 
+/* Same look as the header "Create" button: bright lime on near-black */
+body:not(.dark-theme) .clear-filters {
+    color: #c6f36b;
+    border-color: #c6f36b;
+    background: #18201c;
+    font-weight: 700;
+    padding: 7px 12px;
+    border: 1px solid #c6f36b;
+    border-radius: 11px;
+}
+
 body:not(.dark-theme) .back-link:hover {
     background: rgba(198, 243, 107, 0.45);
     box-shadow: 0 10px 24px rgba(61, 90, 18, 0.12);
