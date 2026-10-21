@@ -1,3 +1,5 @@
+import functools
+
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.db.models import Count, F, Max, Q
@@ -7,7 +9,7 @@ from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseRedirect
+from django.http import Http404, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import get_language, gettext, gettext_lazy as _
@@ -23,6 +25,7 @@ from mainapp.pagination import InternshipPagination, JobPagination, ResumePagina
 from mainapp.throttling import CityThrottle, InternshipThrottle, JobThrottle, ResumeThrottle
 from mainapp import ratelimit
 from .geo_utils import normalize_search
+from chat.models import Conversation, Report
 from .models import AccountProfile, City, Internship, Job, ListingInteraction, Resume
 from .forms import (
     AccountSettingsForm,
@@ -55,9 +58,18 @@ def can_create_listing(user, listing_type):
 
 
 def super_admin_forbidden(request):
-    return HttpResponseForbidden(
-        _('Access denied for user %(username)s.') % {'username': request.user.username}
-    )
+    # 404 rather than 403: don't reveal that the super-admin page exists.
+    raise Http404
+
+
+def super_admin_only(view):
+    """Anonymous users and non-superusers alike get a plain 404: no login redirect that would give the URL away."""
+    @functools.wraps(view)
+    def wrapped(request, *args, **kwargs):
+        if not is_super_admin(request.user):
+            return super_admin_forbidden(request)
+        return view(request, *args, **kwargs)
+    return wrapped
 
 
 def filter_listings_by_query(queryset, query, fields):
@@ -569,11 +581,8 @@ def edit_listing(request, listing_type, pk):
     })
 
 
-@login_required
+@super_admin_only
 def super_admin(request):
-    if not is_super_admin(request.user):
-        return super_admin_forbidden(request)
-
     user_form = None
     selected_user = None
     if request.method == 'POST':
@@ -589,6 +598,16 @@ def super_admin(request):
             if selected_user != request.user and not selected_user.is_superuser:
                 selected_user.delete()
             return redirect('super_admin')
+        elif action == 'resolve_report':
+            Report.objects.filter(pk=request.POST.get('report_id')).update(resolved=True)
+            return redirect(reverse('super_admin') + '#reports')
+        elif action == 'delete_report_message':
+            report = get_object_or_404(Report, pk=request.POST.get('report_id'))
+            report.message.delete()  # cascades to every report on this message
+            return redirect(reverse('super_admin') + '#reports')
+        elif action == 'delete_chat':
+            get_object_or_404(Conversation, pk=request.POST.get('conversation_id')).delete()
+            return redirect(reverse('super_admin') + '#reports')
         elif action == 'delete_listing':
             listing_map = {'job': Job, 'internship': Internship, 'resume': Resume}
             model = listing_map.get(request.POST.get('listing_type'))
@@ -609,6 +628,10 @@ def super_admin(request):
             | Q(last_name__icontains=search_query)
             | Q(account_profile__display_name__icontains=search_query)
         )
+
+    reports = Report.objects.select_related(
+        'reporter', 'message__sender', 'message__conversation',
+    ).order_by('resolved', '-created_at')[:50]
 
     jobs = Paginator(
         Job.objects.select_related('owner').order_by('-created_at'), 10
@@ -634,6 +657,8 @@ def super_admin(request):
 
     return render(request, 'mainapp/super_admin.html', {
         'users': users,
+        'reports': reports,
+        'open_reports_count': Report.objects.filter(resolved=False).count(),
         'jobs': jobs,
         'internships': internships,
         'resumes': resumes,
@@ -646,11 +671,8 @@ def super_admin(request):
     })
 
 
-@login_required
+@super_admin_only
 def super_admin_edit_listing(request, listing_type, pk):
-    if not is_super_admin(request.user):
-        return super_admin_forbidden(request)
-
     config = {
         'job': (Job, JobForm, _('Job')),
         'internship': (Internship, InternshipForm, _('Internship')),

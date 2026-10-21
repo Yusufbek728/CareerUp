@@ -93,6 +93,27 @@
             </div>
         </section>
 
+        <section class="sa-panel" id="reports">
+            <div class="sa-panel-head"><h2>{% translate "Reports" %} ({{ open_reports_count }})</h2></div>
+            <div class="sa-table">
+                {% for report in reports %}
+                    <div class="sa-row">
+                        <div class="sa-cell-main">
+                            <div>
+                                <strong>{{ report.message.sender.username }}</strong>: {{ report.message.text|default:report.message.attachment_name|truncatechars:160 }}
+                                <div class="sa-meta">{% translate "reason:" %} {{ report.reason }} · {% translate "reported by" %} {{ report.reporter.username }} · {{ report.created_at|date:"d.m.Y H:i" }}{% if report.resolved %} · {% translate "resolved" %}{% endif %}</div>
+                            </div>
+                        </div>
+                        <div class="sa-actions">
+                            {% if not report.resolved %}<form method="post">{% csrf_token %}<input type="hidden" name="action" value="resolve_report"><input type="hidden" name="report_id" value="{{ report.pk }}"><button class="sa-btn" type="submit">{% translate "Resolve" %}</button></form>{% endif %}
+                            <form method="post">{% csrf_token %}<input type="hidden" name="action" value="delete_report_message"><input type="hidden" name="report_id" value="{{ report.pk }}"><button class="sa-btn sa-btn-danger" type="submit">{% translate "Delete message" %}</button></form>
+                            <form method="post" onsubmit="return confirm('{% translate "Delete the whole chat?" %}')">{% csrf_token %}<input type="hidden" name="action" value="delete_chat"><input type="hidden" name="conversation_id" value="{{ report.message.conversation_id }}"><button class="sa-btn sa-btn-danger" type="submit">{% translate "Delete chat" %}</button></form>
+                        </div>
+                    </div>
+                {% empty %}<p class="sa-meta sa-empty">{% translate "No reports yet." %}</p>{% endfor %}
+            </div>
+        </section>
+
         {% translate "Jobs" as jobs_title %}
         {% translate "Internships" as internships_title %}
         {% translate "Resumes" as resumes_title %}

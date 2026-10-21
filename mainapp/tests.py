@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import translation
@@ -846,18 +847,39 @@ class SuperAdminTests(TestCase):
 
 	def test_super_admin_requires_staff_access(self):
 		response = self.client.get(reverse('super_admin'))
-		self.assertEqual(response.status_code, 302)
-		self.assertIn('/login/', response['Location'])
-		self.assertIn('next=/super_admin', response['Location'])
+		self.assertEqual(response.status_code, 404)
 
 		self.client.force_login(self.account)
 		response = self.client.get(reverse('super_admin'))
-		self.assertEqual(response.status_code, 403)
+		self.assertEqual(response.status_code, 404)
 
-		self.account.is_staff = True
-		self.account.save(update_fields=['is_staff'])
+		self.account.is_superuser = True
+		self.account.save(update_fields=['is_superuser'])
 		response = self.client.get(reverse('super_admin'))
 		self.assertEqual(response.status_code, 200)
+
+	def test_reports_can_be_resolved_and_chats_deleted(self):
+		from chat.models import Conversation, Message, Report
+		job = Job.objects.create(company_name='C', phone_number='+998901234567', salary=1, required_experience=1, work_time=8, job_title='J', requirements_of_job='x', owner=self.admin)
+		conversation = Conversation.objects.create(
+			content_type=ContentType.objects.get_for_model(Job), object_id=job.pk,
+			initiator=self.account, recipient=self.admin,
+		)
+		message = Message.objects.create(conversation=conversation, sender=self.account, text='spam')
+		report = Report.objects.create(reporter=self.admin, message=message, reason='abuse')
+		self.client.force_login(self.admin)
+		self.assertContains(self.client.get(reverse('super_admin')), 'abuse')
+
+		self.client.post(reverse('super_admin'), {'action': 'resolve_report', 'report_id': report.pk})
+		report.refresh_from_db()
+		self.assertTrue(report.resolved)
+
+		self.client.post(reverse('super_admin'), {'action': 'delete_report_message', 'report_id': report.pk})
+		self.assertFalse(Message.objects.filter(pk=message.pk).exists())
+		self.assertFalse(Report.objects.filter(pk=report.pk).exists())
+
+		self.client.post(reverse('super_admin'), {'action': 'delete_chat', 'conversation_id': conversation.pk})
+		self.assertFalse(Conversation.objects.filter(pk=conversation.pk).exists())
 
 	def test_staff_can_edit_account_and_password(self):
 		self.client.force_login(self.admin)
@@ -941,7 +963,7 @@ class SuperAdminTests(TestCase):
 		self.client.force_login(self.admin)
 		response = self.client.get(reverse('super_admin'))
 
-		self.assertEqual(response.status_code, 403)
+		self.assertEqual(response.status_code, 404)
 
 	def test_logout_requires_post(self):
 		self.client.force_login(self.admin)

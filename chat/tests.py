@@ -796,6 +796,9 @@ class ApiTests(ChatFixtureMixin, MediaMixin, TestCase):
             self.assertEqual(client.get(url).status_code, 200)
 
     def test_swagger_schema_still_builds(self):
+        self.assertEqual(self.client.get('/swagger/?format=openapi').status_code, 404)
+        root = User.objects.create_superuser('swagger-root', password='swagger-password')
+        self.client.force_login(root)
         response = self.client.get('/swagger/?format=openapi')
         self.assertEqual(response.status_code, 200)
         self.assertIn('/conversations/', response.content.decode())
