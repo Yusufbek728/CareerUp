@@ -1,0 +1,57 @@
+{% load i18n static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>404 - CareerUp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'mainapp/styles.css' %}?v=ui-fix-1">
+    <script src="{% static 'mainapp/theme.js' %}?v=language-labels-1&switch=3" defer></script>
+    <style>
+        .nf-page { min-height: 70vh; display: grid; place-items: center; padding: 48px 0; }
+        .nf-card {
+            position: relative; overflow: hidden; text-align: center; max-width: 560px; width: 100%;
+            padding: 56px 32px 44px; border-radius: 28px;
+            border: 1px solid rgba(118, 169, 255, 0.25);
+            background: rgba(255, 255, 255, 0.04);
+            box-shadow: 0 24px 80px rgba(23, 42, 90, 0.25);
+        }
+        body:not(.dark-theme) .nf-card { background: #fff; border-color: #e4e9f2; }
+        .nf-card::before {
+            content: ""; position: absolute; inset: -40% -20% auto; height: 70%;
+            background: radial-gradient(circle, rgba(118, 169, 255, 0.28), transparent 65%);
+            pointer-events: none;
+        }
+        .nf-code {
+            position: relative; margin: 0; font: 700 clamp(5.5rem, 22vw, 9rem)/1 'Space Grotesk', sans-serif;
+            letter-spacing: -0.04em;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            animation: nf-float 4s ease-in-out infinite;
+        }
+        .nf-card h1 { position: relative; margin: 18px 0 10px; font-size: 1.6rem; }
+        .nf-card p { position: relative; margin: 0 auto 28px; max-width: 400px; color: var(--muted); line-height: 1.7; }
+        body:not(.dark-theme) .nf-card p { color: #475467; }
+        .nf-actions { position: relative; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        @keyframes nf-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @media (prefers-reduced-motion: reduce) { .nf-code { animation: none; } }
+    </style>
+</head>
+<body>
+    {% include "mainapp/partials/site_header.html" %}
+    <main class="nf-page container">
+        <section class="nf-card">
+            <div class="nf-code">404</div>
+            <h1>{% translate "Page not found" %}</h1>
+            <p>{% translate "The page you are looking for does not exist or has been moved." %}</p>
+            <div class="nf-actions">
+                <a href="{% url 'home' %}" class="primary-btn">{% translate "Back to home" %}</a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

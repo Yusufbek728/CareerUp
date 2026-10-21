@@ -881,6 +881,23 @@ class SuperAdminTests(TestCase):
 		self.client.post(reverse('super_admin'), {'action': 'delete_chat', 'conversation_id': conversation.pk})
 		self.assertFalse(Conversation.objects.filter(pk=conversation.pk).exists())
 
+	def test_django_admin_is_hidden_from_everyone_but_superusers(self):
+		self.assertEqual(self.client.get('/admin/').status_code, 404)
+		self.assertEqual(self.client.get('/admin/login/').status_code, 404)
+
+		self.account.is_staff = True
+		self.account.save(update_fields=['is_staff'])
+		self.client.force_login(self.account)
+		self.assertEqual(self.client.get('/admin/').status_code, 404)
+
+		self.client.force_login(self.admin)
+		self.assertEqual(self.client.get('/admin/').status_code, 200)
+
+	def test_404_page_is_custom(self):
+		response = self.client.get('/no-such-page/')
+		self.assertEqual(response.status_code, 404)
+		self.assertContains(response, 'nf-card', status_code=404)
+
 	def test_staff_can_edit_account_and_password(self):
 		self.client.force_login(self.admin)
 		response = self.client.post(reverse('super_admin'), {

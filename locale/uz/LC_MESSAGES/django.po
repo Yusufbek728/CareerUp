@@ -871,3 +871,12 @@ msgstr "Rasm tanlang"
 
 msgid "Sections"
 msgstr "Bo'limlar"
+
+msgid "Page not found"
+msgstr "Sahifa topilmadi"
+
+msgid "The page you are looking for does not exist or has been moved."
+msgstr "Bunday sahifa mavjud emas yoki boshqa joyga ko'chirilgan."
+
+msgid "Back to home"
+msgstr "Bosh sahifaga qaytish"

@@ -874,3 +874,12 @@ msgstr "Выберите фото"
 
 msgid "Sections"
 msgstr "Разделы"
+
+msgid "Page not found"
+msgstr "Страница не найдена"
+
+msgid "The page you are looking for does not exist or has been moved."
+msgstr "Такой страницы нет или она была перемещена."
+
+msgid "Back to home"
+msgstr "На главную"
