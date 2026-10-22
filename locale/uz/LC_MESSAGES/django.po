@@ -880,3 +880,30 @@ msgstr "Bunday sahifa mavjud emas yoki boshqa joyga ko'chirilgan."
 
 msgid "Back to home"
 msgstr "Bosh sahifaga qaytish"
+
+msgid "You are muted by a moderator and cannot send messages."
+msgstr "Moderator sizga xabar yuborishni cheklagan."
+
+msgid "Unmute"
+msgstr "Mutni olib tashlash"
+
+msgid "Mute user"
+msgstr "Mutga olish"
+
+msgid "Mute duration"
+msgstr "Mut muddati"
+
+msgid "1 hour"
+msgstr "1 soat"
+
+msgid "24 hours"
+msgstr "24 soat"
+
+msgid "7 days"
+msgstr "7 kun"
+
+msgid "30 days"
+msgstr "30 kun"
+
+msgid "Forever"
+msgstr "Doimiy"

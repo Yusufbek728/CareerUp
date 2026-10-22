@@ -14,7 +14,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .attachments import validate_attachment
 from .exceptions import ChatError
-from .models import LISTING_MODELS, Block, Conversation, Message, Report
+from .models import LISTING_MODELS, Block, Conversation, Message, Mute, Report
 
 
 # --------------------------------------------------------------------------- helpers
@@ -57,6 +57,19 @@ def users_blocked(user_a, user_b):
     return Block.objects.filter(
         Q(blocker=user_a, blocked=user_b) | Q(blocker=user_b, blocked=user_a)
     ).exists()
+
+
+def is_muted(user):
+    mute = Mute.objects.filter(user=user).first()
+    return mute is not None and mute.is_active
+
+
+def mute_user(user, until=None):
+    return Mute.objects.update_or_create(user=user, defaults={'until': until})[0]
+
+
+def unmute_user(user):
+    Mute.objects.filter(user=user).delete()
 
 
 def share_conversation(user_a, user_b):
@@ -153,6 +166,8 @@ def check_can_send(conversation, sender):
     """Raise unless `sender` may write to `conversation` (membership + blocks)."""
     if not conversation.is_participant(sender):
         raise ChatError('forbidden', _('You are not a participant of this conversation.'))
+    if is_muted(sender):
+        raise ChatError('muted', _('You are muted by a moderator and cannot send messages.'))
     other = conversation.other_user(sender)
     if users_blocked(sender, other):
         raise ChatError('blocked', _('Sending messages in this conversation is not possible.'))

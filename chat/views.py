@@ -117,6 +117,7 @@ def conversation_detail(request, pk):
                 'too_long': _('The message is too long.'),
                 'rate_limited': _('You are sending messages too fast. Please wait a moment.'),
                 'blocked': _('Sending messages in this conversation is not possible.'),
+                'muted': _('You are muted by a moderator and cannot send messages.'),
                 'forbidden': _('You are not a participant of this conversation.'),
                 'bad_attachment': _('The attachment was rejected.'),
                 'server_error': _('Message saved but could not be delivered live.'),

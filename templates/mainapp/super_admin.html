@@ -105,6 +105,20 @@
                             </div>
                         </div>
                         <div class="sa-actions">
+                            {% with sender=report.message.sender %}{% if sender.chat_mute.is_active %}
+                            <form method="post">{% csrf_token %}<input type="hidden" name="action" value="unmute_user"><input type="hidden" name="user_id" value="{{ sender.pk }}"><button class="sa-btn" type="submit">{% translate "Unmute" %}</button></form>
+                            {% elif not sender.is_superuser %}
+                            <form method="post" class="sa-mute-form">{% csrf_token %}<input type="hidden" name="action" value="mute_user"><input type="hidden" name="user_id" value="{{ sender.pk }}">
+                                <select name="duration" aria-label="{% translate 'Mute duration' %}">
+                                    <option value="1h">{% translate "1 hour" %}</option>
+                                    <option value="24h" selected>{% translate "24 hours" %}</option>
+                                    <option value="7d">{% translate "7 days" %}</option>
+                                    <option value="30d">{% translate "30 days" %}</option>
+                                    <option value="forever">{% translate "Forever" %}</option>
+                                </select>
+                                <button class="sa-btn sa-btn-danger" type="submit">{% translate "Mute user" %}</button>
+                            </form>
+                            {% endif %}{% endwith %}
                             {% if not report.resolved %}<form method="post">{% csrf_token %}<input type="hidden" name="action" value="resolve_report"><input type="hidden" name="report_id" value="{{ report.pk }}"><button class="sa-btn" type="submit">{% translate "Resolve" %}</button></form>{% endif %}
                             <form method="post">{% csrf_token %}<input type="hidden" name="action" value="delete_report_message"><input type="hidden" name="report_id" value="{{ report.pk }}"><button class="sa-btn sa-btn-danger" type="submit">{% translate "Delete message" %}</button></form>
                             <form method="post" onsubmit="return confirm('{% translate "Delete the whole chat?" %}')">{% csrf_token %}<input type="hidden" name="action" value="delete_chat"><input type="hidden" name="conversation_id" value="{{ report.message.conversation_id }}"><button class="sa-btn sa-btn-danger" type="submit">{% translate "Delete chat" %}</button></form>

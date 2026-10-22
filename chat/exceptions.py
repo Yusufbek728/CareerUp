@@ -6,6 +6,7 @@ class ChatError(Exception):
         'not_found': 404,
         'forbidden': 403,
         'blocked': 403,
+        'muted': 403,
         'empty': 400,
         'too_long': 400,
         'invalid': 400,

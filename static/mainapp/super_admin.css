@@ -310,3 +310,6 @@ html { scroll-behavior: smooth; }
     .sa-search { width: 100%; }
     .sa-search input { width: 100%; }
 }
+
+.sa-mute-form { display: flex; gap: 6px; align-items: center; }
+.sa-mute-form select { padding: 7px 10px; border-radius: 10px; border: 1px solid rgba(128, 144, 170, 0.4); background: transparent; color: inherit; font: inherit; }

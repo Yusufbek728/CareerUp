@@ -1,4 +1,5 @@
 import functools
+from datetime import timedelta
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
@@ -25,6 +26,7 @@ from mainapp.pagination import InternshipPagination, JobPagination, ResumePagina
 from mainapp.throttling import CityThrottle, InternshipThrottle, JobThrottle, ResumeThrottle
 from mainapp import ratelimit
 from .geo_utils import normalize_search
+from chat import services as chat_services
 from chat.models import Conversation, Report
 from .models import AccountProfile, City, Internship, Job, ListingInteraction, Resume
 from .forms import (
@@ -39,6 +41,10 @@ from .forms import (
     RoleForm,
 )
 from .serialiers import JobSerializer, ResumeSerializer, InternshipSerializer, RegistrationSerializer
+
+
+# Hours per duration choice in the mute form; 0 means for good.
+MUTE_DURATIONS = {'1h': 1, '24h': 24, '7d': 24 * 7, '30d': 24 * 30, 'forever': 0}
 
 
 def is_super_admin(user):
@@ -601,6 +607,17 @@ def super_admin(request):
         elif action == 'resolve_report':
             Report.objects.filter(pk=request.POST.get('report_id')).update(resolved=True)
             return redirect(reverse('super_admin') + '#reports')
+        elif action == 'mute_user':
+            target = get_object_or_404(User, pk=request.POST.get('user_id'))
+            hours = MUTE_DURATIONS.get(request.POST.get('duration'), 24)
+            if target != request.user and not target.is_superuser:
+                chat_services.mute_user(
+                    target, timezone.now() + timedelta(hours=hours) if hours else None,
+                )
+            return redirect(reverse('super_admin') + '#reports')
+        elif action == 'unmute_user':
+            chat_services.unmute_user(get_object_or_404(User, pk=request.POST.get('user_id')))
+            return redirect(reverse('super_admin') + '#reports')
         elif action == 'delete_report_message':
             report = get_object_or_404(Report, pk=request.POST.get('report_id'))
             report.message.delete()  # cascades to every report on this message
@@ -630,7 +647,7 @@ def super_admin(request):
         )
 
     reports = Report.objects.select_related(
-        'reporter', 'message__sender', 'message__conversation',
+        'reporter', 'message__sender__chat_mute', 'message__conversation',
     ).order_by('resolved', '-created_at')[:50]
 
     jobs = Paginator(

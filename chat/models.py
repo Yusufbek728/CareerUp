@@ -168,6 +168,23 @@ class Block(models.Model):
         return f'{self.blocker_id} blocked {self.blocked_id}'
 
 
+class Mute(models.Model):
+    """A moderator's ban on writing in chats. `until` of None means for good."""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='chat_mute',
+    )
+    until = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Mute of {self.user_id} until {self.until or "forever"}'
+
+    @property
+    def is_active(self):
+        return self.until is None or self.until > timezone.now()
+
+
 class Report(models.Model):
     reporter = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='chat_reports',

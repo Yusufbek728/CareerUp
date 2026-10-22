@@ -883,3 +883,30 @@ msgstr "Такой страницы нет или она была перемещ
 
 msgid "Back to home"
 msgstr "На главную"
+
+msgid "You are muted by a moderator and cannot send messages."
+msgstr "Модератор ограничил вам отправку сообщений."
+
+msgid "Unmute"
+msgstr "Снять мут"
+
+msgid "Mute user"
+msgstr "Замутить"
+
+msgid "Mute duration"
+msgstr "Срок мута"
+
+msgid "1 hour"
+msgstr "1 час"
+
+msgid "24 hours"
+msgstr "24 часа"
+
+msgid "7 days"
+msgstr "7 дней"
+
+msgid "30 days"
+msgstr "30 дней"
+
+msgid "Forever"
+msgstr "Навсегда"

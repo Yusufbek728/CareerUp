@@ -893,6 +893,38 @@ class SuperAdminTests(TestCase):
 		self.client.force_login(self.admin)
 		self.assertEqual(self.client.get('/admin/').status_code, 200)
 
+	def test_reported_user_can_be_muted_and_unmuted(self):
+		from chat.models import Conversation, Message, Mute, Report
+		from datetime import timedelta
+		from django.utils import timezone
+		from chat import services
+		from chat.exceptions import ChatError
+		job = Job.objects.create(company_name='C', phone_number='+998901234567', salary=1, required_experience=1, work_time=8, job_title='J', requirements_of_job='x', owner=self.admin)
+		conversation = Conversation.objects.create(
+			content_type=ContentType.objects.get_for_model(Job), object_id=job.pk,
+			initiator=self.account, recipient=self.admin,
+		)
+		message = Message.objects.create(conversation=conversation, sender=self.account, text='spam')
+		Report.objects.create(reporter=self.admin, message=message, reason='abuse')
+		self.client.force_login(self.admin)
+
+		self.client.post(reverse('super_admin'), {'action': 'mute_user', 'user_id': self.account.pk, 'duration': '1h'})
+		self.assertTrue(services.is_muted(self.account))
+		with self.assertRaises(ChatError) as raised:
+			services.send_message(conversation, self.account, 'hello')
+		self.assertEqual(raised.exception.code, 'muted')
+		services.send_message(conversation, self.admin, 'still fine')
+
+		self.client.post(reverse('super_admin'), {'action': 'mute_user', 'user_id': self.admin.pk, 'duration': 'forever'})
+		self.assertFalse(Mute.objects.filter(user=self.admin).exists())
+
+		Mute.objects.filter(user=self.account).update(until=timezone.now() - timedelta(minutes=1))
+		self.assertFalse(services.is_muted(self.account))
+
+		self.client.post(reverse('super_admin'), {'action': 'mute_user', 'user_id': self.account.pk, 'duration': 'forever'})
+		self.client.post(reverse('super_admin'), {'action': 'unmute_user', 'user_id': self.account.pk})
+		self.assertFalse(services.is_muted(self.account))
+
 	def test_404_page_is_custom(self):
 		response = self.client.get('/no-such-page/')
 		self.assertEqual(response.status_code, 404)
