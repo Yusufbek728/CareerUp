@@ -1528,6 +1528,9 @@ body.category-listing-body:not(.dark-theme) .listing-card-media .status {
 }
 
 .listing-card-company {
+    /* overflow:hidden lets a flex item shrink to ~0 when the card has a fixed
+       height and a 2-line title, which hid the employer name */
+    flex: 0 0 auto;
     margin: 0;
     font-size: 0.88rem;
     color: var(--muted);
@@ -1578,10 +1581,15 @@ body.category-listing-body:not(.dark-theme) .listing-card-media .status {
 }
 
 .job-card-link {
-    display: block;
+    display: flex;
+    flex-direction: column;
     height: 100%;
     color: inherit;
     text-decoration: none;
+}
+
+.job-card-link > .listing-card {
+    flex: 1 1 auto;
 }
 
 .job-card-link:hover .job-card,
@@ -2591,7 +2599,10 @@ body.dark-theme .band-content {
 }
 
 .job-card.listing-card {
-    height: 440px;
+    /* grow when a 2-line title + location pill need more room; grid rows keep
+       neighbouring cards equal height */
+    height: auto;
+    min-height: 440px;
     padding: 0;
 }
 
@@ -2826,10 +2837,10 @@ body.dark-theme .profile-image-placeholder {
 .header .nav-link::after {
     position: absolute;
     right: 12px;
-    bottom: -21px;
+    bottom: -22px;
     left: 12px;
-    height: 3px;
-    border-radius: 3px;
+    height: 5px;
+    border-radius: 5px;
     background: var(--accent);
     content: "";
     opacity: 0;
@@ -4848,6 +4859,12 @@ body.dark-theme .cf-field select option {
 /* ===== Light theme contrast, resume avatar, my cards, account settings ===== */
 body:not(.dark-theme) {
     --ink-accent: #3d5a12;
+}
+
+/* Pale lime underline barely shows on the light header: use a saturated lime */
+body:not(.dark-theme) .header .nav-link::after {
+    background: #84cc16;
+    box-shadow: 0 2px 8px rgba(132, 204, 22, 0.45);
 }
 
 /* Lime used as text colour is invisible on light surfaces */
